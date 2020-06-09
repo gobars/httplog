@@ -2,10 +2,12 @@ package com.github.gobars.httplog;
 
 import static java.util.Collections.list;
 
+import com.github.gobars.id.Id;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import javax.servlet.FilterChain;
@@ -31,17 +33,21 @@ import org.springframework.web.util.ContentCachingResponseWrapper;
  * @author bingoo.
  */
 @Slf4j
-public class ReqRspLogFilter extends OncePerRequestFilter {
+public class Filter extends OncePerRequestFilter {
+
+  public static final String HTTPLOG_REQ = "HTTPLOG_REQ";
 
   @Override
-  protected void doFilterInternal(HttpServletRequest r, HttpServletResponse s, FilterChain fc)
+  protected void doFilterInternal(HttpServletRequest r, HttpServletResponse s, FilterChain c)
       throws ServletException, IOException {
 
     val rq = new ContentCachingRequestWrapper(r);
     val rp = new ContentCachingResponseWrapper(s);
 
     Req req = new Req();
+    req.setId(Id.next());
     Rsp rsp = new Rsp();
+    rsp.setId(req.getId());
 
     // Launch of the timing of the request
     long startNs = System.nanoTime();
@@ -52,17 +58,29 @@ public class ReqRspLogFilter extends OncePerRequestFilter {
     logReqStatusAndHeaders(rq, req);
 
     try {
-      fc.doFilter(rq, rp);
+      rq.setAttribute(HTTPLOG_REQ, req);
+      c.doFilter(rq, rp);
       logStart(rq, req, rsp, startNs, rp.getStatus());
+      rsp.setEndTime(new Timestamp(System.currentTimeMillis()));
       logRsp(rp, req, rsp);
     } catch (Exception e) {
       // Calculates the execution time of the request
+      rsp.setEndTime(new Timestamp(System.currentTimeMillis()));
       logStart(rq, req, rsp, startNs, 500);
       logEx(rsp, e);
 
       // Throw the exception to not continue the treatment
       throw e;
     } finally {
+      val p = (HttpLogProcessor) rq.getAttribute(Interceptor.HTTPLOG_PROCESSOR);
+      if (p != null) {
+        try {
+          p.complete(rq, rp, rsp);
+        } catch (Exception ex) {
+          log.warn("failed to complete req:{} rsp:{}", req, rsp, ex);
+        }
+      }
+
       // Publication of the trace
       log.info("req: {}", req);
       log.info("rsp: {}", rsp);
@@ -103,6 +121,7 @@ public class ReqRspLogFilter extends OncePerRequestFilter {
   private void logReqStatusAndHeaders(ContentCachingRequestWrapper r, Req req) {
     req.setMethod(r.getMethod());
     req.setRequestUri(r.getRequestURI());
+    req.setQueries(Str.parseQuery(r.getQueryString()));
     req.setProtocol(r.getProtocol());
 
     Map<String, String> headers = new HashMap<>(10);

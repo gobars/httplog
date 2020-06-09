@@ -1,12 +1,18 @@
 # httplog
 
+[![Build Status](https://travis-ci.org/httplog.svg?branch=master)](https://travis-ci.org/httplog)
+[![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=com.github.gobars%3Ahttplog&metric=alert_status)](https://sonarcloud.io/dashboard/index/com.github.gobars%3Ahttplog)
+[![Coverage Status](https://coveralls.io/repos/github/httplog/badge.svg?branch=master)](https://coveralls.io/github/httplog?branch=master)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.httplog/badge.svg?style=flat-square)](https://maven-badges.herokuapp.com/maven-central/com.github.httplog/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 log request and response for http
 
 ## Usage 
 
 ```
 @Configuration
-public class ReqRspLogConfig extends com.github.gobars.httplog.ReqRspLogFilter {}
+public class ReqRspLogConfig extends com.github.gobars.httplog.Filter {}
 ```
 
 ## Examples
@@ -40,7 +46,7 @@ public class ReqRspLogConfig extends com.github.gobars.httplog.ReqRspLogFilter {
 	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:53)
 	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:193)
 	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:166)
-	at com.github.gobars.httplog.ReqRspLogFilter.doFilterInternal(ReqRspLogFilter.java:56)
+	at com.github.gobars.httplog.Filter.doFilterInternal(ReqRspLogFilter.java:56)
 	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:119)
 	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:193)
 	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:166)

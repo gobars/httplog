@@ -1,0 +1,33 @@
+dist: xenial
+
+services:
+  - docker
+before_install:
+  - docker pull mysql:5.7
+  - docker run -p 3306:3306 --name mysql -e MYSQL_ROOT_PASSWORD=root -d mysql:5.7
+  - docker pull epiclabs/docker-oracle-xe-11g
+  - docker run --name oracle -d -p 127.0.0.1:1521:1521 -e ORACLE_ALLOW_REMOTE=true epiclabs/docker-oracle-xe-11g
+  # - docker inspect oracle
+  # - docker ps -a
+  - echo "Wait to allow Oracle to be initialized"
+  - travis_wait sleep 10
+  - docker top oracle
+  - docker exec -it mysql mysql -u root -p'root' -s -e "create database id;create table id.worker_id(id bigint auto_increment primary key,created datetime default current_timestamp,ip varchar(60),hostname varchar(60),pid int,reason varchar(60),biz varchar(60))engine=innodb default charset=utf8mb4;"
+  - docker exec -it mysql mysql -u root -p'root' -s -e "drop table if exists id.biz_log;create table id.biz_log(id bigint auto_increment primary key comment '日志记录ID',created datetime default current_timestamp comment '创建时间',start datetime comment '请求时间',end datetime comment '结束时间',cost int comment '费时毫秒',ip varchar(60) comment '当前机器IP',hostname varchar(60) comment '当前机器名称',pid int comment '应用程序PID',biz varchar(60) comment '当前业务名称',req_path_id varchar(60) comment '请求路径变量id',req_url varchar(60) comment '请求url',req_heads varchar(600) comment '请求头',req_method varchar(60) comment '请求方法',rsp_body varchar(60) comment '响应体',bizdesc varchar(60) comment '响应体 httplog:"fix_desc"') engine = innodb default charset = utf8mb4 comment 'biz_log';"
+  - docker exec -it mysql mysql -u root -p'root' -s -e "drop table if exists biz_log_post;create table biz_log_post(id bigint auto_increment primary key comment '日志记录ID',created datetime default current_timestamp comment '创建时间',start datetime comment '请求时间',end datetime comment '结束时间',cost int comment '费时毫秒',ip varchar(60) comment '当前机器IP',hostname varchar(60) comment '当前机器名称',pid int comment '应用程序PID',biz varchar(60) comment '当前业务名称',req_path_id varchar(60) comment '请求路径变量id',req_url varchar(60) comment '请求url',req_heads varchar(600) comment '请求头',req_method varchar(60) comment '请求方法',rsp varchar(60) comment '响应体 httplog:"req_body"',dtoid varchar(60) comment '响应体 httplog:"req_json_id"') engine = innodb default charset = utf8mb4 comment 'biz_log_post';"
+
+language: java
+install: mvn install -DskipTests -Dgpg.skip
+jdk: openjdk8
+sudo: false
+cache:
+  directories:
+    - $HOME/.m2/repository
+    - $HOME/.sonar/cache
+addons:
+  sonarcloud:
+    organization: bingoohuang-github
+    token:
+      secure: Q0b81ebLGrl8/lhQVwnPz+yOWMYqsI3QK4PjwPT8GPmbA47cs8oHiZDTm40mAb5lUvd1jkcMhmnG35ywIKoQswnkvCJdSYfSdmajXVALKB5I6sVSILec3TtZVfzahIScXi3C0wvUg8X0av9bj7L5qqi76sxGfAeSw/qp9/HCHtnB/H/98LIoCqf5pfqaSfGQP0i7JRq99U/9hFSdQ4cXJi7P1OD3LTcvfCL83XGSVoWydh8eSVDqRzsV7zZEPPpE7MNoMCgwot3SJashK7zYaMIU+9ML1mW31ncujHkF+zIBEELtU9aaymhPZSqeAqtTT+JCBdq8tgEx3Ikt2dWs38iq9bSaIP3bLMRpfEEh1ylBo6+eo8Oq3aVnfzWvdYfehcEKftUj3ePSBbO+CMWFddWOeFd7GWCBSE4RDE2tsvyBdefbsH0Nm5fy4U7HgEWMvzVz5FQTUIFvxgW67gL9U/HFBlPQfH1+oVV3+sbCpxv/jbAHiqMkB7UKNV6i+2mTpQH180JTO36J3fvKOKHPhRmvZ+AmbT5ehXrlb9qk7xZvEsXK5JogXYRX5bYB5Vqd+IJLFx5BFxkZoftgH2wz9ZpwBi090lOJrPq+sjW8qCpBS/lqvap4Y6ZoeQLg7sjmTIqLb4CN4EGlf39Z0YREfyXLxlcnbmajOhgly+X4hhE=
+script:
+  - mvn clean test jacoco:report coveralls:report install sonar:sonar -Dgpg.skip -Dsonar.organization=bingoohuang-github -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=a7fe683637d6e1f54e194817cc36e78936d4fe61
