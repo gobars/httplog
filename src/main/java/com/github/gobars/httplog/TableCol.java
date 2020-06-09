@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -299,9 +298,12 @@ public class TableCol {
     Object get(Req req, Rsp rsp, HttpServletRequest r, HttpServletResponse p, HttpLog hl, String v);
   }
 
-  @AllArgsConstructor
   static class Equals implements Matcher {
     private final String value;
+
+    Equals(String value) {
+      this.value = value;
+    }
 
     static Matcher eqOf(String value) {
       return new Equals(value);
@@ -313,9 +315,12 @@ public class TableCol {
     }
   }
 
-  @AllArgsConstructor
   static class Starts implements Matcher {
     private final String value;
+
+    Starts(String value) {
+      this.value = value;
+    }
 
     public static Matcher startsOf(String value) {
       return new Starts(value);
@@ -327,9 +332,12 @@ public class TableCol {
     }
   }
 
-  @AllArgsConstructor
   static class Factory {
     private final ColValueGetter colValueGetter;
+
+    Factory(ColValueGetter colValueGetter) {
+      this.colValueGetter = colValueGetter;
+    }
 
     static Factory of(ColValueGetter colValueGetter) {
       return new Factory(colValueGetter);
