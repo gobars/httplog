@@ -8,15 +8,19 @@
 
 log request and response for http
 
-## Usage 
+## Usage
+
+HttpLog会根据`@HttpLog`中定义的日志表的注解及字段名，自动记录相关HTTP信息.
 
 ### Prepare log tables
+
+业务日志表定义，根据具体业务需要，必须字段为主键`id`（名字固定）:
 
 ```sql
 drop table if exists biz_log;
 create table biz_log
 (
-    id          bigint auto_increment primary key comment '日志记录ID',
+    id          bigint  primary key comment '日志记录ID',
     created     datetime default current_timestamp comment '创建时间',
     start       datetime comment '请求时间',
     end         datetime comment '结束时间',
@@ -37,7 +41,7 @@ create table biz_log
 drop table if exists biz_log_post;
 create table biz_log_post
 (
-    id          bigint auto_increment primary key comment '日志记录ID',
+    id          bigint  primary key comment '日志记录ID',
     created     datetime default current_timestamp comment '创建时间',
     start       datetime comment '请求时间',
     end         datetime comment '结束时间',
