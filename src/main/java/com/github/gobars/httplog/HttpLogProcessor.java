@@ -108,7 +108,7 @@ public class HttpLogProcessor {
       val runner = new SqlRunner(conn, false);
       val sqlGenerator = sqlGenerators.get(table);
 
-      sqlGenerator.logReq(runner, r, req);
+      sqlGenerator.req(runner, r, req);
     }
   }
 
@@ -122,7 +122,7 @@ public class HttpLogProcessor {
       val runner = new SqlRunner(conn, false);
       val sqlGenerator = sqlGenerators.get(table);
 
-      sqlGenerator.logRsp(runner, r, p, req, rsp);
+      sqlGenerator.rsp(runner, r, p, req, rsp);
     }
   }
 }

@@ -69,7 +69,7 @@ public interface TableLogger {
         insertValueGetters.add(valueGetter);
       }
 
-      updateSets.add(table + "=?");
+      updateSets.add(tableCol.getName() + "=?");
       updateValueGetters.add(valueGetter);
     }
 
@@ -93,7 +93,7 @@ public interface TableLogger {
    * @param r HttpServletRequest
    * @param req Req
    */
-  void logReq(SqlRunner run, HttpServletRequest r, Req req);
+  default void req(SqlRunner run, HttpServletRequest r, Req req) {}
 
   /**
    * 记录响应日志
@@ -104,7 +104,7 @@ public interface TableLogger {
    * @param req Req
    * @param rsp Rsp
    */
-  void logRsp(SqlRunner run, HttpServletRequest r, HttpServletResponse p, Req req, Rsp rsp);
+  void rsp(SqlRunner run, HttpServletRequest r, HttpServletResponse p, Req req, Rsp rsp);
 
   /**
    * 两阶段记录（req和rsp).
@@ -120,7 +120,7 @@ public interface TableLogger {
     List<ColValueGetter> updateValueGetters;
 
     @Override
-    public void logReq(SqlRunner run, HttpServletRequest r, Req req) {
+    public void req(SqlRunner run, HttpServletRequest r, Req req) {
       val params = new ArrayList<>(insertValueGetters.size());
       for (val colValueGetter : insertValueGetters) {
         try {
@@ -139,9 +139,8 @@ public interface TableLogger {
     }
 
     @Override
-    public void logRsp(
-        SqlRunner run, HttpServletRequest r, HttpServletResponse p, Req req, Rsp rsp) {
-      NonEagerTableLogger.logByInsert(insertSql, insertValueGetters, run, r, p, req, rsp);
+    public void rsp(SqlRunner run, HttpServletRequest r, HttpServletResponse p, Req req, Rsp rsp) {
+      NonEagerTableLogger.log(updateSql, updateValueGetters, run, r, p, req, rsp);
     }
   }
 
@@ -156,7 +155,7 @@ public interface TableLogger {
     String sql;
     List<ColValueGetter> valueGetters;
 
-    static void logByInsert(
+    static void log(
         String sql,
         List<ColValueGetter> valueGetters,
         SqlRunner run,
@@ -182,12 +181,8 @@ public interface TableLogger {
     }
 
     @Override
-    public void logReq(SqlRunner run, HttpServletRequest r, Req req) {}
-
-    @Override
-    public void logRsp(
-        SqlRunner run, HttpServletRequest r, HttpServletResponse p, Req req, Rsp rsp) {
-      logByInsert(sql, valueGetters, run, r, p, req, rsp);
+    public void rsp(SqlRunner run, HttpServletRequest r, HttpServletResponse p, Req req, Rsp rsp) {
+      log(sql, valueGetters, run, r, p, req, rsp);
     }
   }
 }

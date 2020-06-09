@@ -91,4 +91,16 @@ public class Str {
       throw new IllegalArgumentException(problem);
     }
   }
+
+  public String join(String[] values) {
+    return join(",", values);
+  }
+
+  public String join(String sep, String[] values) {
+    if (values == null) {
+      return null;
+    }
+
+    return String.join(sep, values);
+  }
 }
