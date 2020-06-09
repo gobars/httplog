@@ -10,6 +10,213 @@ log request and response for http
 
 ## Usage 
 
+### Prepare log tables
+
+```sql
+drop table if exists biz_log;
+create table biz_log
+(
+    id          bigint auto_increment primary key comment '日志记录ID',
+    created     datetime default current_timestamp comment '创建时间',
+    start       datetime comment '请求时间',
+    end         datetime comment '结束时间',
+    cost        int comment '费时毫秒',
+    ip          varchar(60) comment '当前机器IP',
+    hostname    varchar(60) comment '当前机器名称',
+    pid         int comment '应用程序PID',
+    biz         varchar(60) comment '当前业务名称',
+    req_path_id varchar(60) comment '请求路径变量id',
+    req_url     varchar(60) comment '请求url',
+    req_heads   varchar(600) comment '请求头',
+    req_method  varchar(60) comment '请求方法',
+    rsp_body    varchar(60) comment '响应体',
+    bizdesc     varchar(60) comment '响应体 httplog:"fix_desc"'
+) engine = innodb
+  default charset = utf8mb4 comment 'biz_log';
+
+drop table if exists biz_log_post;
+create table biz_log_post
+(
+    id          bigint auto_increment primary key comment '日志记录ID',
+    created     datetime default current_timestamp comment '创建时间',
+    start       datetime comment '请求时间',
+    end         datetime comment '结束时间',
+    cost        int comment '费时毫秒',
+    ip          varchar(60) comment '当前机器IP',
+    hostname    varchar(60) comment '当前机器名称',
+    pid         int comment '应用程序PID',
+    biz         varchar(60) comment '当前业务名称',
+    req_path_id varchar(60) comment '请求路径变量id',
+    req_url     varchar(60) comment '请求url',
+    req_heads   varchar(600) comment '请求头',
+    req_method  varchar(60) comment '请求方法',
+    rsp         varchar(60) comment '响应体 httplog:"req_body"',
+    dtoid       varchar(60) comment '响应体 httplog:"req_json_id"'
+) engine = innodb
+  default charset = utf8mb4 comment 'biz_log_post';
+```
+
+日志表建表规范
+
+字段注释包含| 或者字段名 | 说明
+---|---|---
+内置类:||
+`httplog:"id"`|id| 日志记录ID
+`httplog:"created"`|created| 创建时间
+`httplog:"ip"` |ip|当前机器IP
+`httplog:"hostname"` |hostname|当前机器名称
+`httplog:"pid"` |pid|应用程序PID
+`httplog:"start"` |start|开始时间(yyyy-MM-dd HH:mm:ss.SSS)
+`httplog:"end"` |end|结束时间(yyyy-MM-dd HH:mm:ss.SSS)
+`httplog:"cost"` |cost|花费时间（ms)
+`httplog:"exception"` |exception|异常信息
+请求类:||
+`httplog:"req_head_xxx"` |req_head_xxx|请求中的xxx头
+`httplog:"req_heads"` |req_heads|请求中的所有头
+`httplog:"req_method"` |req_method|请求method
+`httplog:"req_url"` |req_url|请求URL
+`httplog:"req_path_xxx"` |req_path_xxx|请求URL中的xxx路径参数
+`httplog:"req_paths"` |req_paths|请求URL中的所有路径参数
+`httplog:"req_query_xxx"` |req_query_xxx|请求URl中的xxx查询参数
+`httplog:"req_queries"` |req_queries|请求URl中的所有查询参数
+`httplog:"req_param_xxx"` |req_param_xxx|请求中query/form的xxx参数
+`httplog:"req_params"` |req_params|请求中query/form的所有参数
+`httplog:"req_body"` |req_body|请求体
+`httplog:"req_json"` |req_json|请求体（当Content-Type为JSON时)
+`httplog:"req_json_xxx"` |req_json_xxx|请求体JSON中的xxx属性
+响应类:||
+`httplog:"rsp_head_xxx"` |rsp_head_xxx|响应中的xxx头
+`httplog:"rsp_heads"` |rsp_heads|响应中的所有头
+`httplog:"rsp_body"` |rsp_body|响应体
+`httplog:"rsp_json"` |rsp_json|响应体JSON（当Content-Type为JSON时)
+`httplog:"rsp_json_xxx"`|rsp_json_xxx| 请求体JSON中的xxx属性
+`httplog:"rsp_status"`|rsp_status| 响应编码
+上下文:||
+`httplog:"ctx_xxx"` |ctx_xxx|上下文对象xxx的值
+固定值:||
+`httplog:"fix_xxx"`|fix_xxx| 由fix参数指定的固定值 
+
+### Setup interceptors and filters
+
+```java
+@Slf4j
+@Configuration
+public class HttpLogWebMvcConf extends WebMvcConfigurationSupport {
+  @Autowired DataSource dataSource;
+
+  @Bean
+  public Filter filter() {
+    return new Filter();
+  }
+
+  @Override
+  protected void addInterceptors(InterceptorRegistry registry) {
+    registry
+        .addInterceptor(new Interceptor(new ConnGetter.DsConnGetter(dataSource)))
+        .addPathPatterns("/**");
+    log.info("Configure Interceptor.....");
+    super.addInterceptors(registry);
+  }
+}
+```
+
+```java
+import com.github.gobars.httplog.HttpLog;
+import com.github.gobars.httplog.spring.dto.TestDto;
+import com.github.gobars.httplog.spring.ex.TestException;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.*;
+
+@Slf4j
+@RestController
+@RequestMapping(value = "/test")
+public class TestController {
+
+  /**
+   * test get.
+   *
+   * @param id id
+   * @return id
+   */
+  @HttpLog(tables = "biz_log", fix = "desc:ID查找", eager = true)
+  @GetMapping(value = "/{id}")
+  public String get(@PathVariable Integer id) {
+    return "test id : " + id;
+  }
+
+  /**
+   * test post.
+   *
+   * @param testDto testDto
+   * @return testDto
+   */
+  @HttpLog(tables = "biz_log_post")
+  @PostMapping
+  public TestDto post(@RequestBody TestDto testDto) {
+    return testDto;
+  }
+
+  /**
+   * test put error.
+   *
+   * @param testDto testDto
+   */
+  @PutMapping
+  public void error(@RequestBody TestDto testDto) {
+    log.warn("error TestException will be thrown");
+    throw new TestException(testDto.toString());
+  }
+}
+```
+
+sample biz_log records:
+
+```json
+[
+  {
+    "id": 928019202048,
+    "created": "2020-06-09 16:41:51",
+    "start": "2020-06-09 16:41:51",
+    "end": "2020-06-09 16:41:52",
+    "cost": 592,
+    "ip": "192.168.224.20",
+    "hostname": "bingoobjcadeMacBook-Pro.local",
+    "pid": 73362,
+    "biz": null,
+    "req_path_id": "10",
+    "req_url": "/test/10",
+    "req_heads": "{host=localhost:53865, connection=keep-alive, accept=text/plain, application/json, application/*+json, */*, user-agent=Java/11.0.7}",
+    "req_method": "GET",
+    "rsp_body": "",
+    "bizdesc": "ID查找"
+  }
+]
+```
+
+sample biz_log_post records:
+
+```json
+[
+  {
+    "id": 931332702208,
+    "created": "2020-06-09 16:41:52",
+    "start": "2020-06-09 16:41:52",
+    "end": "2020-06-09 16:41:52",
+    "cost": 31,
+    "ip": "192.168.224.20",
+    "hostname": "bingoobjcadeMacBook-Pro.local",
+    "pid": 73362,
+    "biz": null,
+    "req_path_id": null,
+    "req_url": "/test",
+    "req_heads": "{content-length=9, host=localhost:53865, content-type=application/json, connection=keep-alive, accept=application/json, application/*+json, user-agent=Java/11.0.7}",
+    "req_method": "POST",
+    "rsp": "{\"id\":10}",
+    "dtoid": "10"
+  }
+]
+```
+
 ```
 @Configuration
 public class ReqRspLogConfig extends com.github.gobars.httplog.Filter {}

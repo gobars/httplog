@@ -59,8 +59,8 @@ public @interface HttpLog {
    *   <li>httplog:"rsp_heads" 响应中的所有头
    *   <li>httplog:"rsp_body" 响应体
    *   <li>httplog:"rsp_json" 响应体JSON（当Content-Type为JSON时)
-   *   <li>httplog:"rsp_status" 响应编码
    *   <li>httplog:"rsp_json_xxx" 请求体JSON中的xxx属性
+   *   <li>httplog:"rsp_status" 响应编码
    *   <li>上下文:
    *   <li>httplog:"ctx_xxx" 上下文对象xxx的值
    *   <li>固定值:

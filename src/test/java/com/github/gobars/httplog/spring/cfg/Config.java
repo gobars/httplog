@@ -1,14 +1,13 @@
 package com.github.gobars.httplog.spring.cfg;
 
 import com.alibaba.druid.pool.DruidDataSource;
-import com.github.gobars.httplog.Filter;
 import javax.sql.DataSource;
 import lombok.val;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class Config extends Filter {
+public class Config {
   @Bean
   public DataSource getDataSource() {
     val dataSource = new DruidDataSource();

@@ -52,6 +52,7 @@ public class TableCol {
     rsps.put(eqOf("body"), (req, rsp, r, p, v) -> req.getBody());
     rsps.put(eqOf("json"), (req, rsp, r, p, v) -> getJsonBody(req));
     rsps.put(startsOf("json_"), (req, rsp, r, p, v) -> jsonpath(v.substring(5), req));
+    rsps.put(eqOf("status"), (req, rsp, r, p, v) -> p.getStatus());
   }
 
   static {
