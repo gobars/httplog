@@ -8,8 +8,10 @@ import com.github.gobars.httplog.snack.core.Context;
 import com.github.gobars.httplog.snack.core.Handler;
 import com.github.gobars.httplog.snack.from.JsonFromer;
 import java.util.*;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore
 public class SpeedTest {
 
   /** 测试性能（大json） */
@@ -87,7 +89,7 @@ public class SpeedTest {
     obj.put("list", list);
 
     String tmp = ONode.serialize(obj);
-    System.out.println(tmp);
+    //    System.out.println(tmp);
 
     long start = System.currentTimeMillis();
     for (int i = 0, len = 10000; i < len; i++) {
@@ -127,7 +129,7 @@ public class SpeedTest {
     }
 
     String tmp = ONode.serialize(group);
-    System.out.println(tmp);
+    //    System.out.println(tmp);
 
     long start = System.currentTimeMillis();
     for (int i = 0, len = 100000; i < len; i++) {
@@ -167,7 +169,7 @@ public class SpeedTest {
     }
 
     String json = ONode.serialize(group);
-    System.out.println(json);
+    //    System.out.println(json);
 
     ONode.deserialize(json, UserGroupModel.class);
 
@@ -209,7 +211,7 @@ public class SpeedTest {
     }
 
     String json = ONode.serialize(group);
-    System.out.println(json);
+    //    System.out.println(json);
 
     ONode.deserialize(json, null);
 
@@ -251,7 +253,7 @@ public class SpeedTest {
     }
 
     String json = ONode.serialize(group);
-    System.out.println(json);
+    //    System.out.println(json);
 
     ONode tmp = ONode.load(json, Constants.serialize());
 
@@ -295,7 +297,7 @@ public class SpeedTest {
     }
 
     String json = ONode.serialize(group);
-    System.out.println(json);
+    //    System.out.println(json);
 
     ONode tmp = ONode.load(json);
 
@@ -331,7 +333,7 @@ public class SpeedTest {
     obj.put("list", list);
 
     String json = ONode.serialize(obj);
-    System.out.println(json);
+    //    System.out.println(json);
 
     ONode.deserialize(json, obj.getClass());
 
@@ -365,7 +367,7 @@ public class SpeedTest {
     obj.put("list", list);
 
     String json = ONode.serialize(obj);
-    System.out.println(json);
+    //    System.out.println(json);
 
     long start = System.currentTimeMillis();
     for (int i = 0, len = 100000; i < len; i++) {
@@ -397,7 +399,7 @@ public class SpeedTest {
     obj.put("list", list);
 
     String json = ONode.serialize(obj);
-    System.out.println(json);
+    //    System.out.println(json);
     ONode n = ONode.load(json);
 
     long start = System.currentTimeMillis();

@@ -1,5 +1,6 @@
-package com.github.gobars.httplog;
+package com.github.gobars.httplog.spring;
 
+import com.github.gobars.httplog.Interceptor;
 import com.github.gobars.id.conf.ConnGetter;
 import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;

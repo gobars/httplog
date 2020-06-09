@@ -1,4 +1,4 @@
-package com.github.gobars.httplog.cfg;
+package com.github.gobars.httplog.spring.cfg;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import com.github.gobars.httplog.Filter;

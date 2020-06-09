@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import org.junit.Test;
 
+@SuppressWarnings("unchecked")
 public class ComplicatedTest {
   @Test
   public void test0() {
@@ -28,7 +29,7 @@ public class ComplicatedTest {
 
     // 开始序列化
     String json = ONode.serialize(list2);
-    System.out.println(json);
+    //    System.out.println(json);
 
     // 开始反序列化
     Object obj2 = ONode.deserialize(json);
@@ -52,7 +53,7 @@ public class ComplicatedTest {
 
     // 开始序列化
     String json = ONode.serialize(map2);
-    System.out.println(json);
+    //    System.out.println(json);
 
     // 开始反序列化
     Object obj2 = ONode.deserialize(json);
@@ -75,7 +76,7 @@ public class ComplicatedTest {
 
     // 开始序列化
     String json = ONode.serialize(map2);
-    System.out.println(json);
+    //    System.out.println(json);
 
     // 开始反序列化
     Object obj2 = ONode.deserialize(json);

@@ -18,13 +18,9 @@ import org.junit.Test;
  */
 public class ObjectTest {
 
-  /**
-   * 无限递归
-   *
-   * @throws IllegalAccessException
-   */
+  /** 无限递归 */
   @Test
-  public void test000() throws IllegalAccessException {
+  public void test000() {
 
     AModel a = new AModel();
     BModel b = new BModel();
@@ -36,7 +32,7 @@ public class ObjectTest {
 
     new ObjectFromer().handle(c);
 
-    System.out.println(((ONode) c.target).toJson());
+    //    System.out.println(((ONode) c.target).toJson());
 
     assert "{\"b\":{}}".equals(((ONode) c.target).toJson());
   }
@@ -57,7 +53,7 @@ public class ObjectTest {
 
     new ObjectFromer().handle(c);
 
-    System.out.println(((ONode) c.target).toJson());
+    //    System.out.println(((ONode) c.target).toJson());
 
     c = new Context(Constants.def(), ((ONode) c.target), OrderModel.class);
     new ObjectToer().handle(c);
@@ -92,7 +88,7 @@ public class ObjectTest {
 
     new ObjectFromer().handle(c);
 
-    System.out.println(((ONode) c.target).toJson());
+    //    System.out.println(((ONode) c.target).toJson());
 
     assert 1 == ((ONode) c.target).get("users").get(1).get("id").getInt();
 
@@ -107,7 +103,7 @@ public class ObjectTest {
     final TypeVariable<? extends Class<? extends List>>[] typeParameters =
         d.getClass().getTypeParameters();
     for (TypeVariable<? extends Class<? extends List>> t : typeParameters) {
-      System.out.println(t.getName());
+      //      System.out.println(t.getName());
     }
   }
 }

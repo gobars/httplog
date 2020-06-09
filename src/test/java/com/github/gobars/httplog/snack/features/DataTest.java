@@ -18,13 +18,9 @@ import org.junit.Test;
  */
 public class DataTest {
 
-  /**
-   * 无限递归
-   *
-   * @throws IllegalAccessException
-   */
+  /** 无限递归 */
   @Test
-  public void test000() throws IllegalAccessException {
+  public void test000() {
 
     AModel a = new AModel();
     BModel b = new BModel();
@@ -36,7 +32,7 @@ public class DataTest {
 
     new ObjectFromer().handle(c);
 
-    System.out.println(((ONode) c.target).toJson());
+    //    System.out.println(((ONode) c.target).toJson());
 
     Object data = ((ONode) c.target).toObject(null);
 
@@ -44,7 +40,7 @@ public class DataTest {
   }
 
   @Test
-  public void test1() throws Exception {
+  public void test1() {
 
     UserModel user = new UserModel();
     user.id = 1111;
@@ -59,7 +55,7 @@ public class DataTest {
 
     new ObjectFromer().handle(c);
 
-    System.out.println(((ONode) c.target).toJson());
+    //    System.out.println(((ONode) c.target).toJson());
 
     Object data = ((ONode) c.target).toObject(null);
 
@@ -67,7 +63,7 @@ public class DataTest {
   }
 
   @Test
-  public void test2() throws Exception {
+  public void test2() {
 
     UserGroupModel group = new UserGroupModel();
     group.id = 9999;
@@ -93,7 +89,7 @@ public class DataTest {
 
     String json = ONode.serialize(group);
 
-    System.out.println(json); // context.node.toJson());
+    //    System.out.println(json); // context.node.toJson());
 
     Object g2 = ONode.deserialize(json);
 
@@ -110,7 +106,7 @@ public class DataTest {
     final TypeVariable<? extends Class<? extends List>>[] typeParameters =
         d.getClass().getTypeParameters();
     for (TypeVariable<? extends Class<? extends List>> t : typeParameters) {
-      System.out.println(t.getName());
+      //      System.out.println(t.getName());
     }
   }
 }

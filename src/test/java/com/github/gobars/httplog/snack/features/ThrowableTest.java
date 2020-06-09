@@ -13,41 +13,41 @@ public class ThrowableTest {
   }
 
   @Test
-  public void test01() throws Throwable {
+  public void test01() {
     Throwable err = (Throwable) test01_exc();
-    err.printStackTrace();
+    //    err.printStackTrace();
 
     String tmp_json = ONode.serialize(err);
-    System.out.println(tmp_json);
+    //    System.out.println(tmp_json);
 
     Throwable err2 = ONode.deserialize(tmp_json);
-    err2.printStackTrace();
+    //    err2.printStackTrace();
   }
 
   @Test
-  public void test02() throws Throwable {
+  public void test02() {
     Throwable tmp = (Throwable) test01_exc();
     Throwable err = new RuntimeException(tmp);
-    err.printStackTrace();
+    //    err.printStackTrace();
 
     String tmp_json = ONode.serialize(err);
-    System.out.println(tmp_json);
+    //    System.out.println(tmp_json);
 
     Throwable err2 = ONode.deserialize(tmp_json);
-    err2.printStackTrace();
+    //    err2.printStackTrace();
   }
 
   @Test
-  public void test03() throws Throwable {
+  public void test03() {
     Throwable tmp = (Throwable) test01_exc();
     Throwable tmp2 = new Exception(tmp);
     Throwable err = new RuntimeException(tmp2);
-    err.printStackTrace();
+    //    err.printStackTrace();
 
     String tmp_json = ONode.serialize(err);
-    System.out.println(tmp_json);
+    //    System.out.println(tmp_json);
 
     Throwable err2 = ONode.deserialize(tmp_json);
-    err2.printStackTrace();
+    //    err2.printStackTrace();
   }
 }

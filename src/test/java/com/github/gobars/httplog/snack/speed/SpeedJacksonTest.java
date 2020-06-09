@@ -8,8 +8,10 @@ import com.github.gobars.httplog.snack._models.UserGroupModel;
 import com.github.gobars.httplog.snack._models.UserModel;
 import java.io.IOException;
 import java.util.*;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore
 public class SpeedJacksonTest {
   ObjectMapper mapper = getMapper();
 

@@ -21,17 +21,17 @@ public class Constants {
           Feature.BrowserCompatible,
           Feature.WriteClassName,
           Feature.QuoteFieldNames);
-  // 日期格式
+  /** 日期格式 */
   public DateFormat date_format = DEFAULTS.DEF_DATE_FORMAT;
-  // 类型key
+  /** 类型key */
   public String type_key = DEFAULTS.DEF_TYPE_KEY;
-  // 时区
+  /** 时区 */
   public TimeZone time_zone = DEFAULTS.DEF_TIME_ZONE;
-  // 地区
+  /** 地区 */
   public Locale locale = DEFAULTS.DEF_LOCALE;
-  // 特性
+  /** 特性 */
   public int features = DEFAULTS.DEF_FEATURES;
-  // n.get(key)时，只读处理; 即不自动添加新节点
+  /** n.get(key)时，只读处理; 即不自动添加新节点 */
   public boolean get_readonly = false;
 
   public Constants() {}
@@ -40,13 +40,11 @@ public class Constants {
     this.features = features;
   }
 
-  /** 默认配置 */
-  public static final Constants def() {
+  public static Constants def() {
     return new Constants(features_def);
   }
 
-  /** 序列化配置 */
-  public static final Constants serialize() {
+  public static Constants serialize() {
     return new Constants(features_serialize);
   }
 
@@ -68,7 +66,6 @@ public class Constants {
     return this;
   }
 
-  /** 构建自己 */
   public Constants build(Act1<Constants> builder) {
     builder.run(this);
     return this;
@@ -80,7 +77,6 @@ public class Constants {
     return date_format.format(date);
   }
 
-  /** 检查是否有特性 */
   public final boolean hasFeature(Feature feature) {
     return Feature.isEnabled(features, feature);
   }
@@ -89,8 +85,8 @@ public class Constants {
   public final String null_string() {
     if (hasFeature(Feature.StringNullAsEmpty)) {
       return "";
-    } else {
-      return null;
     }
+
+    return null;
   }
 }

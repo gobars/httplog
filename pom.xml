@@ -3,19 +3,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.3.0.RELEASE</version>
-    </parent>
-
     <groupId>com.github.gobars</groupId>
     <artifactId>httplog</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
     <packaging>jar</packaging>
 
     <name>httplog</name>
-    <description>an http logger</description>
+    <description>a http logger</description>
     <url>http://github.com/gobars/httplog</url>
 
     <repositories>
@@ -91,18 +85,27 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
+            <version>2.3.0.RELEASE</version>
             <optional>true</optional>
+            <exclusions>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
+            <version>2.3.0.RELEASE</version>
             <optional>true</optional>
         </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <version>2.3.0.RELEASE</version>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
@@ -181,29 +184,6 @@
                         <id>prepare-agent</id>
                         <goals>
                             <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>com.cosium.code</groupId>
-                <artifactId>git-code-format-maven-plugin</artifactId>
-                <version>2.4</version>
-                <executions>
-                    <!-- On commit, format the modified java files -->
-                    <execution>
-                        <id>install-formatter-hook</id>
-                        <goals>
-                            <goal>install-hooks</goal>
-                        </goals>
-                    </execution>
-                    <!-- On Maven verify phase, fail if any file
-                    (including unmodified) is badly formatted -->
-                    <execution>
-                        <id>validate-code-format</id>
-                        <goals>
-                            <goal>validate-code-format</goal>
                         </goals>
                     </execution>
                 </executions>

@@ -127,7 +127,7 @@ public class JsonPathTest {
     //        assert  t5.getInt()==2;
 
     ONode t60 = n.select("$..b");
-    System.out.println(t60.toJson());
+    //    System.out.println(t60.toJson());
 
     ONode t6 = n.select("$..list[-1]");
     assert t6.get(0).getInt() == 5;

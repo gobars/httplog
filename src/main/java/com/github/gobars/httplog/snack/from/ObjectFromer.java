@@ -20,6 +20,7 @@ public class ObjectFromer implements Fromer {
     ctx.target = analyse(ctx.config, ctx.source); // 如果是null,会返回 ONode.Null
   }
 
+  @SuppressWarnings("unchecked")
   private ONode analyse(Constants cfg, Object source) {
 
     ONode rst = new ONode(cfg);
@@ -197,7 +198,7 @@ public class ObjectFromer implements Fromer {
         continue;
       }
 
-      if (val.equals(obj) == false) { // null 和 自引用 不需要处理
+      if (!val.equals(obj)) { // null 和 自引用 不需要处理
         rst.setNode(f.name(), analyse(cfg, val));
       }
     }
@@ -205,6 +206,7 @@ public class ObjectFromer implements Fromer {
     return true;
   }
 
+  @SuppressWarnings("unchecked")
   private boolean analyseOther(Constants cfg, ONode rst, Class<?> clz, Object obj) {
     if (obj instanceof SimpleDateFormat) {
       rst.set(cfg.type_key, clz.getName());

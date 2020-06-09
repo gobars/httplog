@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /** 类型工具类 */
+@SuppressWarnings("unchecked")
 public class TypeUtil {
   public static final BigInteger INT_LOW = BigInteger.valueOf(-9007199254740991L);
   public static final BigInteger INT_HIGH = BigInteger.valueOf(9007199254740991L);

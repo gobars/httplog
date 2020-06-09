@@ -3,8 +3,10 @@ package com.github.gobars.httplog.snack.speed;
 import java.lang.reflect.Array;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore
 public class BaseSpeedTest {
 
   @Test

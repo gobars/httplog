@@ -24,6 +24,7 @@ import java.util.*;
  *
  * <p>将 ONode 转为 java Object
  */
+@SuppressWarnings("unchecked")
 public class ObjectToer implements Toer {
   @Override
   public void handle(Context ctx) throws Exception {
@@ -69,26 +70,21 @@ public class ObjectToer implements Toer {
       }
     }
 
-    if (StringUtil.isEmpty(typeStr) == false) {
-      Class<?> clz = BeanUtil.loadClass(typeStr);
-      if (clz == null) {
-        throw new RuntimeException("unsupport type " + typeStr);
-      } else {
-        return clz;
-      }
-    } else {
-      if (def == null || def == Object.class) {
-        if (o.isObject()) {
-          return HashMap.class;
-        }
-
-        if (o.isArray()) {
-          return ArrayList.class;
-        }
-      }
-
-      return def;
+    if (!StringUtil.isEmpty(typeStr)) {
+      return BeanUtil.loadClass(typeStr);
     }
+
+    if (def == null || def == Object.class) {
+      if (o.isObject()) {
+        return HashMap.class;
+      }
+
+      if (o.isArray()) {
+        return ArrayList.class;
+      }
+    }
+
+    return def;
   }
 
   private Object analyse(Context ctx, ONode o, Class<?> clz, Type type) throws Exception {
@@ -135,7 +131,7 @@ public class ObjectToer implements Toer {
     return s.isAssignableFrom(t);
   }
 
-  public Object analyseVal(Context ctx, ONodeData d, Class<?> clz) throws Exception {
+  public Object analyseVal(Context ctx, ONodeData d, Class<?> clz) {
 
     OValue v = d.value;
 
@@ -274,6 +270,7 @@ public class ObjectToer implements Toer {
     }
   }
 
+  @SuppressWarnings("unchecked")
   public Object analyseCollection(Context ctx, ONode o, Class<?> clz, Type type) throws Exception {
     Collection list = TypeUtil.createCollection(clz, false);
 
@@ -283,8 +280,10 @@ public class ObjectToer implements Toer {
 
     if (o.count() == 2) {
       ONode o1 = o.get(0);
-      if (o1.count() == 1 && o1.contains(ctx.config.type_key)) { // 说明，是有类型的集合
-        o = o.get(1); // 取第二个节点，做为数据节点（第1个为类型节点）;
+      // 说明，是有类型的集合
+      if (o1.count() == 1 && o1.contains(ctx.config.type_key)) {
+        // 取第二个节点，做为数据节点（第1个为类型节点）;
+        o = o.get(1);
       }
     }
 

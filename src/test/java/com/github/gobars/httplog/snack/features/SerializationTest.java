@@ -13,7 +13,7 @@ import org.junit.Test;
 public class SerializationTest {
 
   @Test
-  public void test0() throws Exception {
+  public void test0() {
     String temp = ONode.serialize("aaa");
     assert "\"aaa\"".equals(temp);
 
@@ -33,20 +33,20 @@ public class SerializationTest {
 
     ONode tm3 = ONode.load(tm2);
 
-    tm3.toJson().equals("{\"a\":\"http://raas.dev.zmapi.cn\"}");
+    assert tm3.toJson().equals("{\"a\":\"http://raas.dev.zmapi.cn\"}");
   }
 
   @Test
-  public void test1() throws Exception {
+  public void test1() {
     try {
       String val = null;
       val.equals("");
     } catch (Exception ex) {
-      ex.printStackTrace();
+      //      ex.printStackTrace();
 
       String json = ONode.serialize(ex);
 
-      System.out.println(json);
+      //      System.out.println(json);
 
       NullPointerException ex2 = ONode.deserialize(json, NullPointerException.class);
 
@@ -63,7 +63,7 @@ public class SerializationTest {
   }
 
   @Test
-  public void test2() throws Exception {
+  public void test2() {
 
     UserGroupModel group = new UserGroupModel();
     group.id = 9999;
@@ -89,7 +89,7 @@ public class SerializationTest {
     }
 
     String json = ONode.serialize(group);
-    System.out.println(json);
+    //    System.out.println(json);
     UserGroupModel group2 = ONode.deserialize(json, UserGroupModel.class);
 
     Object group22 = ONode.deserialize(json, Object.class);
@@ -102,7 +102,7 @@ public class SerializationTest {
   }
 
   @Test
-  public void test2_2() throws Exception {
+  public void test2_2() {
 
     UserGroupModel group = new UserGroupModel();
     group.id = 9999;
@@ -128,7 +128,7 @@ public class SerializationTest {
     }
 
     String json = ONode.stringify(group); // 产生的json，没有@type
-    System.out.println(json);
+    //    System.out.println(json);
     UserGroupModel group2 = ONode.deserialize(json, UserGroupModel.class);
 
     Object group22 = ONode.deserialize(json, (new UserGroupModel() {}).getClass());
@@ -144,9 +144,8 @@ public class SerializationTest {
   }
 
   @Test
-  public void test3() throws Exception {
+  public void test3() {
 
-    Map<String, Object> objx = new HashMap<>();
     Map<String, Object> obj = new LinkedHashMap<String, Object>();
 
     List<Map<String, Object>> list = new ArrayList<Map<String, Object>>();
@@ -161,7 +160,7 @@ public class SerializationTest {
     obj.put("list", list);
 
     String json = ONode.serialize(obj);
-    System.out.println(json);
+    //    System.out.println(json);
     Map<String, Object> obj2 = ONode.deserialize(json, LinkedHashMap.class);
     assert obj2 instanceof LinkedHashMap;
 
@@ -175,7 +174,7 @@ public class SerializationTest {
   }
 
   @Test
-  public void test4() throws Exception {
+  public void test4() {
     UserModel user = new UserModel();
     user.id = 1111;
     user.name = "张三";
@@ -187,7 +186,7 @@ public class SerializationTest {
     order.order_num = "ddddd";
 
     String json = ONode.serialize(order);
-    System.out.println(json);
+    //    System.out.println(json);
     OrderModel order2 = ONode.deserialize(json, OrderModel.class);
     Object order22 = ONode.deserialize(json, Object.class);
     Map order23 = ONode.deserialize(json, null);
@@ -196,11 +195,11 @@ public class SerializationTest {
   }
 
   @Test
-  public void test5() throws Exception {
+  public void test5() {
     CModel obj = new CModel();
 
     String json = ONode.serialize(obj);
-    System.out.println(json);
+    //    System.out.println(json);
 
     CModel obj2 = ONode.deserialize(json, CModel.class);
 
@@ -208,12 +207,12 @@ public class SerializationTest {
   }
 
   @Test
-  public void test52() throws Exception {
+  public void test52() {
     CModel obj = new CModel();
     obj.init();
 
     String json = ONode.serialize(obj);
-    System.out.println(json);
+    //    System.out.println(json);
 
     CModel obj2 = ONode.deserialize(json, CModel.class);
 
@@ -221,12 +220,12 @@ public class SerializationTest {
   }
 
   @Test
-  public void test53() throws Exception {
+  public void test53() {
     CModel obj = new CModel();
     obj.build();
 
     String json = ONode.serialize(obj);
-    System.out.println(json);
+    //    System.out.println(json);
 
     CModel obj2 = ONode.deserialize(json, CModel.class);
 
@@ -234,7 +233,7 @@ public class SerializationTest {
   }
 
   @Test
-  public void test6() throws Exception {
+  public void test6() {
     String tmp =
         "{code:1,msg:'Hello world',data:{list:[1,2,3,4,5], ary2:[{a:2},{a:3,b:{c:'ddd'}}]}}";
     // 1.加载json

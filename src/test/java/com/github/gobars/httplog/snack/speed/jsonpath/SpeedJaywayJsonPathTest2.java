@@ -3,8 +3,10 @@ package com.github.gobars.httplog.snack.speed.jsonpath;
 import com.jayway.jsonpath.JsonPath;
 import java.util.List;
 import net.minidev.json.JSONArray;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore
 public class SpeedJaywayJsonPathTest2 {
   @Test
   public void test1() {

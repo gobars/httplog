@@ -266,7 +266,7 @@ public class OValue {
       case DateTime:
         return String.valueOf(_date);
       default:
-        return _n._c.null_string();
+        return _n.co.null_string();
     }
   }
 

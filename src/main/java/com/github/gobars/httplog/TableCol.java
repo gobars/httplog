@@ -296,9 +296,12 @@ public class TableCol {
     Object get(Req req, Rsp rsp, HttpServletRequest r, HttpServletResponse p, String value);
   }
 
-  @Value
-  public static class Equals implements Matcher {
-    String value;
+  static class Equals implements Matcher {
+    private final String value;
+
+    public Equals(String value) {
+      this.value = value;
+    }
 
     static Matcher eqOf(String value) {
       return new Equals(value);
@@ -310,9 +313,12 @@ public class TableCol {
     }
   }
 
-  @Value
-  public static class Starts implements Matcher {
-    String value;
+  static class Starts implements Matcher {
+    private final String value;
+
+    public Starts(String value) {
+      this.value = value;
+    }
 
     public static Matcher startsOf(String value) {
       return new Starts(value);

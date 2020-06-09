@@ -21,14 +21,14 @@ import java.util.Iterator;
  */
 public class JsonToer implements Toer {
   private static final ThData<StringBuilder> tlBuilder =
-      new ThData(() -> new StringBuilder(1024 * 5));
+      new ThData<>(() -> new StringBuilder(1024 * 5));
 
   @Override
   public void handle(Context ctx) {
     ONode o = (ONode) ctx.source;
 
     if (null != o) {
-      StringBuilder sb = tlBuilder.get(); // new StringBuilder(1024*5); //
+      StringBuilder sb = tlBuilder.get();
       sb.setLength(0);
 
       analyse(ctx.config, o, sb);
@@ -209,7 +209,7 @@ public class JsonToer implements Toer {
             || c == '\t'
             || c == '\f'
             || c == '\b'
-            || (c >= '\0' && c <= '\7')) {
+            || c <= '\7') {
           sBuf.append("\\");
           sBuf.append(IOUtil.CHARS_MARK[c]);
           continue;

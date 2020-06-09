@@ -1,8 +1,8 @@
-package com.github.gobars.httplog;
+package com.github.gobars.httplog.spring;
 
-import com.github.gobars.httplog.dto.TestDto;
+import com.github.gobars.httplog.spring.dto.TestDto;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -17,7 +17,7 @@ import org.springframework.util.MultiValueMap;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = App.class)
-class AppTests {
+public class AppTest {
   /** Data */
   private static final TestDto TEST_DTO = TestDto.builder().id(10).build();
 

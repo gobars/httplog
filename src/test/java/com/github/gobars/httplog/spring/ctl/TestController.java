@@ -1,8 +1,8 @@
-package com.github.gobars.httplog.ctl;
+package com.github.gobars.httplog.spring.ctl;
 
 import com.github.gobars.httplog.HttpLog;
-import com.github.gobars.httplog.dto.TestDto;
-import com.github.gobars.httplog.ex.TestException;
+import com.github.gobars.httplog.spring.dto.TestDto;
+import com.github.gobars.httplog.spring.ex.TestException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 

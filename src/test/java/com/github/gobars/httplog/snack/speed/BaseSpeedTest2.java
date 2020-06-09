@@ -3,8 +3,10 @@ package com.github.gobars.httplog.snack.speed;
 import com.github.gobars.httplog.snack.ONode;
 import java.util.ArrayList;
 import java.util.List;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore
 public class BaseSpeedTest2 {
   @Test
   public void test1() {

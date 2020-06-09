@@ -35,7 +35,7 @@ public class ReqRspLogConfig extends com.github.gobars.httplog.Filter {}
 
 ```log
 2020-06-04 20:43:31.917  INFO 81103 --- [o-auto-1-exec-3] c.github.gobars.httplog.ReqRspLogFilter  : req: Req(super=ReqRsp(headers={content-length=9, host=localhost:57413, content-type=application/json, connection=keep-alive, accept=application/json, application/*+json, user-agent=Java/11.0.7}, startNs=13515248933063, tookMs=0, bodyBytes=9, body={"id":10}, error=null), method=PUT, requestUri=/test, protocol=HTTP/1.1)
-2020-06-04 20:43:31.917  INFO 81103 --- [o-auto-1-exec-3] c.github.gobars.httplog.ReqRspLogFilter  : rsp: Rsp(super=ReqRsp(headers=null, startNs=13515248933063, tookMs=4, bodyBytes=0, body=null, error=org.springframework.web.util.NestedServletException: Request processing failed; nested exception is com.github.gobars.httplog.ex.TestException: TestDto(id=10)
+2020-06-04 20:43:31.917  INFO 81103 --- [o-auto-1-exec-3] c.github.gobars.httplog.ReqRspLogFilter  : rsp: Rsp(super=ReqRsp(headers=null, startNs=13515248933063, tookMs=4, bodyBytes=0, body=null, error=org.springframework.web.util.NestedServletException: Request processing failed; nested exception is com.github.gobars.httplog.spring.ex.TestException: TestDto(id=10)
 	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014)
 	at org.springframework.web.servlet.FrameworkServlet.doPut(FrameworkServlet.java:920)
 	at javax.servlet.http.HttpServlet.service(HttpServlet.java:663)
@@ -78,8 +78,8 @@ public class ReqRspLogConfig extends com.github.gobars.httplog.Filter {}
 	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:628)
 	at org.apache.tomcat.util.threads.TaskThread$WrappingRunnable.run(TaskThread.java:61)
 	at java.base/java.lang.Thread.run(Thread.java:834)
-Caused by: com.github.gobars.httplog.ex.TestException: TestDto(id=10)
-	at com.github.gobars.httplog.ctl.TestController.error(TestController.java:40)
+Caused by: com.github.gobars.httplog.spring.ex.TestException: TestDto(id=10)
+	at com.github.gobars.httplog.spring.ctl.TestController.error(TestController.java:40)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
 	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)

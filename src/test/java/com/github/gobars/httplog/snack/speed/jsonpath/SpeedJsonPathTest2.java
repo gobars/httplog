@@ -1,8 +1,10 @@
 package com.github.gobars.httplog.snack.speed.jsonpath;
 
 import com.github.gobars.httplog.snack.ONode;
+import org.junit.Ignore;
 import org.junit.Test;
 
+@Ignore
 public class SpeedJsonPathTest2 {
   @Test
   public void test1() {
