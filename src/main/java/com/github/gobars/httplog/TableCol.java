@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
@@ -299,9 +300,9 @@ public class TableCol {
     Object get(Req req, Rsp rsp, HttpServletRequest r, HttpServletResponse p, HttpLog hl, String v);
   }
 
-  @Value
+  @AllArgsConstructor
   static class Equals implements Matcher {
-    String value;
+    private final String value;
 
     static Matcher eqOf(String value) {
       return new Equals(value);
@@ -313,9 +314,9 @@ public class TableCol {
     }
   }
 
-  @Value
+  @AllArgsConstructor
   static class Starts implements Matcher {
-    String value;
+    private final String value;
 
     public static Matcher startsOf(String value) {
       return new Starts(value);
