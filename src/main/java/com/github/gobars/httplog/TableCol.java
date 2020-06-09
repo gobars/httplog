@@ -16,7 +16,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.web.servlet.HandlerMapping;
@@ -328,9 +327,9 @@ public class TableCol {
     }
   }
 
-  @Value
+  @AllArgsConstructor
   static class Factory {
-    ColValueGetter colValueGetter;
+    private final ColValueGetter colValueGetter;
 
     static Factory of(ColValueGetter colValueGetter) {
       return new Factory(colValueGetter);
