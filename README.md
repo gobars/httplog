@@ -1,9 +1,9 @@
 # httplog
 
-[![Build Status](https://travis-ci.org/httplog.svg?branch=master)](https://travis-ci.org/httplog)
+[![Build Status](https://travis-ci.org/gobars/httplog.svg?branch=master)](https://travis-ci.org/gobars/httplog)
 [![Quality Gate](https://sonarcloud.io/api/project_badges/measure?project=com.github.gobars%3Ahttplog&metric=alert_status)](https://sonarcloud.io/dashboard/index/com.github.gobars%3Ahttplog)
-[![Coverage Status](https://coveralls.io/repos/github/httplog/badge.svg?branch=master)](https://coveralls.io/github/httplog?branch=master)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.httplog/badge.svg?style=flat-square)](https://maven-badges.herokuapp.com/maven-central/com.github.httplog/)
+[![Coverage Status](https://coveralls.io/repos/github/gobars/httplog/badge.svg?branch=master)](https://coveralls.io/github/gobars/httplog?branch=master)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.github.gobars/httplog/badge.svg?style=flat-square)](https://maven-badges.herokuapp.com/maven-central/com.github.gobars/httplog/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 log request and response for http
