@@ -69,6 +69,7 @@ create table biz_log_post
 `httplog:"start"` |start|开始时间(yyyy-MM-dd HH:mm:ss.SSS)
 `httplog:"end"` |end|结束时间(yyyy-MM-dd HH:mm:ss.SSS)
 `httplog:"cost"` |cost|花费时间（ms)
+`httplog:"biz"` |biz|业务名称，对应到HttpLog注解的biz
 `httplog:"exception"` |exception|异常信息
 请求类:||
 `httplog:"req_head_xxx"` |req_head_xxx|请求中的xxx头
@@ -105,15 +106,13 @@ public class HttpLogWebMvcConf extends WebMvcConfigurationSupport {
   @Autowired DataSource dataSource;
 
   @Bean
-  public Filter filter() {
-    return new Filter();
+  public HttpLogFilter httpLogFilter() {
+    return new HttpLogFilter();
   }
 
   @Override
   protected void addInterceptors(InterceptorRegistry registry) {
-    registry
-        .addInterceptor(new Interceptor(new ConnGetter.DsConnGetter(dataSource)))
-        .addPathPatterns("/**");
+    registry.addInterceptor(new HttpLogInterceptor(dataSource)).addPathPatterns("/**");
     log.info("Configure Interceptor.....");
     super.addInterceptors(registry);
   }
@@ -219,7 +218,7 @@ sample biz_log_post records:
 
 ```
 @Configuration
-public class ReqRspLogConfig extends com.github.gobars.httplog.Filter {}
+public class ReqRspLogConfig extends com.github.gobars.httplog.HttpLogFilter {}
 ```
 
 ## Examples
@@ -253,7 +252,7 @@ public class ReqRspLogConfig extends com.github.gobars.httplog.Filter {}
 	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:53)
 	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:193)
 	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:166)
-	at com.github.gobars.httplog.Filter.doFilterInternal(ReqRspLogFilter.java:56)
+	at com.github.gobars.httplog.HttpLogFilter.doFilterInternal(ReqRspLogFilter.java:56)
 	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:119)
 	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:193)
 	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:166)

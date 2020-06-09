@@ -61,7 +61,7 @@ public class HttpLogProcessor {
         setInt(m, "character_maximum_length", tableCol::setMaxLen);
         setInt(m, "ordinal_position", tableCol::setSeq);
 
-        tableCol.parseComment(fixes);
+        tableCol.parseComment(fixes, httpLog);
       }
 
       log.info("tableCols: {}", tableCols);
@@ -70,10 +70,6 @@ public class HttpLogProcessor {
     }
 
     return new HttpLogProcessor(httpLog, sqlGenerators, connGetter);
-  }
-
-  private static Map<String, String> parseHttpLogFix(String s) {
-    return null;
   }
 
   private static void setStr(Map<String, String> m, String key, Consumer<String> consumer) {
@@ -96,7 +92,7 @@ public class HttpLogProcessor {
   }
 
   @SneakyThrows
-  public void logReq(HttpServletRequest r, Req req) {
+  public void logReq(HttpServletRequest r, Req req, HttpLog httpLog) {
     if (!this.eager) {
       return;
     }
@@ -108,21 +104,21 @@ public class HttpLogProcessor {
       val runner = new SqlRunner(conn, false);
       val sqlGenerator = sqlGenerators.get(table);
 
-      sqlGenerator.req(runner, r, req);
+      sqlGenerator.req(runner, r, req, httpLog);
     }
   }
 
   @SneakyThrows
-  public void complete(HttpServletRequest r, HttpServletResponse p, Rsp rsp) {
-    Req req = (Req) r.getAttribute(Filter.HTTPLOG_REQ);
+  public void complete(HttpServletRequest r, HttpServletResponse p, Rsp rsp, HttpLog httpLog) {
+    Req req = (Req) r.getAttribute(HttpLogFilter.HTTPLOG_REQ);
     log.info("eager complete:{}", req);
 
     @Cleanup val conn = connGetter.getConn();
-    for (val table : httpLog.tables()) {
+    for (val table : this.httpLog.tables()) {
       val runner = new SqlRunner(conn, false);
       val sqlGenerator = sqlGenerators.get(table);
 
-      sqlGenerator.rsp(runner, r, p, req, rsp);
+      sqlGenerator.rsp(runner, r, p, req, rsp, httpLog);
     }
   }
 }

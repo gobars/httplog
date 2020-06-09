@@ -33,7 +33,7 @@ import org.springframework.web.util.ContentCachingResponseWrapper;
  * @author bingoo.
  */
 @Slf4j
-public class Filter extends OncePerRequestFilter {
+public class HttpLogFilter extends OncePerRequestFilter {
 
   public static final String HTTPLOG_REQ = "HTTPLOG_REQ";
 
@@ -72,10 +72,11 @@ public class Filter extends OncePerRequestFilter {
       // Throw the exception to not continue the treatment
       throw e;
     } finally {
-      val p = (HttpLogProcessor) rq.getAttribute(Interceptor.HTTPLOG_PROCESSOR);
+      val p = (HttpLogProcessor) rq.getAttribute(HttpLogInterceptor.HTTPLOG_PROCESSOR);
       if (p != null) {
         try {
-          p.complete(rq, rp, rsp);
+          HttpLog httpLog = (HttpLog) rq.getAttribute(HttpLogInterceptor.HTTPLOG_ANN);
+          p.complete(rq, rp, rsp, httpLog);
         } catch (Exception ex) {
           log.warn("failed to complete req:{} rsp:{}", req, rsp, ex);
         }

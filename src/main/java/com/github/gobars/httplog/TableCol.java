@@ -31,44 +31,46 @@ public class TableCol {
   public static final String PATH_ATTR = HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE;
   static final Pattern TAG_PATTERN = Pattern.compile("httplog:\"(.*?)\"");
   static Map<Matcher, Factory> builtins = new HashMap<>(10);
-  static Map<Matcher, ColValueGetter2> rsps = new HashMap<>(5);
-  static Map<Matcher, ColValueGetter2> reqs = new HashMap<>(13);
+  static Map<Matcher, ColValueGetterV> rsps = new HashMap<>(5);
+  static Map<Matcher, ColValueGetterV> reqs = new HashMap<>(13);
 
   static {
-    builtins.put(eqOf("id"), of((req, rsp, r, p) -> req.getId()));
-    builtins.put(eqOf("created"), of((req, rsp, r, p) -> req.getStartTime()));
-    builtins.put(eqOf("ip"), of((req, rsp, r, p) -> WorkerIdIp.localIP));
-    builtins.put(eqOf("hostname"), of((req, rsp, r, p) -> WorkerIdHostname.HOSTNAME));
-    builtins.put(eqOf("pid"), of((req, rsp, r, p) -> Pid.pid));
-    builtins.put(eqOf("start"), of((req, rsp, r, p) -> req.getStartTime()));
-    builtins.put(eqOf("end"), of((req, rsp, r, p) -> rsp == null ? null : rsp.getEndTime()));
-    builtins.put(eqOf("cost"), of((req, rsp, r, p) -> rsp == null ? null : rsp.getTookMs()));
-    builtins.put(eqOf("exception"), of((req, rsp, r, p) -> rsp == null ? null : rsp.getError()));
+    builtins.put(eqOf("id"), of((req, rsp, r, p, hl) -> req.getId()));
+    builtins.put(eqOf("created"), of((req, rsp, r, p, hl) -> req.getStartTime()));
+    builtins.put(eqOf("ip"), of((req, rsp, r, p, hl) -> WorkerIdIp.localIP));
+    builtins.put(eqOf("hostname"), of((req, rsp, r, p, hl) -> WorkerIdHostname.HOSTNAME));
+    builtins.put(eqOf("pid"), of((req, rsp, r, p, hl) -> Pid.pid));
+    builtins.put(eqOf("start"), of((req, rsp, r, p, hl) -> req.getStartTime()));
+    builtins.put(eqOf("end"), of((req, rsp, r, p, hl) -> rsp == null ? null : rsp.getEndTime()));
+    builtins.put(eqOf("cost"), of((req, rsp, r, p, hl) -> rsp == null ? null : rsp.getTookMs()));
+    builtins.put(eqOf("biz"), of((req, rsp, r, p, hl) -> hl.biz()));
+    builtins.put(
+        eqOf("exception"), of((req, rsp, r, p, hl) -> rsp == null ? null : rsp.getError()));
   }
 
   static {
-    rsps.put(startsOf("head_"), (req, rsp, r, p, v) -> req.getHeaders().get(v.substring(5)));
-    rsps.put(eqOf("heads"), (req, rsp, r, p, v) -> req.getHeaders());
-    rsps.put(eqOf("body"), (req, rsp, r, p, v) -> req.getBody());
-    rsps.put(eqOf("json"), (req, rsp, r, p, v) -> getJsonBody(req));
-    rsps.put(startsOf("json_"), (req, rsp, r, p, v) -> jsonpath(v.substring(5), req));
-    rsps.put(eqOf("status"), (req, rsp, r, p, v) -> p.getStatus());
+    rsps.put(startsOf("head_"), (req, rsp, r, p, hl, v) -> req.getHeaders().get(v.substring(5)));
+    rsps.put(eqOf("heads"), (req, rsp, r, p, hl, v) -> req.getHeaders());
+    rsps.put(eqOf("body"), (req, rsp, r, p, hl, v) -> req.getBody());
+    rsps.put(eqOf("json"), (req, rsp, r, p, hl, v) -> getJsonBody(req));
+    rsps.put(startsOf("json_"), (req, rsp, r, hl, p, v) -> jsonpath(v.substring(5), req));
+    rsps.put(eqOf("status"), (req, rsp, r, p, hl, v) -> p.getStatus());
   }
 
   static {
-    reqs.put(startsOf("head_"), (req, rsp, r, p, v) -> req.getHeaders().get(v.substring(5)));
-    reqs.put(eqOf("heads"), (req, rsp, r, p, v) -> req.getHeaders());
-    reqs.put(eqOf("body"), (req, rsp, r, p, v) -> req.getBody());
-    reqs.put(eqOf("json"), (req, rsp, r, p, v) -> getJsonBody(req));
-    reqs.put(startsOf("json_"), (req, rsp, r, p, v) -> jsonpath(v.substring(5), req));
-    reqs.put(eqOf("method"), (req, rsp, r, p, v) -> r.getMethod());
-    reqs.put(eqOf("url"), (req, rsp, r, p, v) -> req.getRequestUri());
-    reqs.put(startsOf("path_"), (req, rsp, r, p, v) -> getPathVar(r, v.substring(5)));
-    reqs.put(eqOf("paths"), (req, rsp, r, p, v) -> r.getAttribute(PATH_ATTR));
-    reqs.put(startsOf("query_"), (req, rsp, r, p, v) -> req.getQueries().get(v.substring(6)));
-    reqs.put(eqOf("queries"), (req, rsp, r, p, v) -> req.getQueries());
-    reqs.put(startsOf("param_"), (req, rsp, r, p, v) -> getParams(r, v.substring(6)));
-    reqs.put(eqOf("params"), (req, rsp, r, p, v) -> convert(r.getParameterMap()));
+    reqs.put(startsOf("head_"), (req, rsp, r, p, hl, v) -> req.getHeaders().get(v.substring(5)));
+    reqs.put(eqOf("heads"), (req, rsp, r, p, hl, v) -> req.getHeaders());
+    reqs.put(eqOf("body"), (req, rsp, r, p, hl, v) -> req.getBody());
+    reqs.put(eqOf("json"), (req, rsp, r, p, hl, v) -> getJsonBody(req));
+    reqs.put(startsOf("json_"), (req, rsp, r, p, hl, v) -> jsonpath(v.substring(5), req));
+    reqs.put(eqOf("method"), (req, rsp, r, p, hl, v) -> r.getMethod());
+    reqs.put(eqOf("url"), (req, rsp, r, p, hl, v) -> req.getRequestUri());
+    reqs.put(startsOf("path_"), (req, rsp, r, p, hl, v) -> getPathVar(r, v.substring(5)));
+    reqs.put(eqOf("paths"), (req, rsp, r, p, hl, v) -> r.getAttribute(PATH_ATTR));
+    reqs.put(startsOf("query_"), (req, rsp, r, p, hl, v) -> req.getQueries().get(v.substring(6)));
+    reqs.put(eqOf("queries"), (req, rsp, r, p, hl, v) -> req.getQueries());
+    reqs.put(startsOf("param_"), (req, rsp, r, p, hl, v) -> getParams(r, v.substring(6)));
+    reqs.put(eqOf("params"), (req, rsp, r, p, hl, v) -> convert(r.getParameterMap()));
   }
 
   /**
@@ -123,13 +125,13 @@ public class TableCol {
   }
 
   private static ColValueGetter createValueGetter(
-      final String tag, Map<Matcher, ColValueGetter2> m) {
-    ColValueGetter2 getter = findGetter2(tag, m);
+      final String tag, Map<Matcher, ColValueGetterV> m, final HttpLog httpLog) {
+    ColValueGetterV getter = findGetter2(tag, m);
     if (getter == null) {
       return null;
     }
 
-    return (req, rsp, r, p) -> getter.get(req, rsp, r, p, tag);
+    return (req, rsp, r, p, hl) -> getter.get(req, rsp, r, p, hl, tag);
   }
 
   private static Object getParams(HttpServletRequest r, String v) {
@@ -154,7 +156,7 @@ public class TableCol {
     return params;
   }
 
-  private static ColValueGetter2 findGetter2(String tag, Map<Matcher, ColValueGetter2> m) {
+  private static ColValueGetterV findGetter2(String tag, Map<Matcher, ColValueGetterV> m) {
     for (val entry : m.entrySet()) {
       if (entry.getKey().matches(tag)) {
         return entry.getValue();
@@ -209,7 +211,7 @@ public class TableCol {
         || tagType == Type.BUILTIN;
   }
 
-  public void parseComment(Map<String, String> fixes) {
+  public void parseComment(Map<String, String> fixes, HttpLog httpLog) {
     val m = TAG_PATTERN.matcher(comment);
     String tag = name;
     if (m.find()) {
@@ -218,10 +220,10 @@ public class TableCol {
 
     if (tag.startsWith("req_")) {
       this.tagType = Type.REQ;
-      this.valueGetter = createValueGetter(tag.substring(4), reqs);
+      this.valueGetter = createValueGetter(tag.substring(4), reqs, httpLog);
     } else if (tag.startsWith("rsp_")) {
       this.tagType = Type.RSP;
-      this.valueGetter = createValueGetter(tag.substring(4), rsps);
+      this.valueGetter = createValueGetter(tag.substring(4), rsps, httpLog);
     } else if (tag.startsWith("ctx_")) {
       this.tagType = Type.CTX;
       this.valueGetter = createCtxValueGetter(tag.substring(4));
@@ -241,8 +243,8 @@ public class TableCol {
   }
 
   private ColValueGetter wrapMaxLength(final ColValueGetter vg) {
-    return (req, rsp, r, p) -> {
-      Object o = vg.get(req, rsp, r, p);
+    return (req, rsp, r, p, hl) -> {
+      Object o = vg.get(req, rsp, r, p, hl);
       if (maxLen <= 0) {
         return o;
       }
@@ -256,7 +258,7 @@ public class TableCol {
   }
 
   private ColValueGetter createFixValueGetter(final String tag, final Map<String, String> fixes) {
-    return (req, rsp, r, p) -> fixes.get(tag);
+    return (req, rsp, r, p, hl) -> fixes.get(tag);
   }
 
   private ColValueGetter createBuiltinValueGetter(String tag) {
@@ -264,7 +266,7 @@ public class TableCol {
   }
 
   private ColValueGetter createCtxValueGetter(String tag) {
-    return (req, rsp, r, p) -> {
+    return (req, rsp, r, p, hl) -> {
       String path = tag;
       if (!path.startsWith("$.")) {
         path = "$." + path;
@@ -293,16 +295,13 @@ public class TableCol {
     boolean matches(String tag);
   }
 
-  public interface ColValueGetter2 {
-    Object get(Req req, Rsp rsp, HttpServletRequest r, HttpServletResponse p, String value);
+  public interface ColValueGetterV {
+    Object get(Req req, Rsp rsp, HttpServletRequest r, HttpServletResponse p, HttpLog hl, String v);
   }
 
+  @Value
   static class Equals implements Matcher {
-    private final String value;
-
-    public Equals(String value) {
-      this.value = value;
-    }
+    String value;
 
     static Matcher eqOf(String value) {
       return new Equals(value);
@@ -314,12 +313,9 @@ public class TableCol {
     }
   }
 
+  @Value
   static class Starts implements Matcher {
-    private final String value;
-
-    public Starts(String value) {
-      this.value = value;
-    }
+    String value;
 
     public static Matcher startsOf(String value) {
       return new Starts(value);

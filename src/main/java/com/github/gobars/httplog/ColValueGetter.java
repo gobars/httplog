@@ -9,5 +9,5 @@ import javax.servlet.http.HttpServletResponse;
  * @author bingoobjca
  */
 public interface ColValueGetter {
-  Object get(Req req, Rsp rsp, HttpServletRequest r, HttpServletResponse p);
+  Object get(Req req, Rsp rsp, HttpServletRequest r, HttpServletResponse p, HttpLog httpLog);
 }

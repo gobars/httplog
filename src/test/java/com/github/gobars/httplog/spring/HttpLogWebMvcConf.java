@@ -1,8 +1,7 @@
 package com.github.gobars.httplog.spring;
 
-import com.github.gobars.httplog.Filter;
-import com.github.gobars.httplog.Interceptor;
-import com.github.gobars.id.conf.ConnGetter;
+import com.github.gobars.httplog.HttpLogFilter;
+import com.github.gobars.httplog.HttpLogInterceptor;
 import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,15 +16,13 @@ public class HttpLogWebMvcConf extends WebMvcConfigurationSupport {
   @Autowired DataSource dataSource;
 
   @Bean
-  public Filter filter() {
-    return new Filter();
+  public HttpLogFilter httpLogFilter() {
+    return new HttpLogFilter();
   }
 
   @Override
   protected void addInterceptors(InterceptorRegistry registry) {
-    registry
-        .addInterceptor(new Interceptor(new ConnGetter.DsConnGetter(dataSource)))
-        .addPathPatterns("/**");
+    registry.addInterceptor(new HttpLogInterceptor(dataSource)).addPathPatterns("/**");
     log.info("Configure Interceptor.....");
     super.addInterceptors(registry);
   }

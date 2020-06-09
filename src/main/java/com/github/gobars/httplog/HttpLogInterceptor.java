@@ -2,8 +2,10 @@ package com.github.gobars.httplog;
 
 import com.github.gobars.id.conf.ConnGetter;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.web.method.HandlerMethod;
@@ -16,12 +18,18 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
  * @author bingoobjca
  */
 @Slf4j
-public class Interceptor extends HandlerInterceptorAdapter {
+public class HttpLogInterceptor extends HandlerInterceptorAdapter {
   public static final String HTTPLOG_PROCESSOR = "HTTPLOG_PROCESSOR";
-  private final ConcurrentHashMap<HttpLog, HttpLogProcessor> cache = new ConcurrentHashMap<>(100);
+  public static final String HTTPLOG_ANN = "HTTPLOG_ANN";
+
+  private final ConcurrentMap<HttpLog, HttpLogProcessor> cache = new ConcurrentHashMap<>(100);
   private final ConnGetter connGetter;
 
-  public Interceptor(ConnGetter connGetter) {
+  public HttpLogInterceptor(DataSource dataSource) {
+    this(new ConnGetter.DsConnGetter(dataSource));
+  }
+
+  public HttpLogInterceptor(ConnGetter connGetter) {
     this.connGetter = connGetter;
   }
 
@@ -49,14 +57,15 @@ public class Interceptor extends HandlerInterceptorAdapter {
     }
 
     val processor = cacheGet(httpLog);
-    Req req = (Req) r.getAttribute(Filter.HTTPLOG_REQ);
+    Req req = (Req) r.getAttribute(HttpLogFilter.HTTPLOG_REQ);
     try {
-      processor.logReq(r, req);
+      processor.logReq(r, req, httpLog);
     } catch (Exception ex) {
       log.warn("failed to log req {}", req, ex);
     }
 
     r.setAttribute(HTTPLOG_PROCESSOR, processor);
+    r.setAttribute(HTTPLOG_ANN, httpLog);
     log.debug("preHandle method:{} URI:{} httpLog:{}", r.getMethod(), r.getRequestURI(), httpLog);
 
     return true;

@@ -14,6 +14,8 @@ public @interface HttpLog {
   /**
    * 是否提前记录request相关的参数.
    *
+   * <p>eager为true时，记录日志将分成两步，第1步insert记录req等日志，第2步update记录rsp等日志
+   *
    * @return true 是
    */
   boolean eager() default false;

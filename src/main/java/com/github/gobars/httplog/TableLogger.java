@@ -79,7 +79,7 @@ public interface TableLogger {
         .append(String.join(",", insertMarks))
         .append(")");
 
-    updateValueGetters.add((req, rsp, r, p) -> req.getId());
+    updateValueGetters.add((req, rsp, r, p, hl) -> req.getId());
     updateSql.append(String.join(",", updateSets)).append(" where id = ?");
 
     return new EagerTableLogger(
@@ -92,8 +92,9 @@ public interface TableLogger {
    * @param run SqlRunner
    * @param r HttpServletRequest
    * @param req Req
+   * @param httpLog
    */
-  default void req(SqlRunner run, HttpServletRequest r, Req req) {}
+  default void req(SqlRunner run, HttpServletRequest r, Req req, HttpLog httpLog) {}
 
   /**
    * 记录响应日志
@@ -103,8 +104,15 @@ public interface TableLogger {
    * @param p HttpServletResponse
    * @param req Req
    * @param rsp Rsp
+   * @param httpLog
    */
-  void rsp(SqlRunner run, HttpServletRequest r, HttpServletResponse p, Req req, Rsp rsp);
+  void rsp(
+      SqlRunner run,
+      HttpServletRequest r,
+      HttpServletResponse p,
+      Req req,
+      Rsp rsp,
+      HttpLog httpLog);
 
   /**
    * 两阶段记录（req和rsp).
@@ -120,11 +128,11 @@ public interface TableLogger {
     List<ColValueGetter> updateValueGetters;
 
     @Override
-    public void req(SqlRunner run, HttpServletRequest r, Req req) {
+    public void req(SqlRunner run, HttpServletRequest r, Req req, HttpLog httpLog) {
       val params = new ArrayList<>(insertValueGetters.size());
       for (val colValueGetter : insertValueGetters) {
         try {
-          Object obj = colValueGetter.get(req, null, r, null);
+          Object obj = colValueGetter.get(req, null, r, null, httpLog);
           params.add(obj);
         } catch (Exception ex) {
           params.add(null);
@@ -139,8 +147,14 @@ public interface TableLogger {
     }
 
     @Override
-    public void rsp(SqlRunner run, HttpServletRequest r, HttpServletResponse p, Req req, Rsp rsp) {
-      NonEagerTableLogger.log(updateSql, updateValueGetters, run, r, p, req, rsp);
+    public void rsp(
+        SqlRunner run,
+        HttpServletRequest r,
+        HttpServletResponse p,
+        Req req,
+        Rsp rsp,
+        HttpLog httpLog) {
+      NonEagerTableLogger.log(updateSql, updateValueGetters, run, r, p, req, rsp, httpLog);
     }
   }
 
@@ -162,11 +176,12 @@ public interface TableLogger {
         HttpServletRequest r,
         HttpServletResponse p,
         Req req,
-        Rsp rsp) {
+        Rsp rsp,
+        HttpLog httpLog) {
       val params = new ArrayList<>(valueGetters.size());
       for (val colValueGetter : valueGetters) {
         try {
-          Object obj = colValueGetter.get(req, rsp, r, p);
+          Object obj = colValueGetter.get(req, rsp, r, p, httpLog);
           params.add(obj);
         } catch (Exception ex) {
           params.add(null);
@@ -181,8 +196,14 @@ public interface TableLogger {
     }
 
     @Override
-    public void rsp(SqlRunner run, HttpServletRequest r, HttpServletResponse p, Req req, Rsp rsp) {
-      log(sql, valueGetters, run, r, p, req, rsp);
+    public void rsp(
+        SqlRunner run,
+        HttpServletRequest r,
+        HttpServletResponse p,
+        Req req,
+        Rsp rsp,
+        HttpLog httpLog) {
+      log(sql, valueGetters, run, r, p, req, rsp, httpLog);
     }
   }
 }
