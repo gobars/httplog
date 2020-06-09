@@ -54,8 +54,9 @@ create table biz_log_post
     req_url     varchar(60) comment '请求url',
     req_heads   varchar(600) comment '请求头',
     req_method  varchar(60) comment '请求方法',
-    rsp         varchar(60) comment '响应体 httplog:"req_body"',
-    dtoid       varchar(60) comment '响应体 httplog:"req_json_id"'
+    exception          text comment '异常',
+    rsp         varchar(60) comment '响应体 httplog:"rsp_body"',
+    dtoid       varchar(60) comment '响应体 httplog:"rsp_json_id"'
 ) engine = innodb
   default charset = utf8mb4 comment 'biz_log_post';
 ```

@@ -40,6 +40,7 @@ public class TestController {
    *
    * @param testDto testDto
    */
+  @HttpLog(tables = "biz_log_post")
   @PutMapping
   public void error(@RequestBody TestDto testDto) {
     log.warn("error TestException will be thrown");
