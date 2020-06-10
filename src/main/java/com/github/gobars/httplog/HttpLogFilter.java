@@ -36,6 +36,7 @@ import org.springframework.web.util.ContentCachingResponseWrapper;
 public class HttpLogFilter extends OncePerRequestFilter {
 
   public static final String HTTPLOG_REQ = "HTTPLOG_REQ";
+  public static final String HTTPLOG_RSP = "HTTPLOG_RSP";
 
   @Override
   protected void doFilterInternal(HttpServletRequest r, HttpServletResponse s, FilterChain c)
@@ -59,6 +60,7 @@ public class HttpLogFilter extends OncePerRequestFilter {
 
     try {
       rq.setAttribute(HTTPLOG_REQ, req);
+      rq.setAttribute(HTTPLOG_RSP, rsp);
       c.doFilter(rq, rp);
       logStart(rq, req, rsp, startNs, rp.getStatus());
       rsp.setEndTime(new Timestamp(System.currentTimeMillis()));
@@ -72,16 +74,15 @@ public class HttpLogFilter extends OncePerRequestFilter {
       // Throw the exception to not continue the treatment
       throw e;
     } finally {
-      val p = (HttpLogProcessor) rq.getAttribute(HttpLogInterceptor.HTTPLOG_PROCESSOR);
+      val p = rq.getAttribute(HttpLogInterceptor.HTTPLOG_PROCESSOR);
       if (p != null) {
         try {
-          p.complete(rq, rp, rsp);
+          ((HttpLogProcessor) p).complete(rq, rp, rsp);
         } catch (Exception ex) {
           log.warn("failed to complete req:{} rsp:{}", req, rsp, ex);
         }
       }
 
-      // Publication of the trace
       log.info("req: {}", req);
       log.info("rsp: {}", rsp);
     }

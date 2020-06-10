@@ -118,7 +118,7 @@ public class TableCol {
   }
 
   private static ColValueGetter createValueGetter(String tag, Map<Matcher, ColValueGetterV> m) {
-    ColValueGetterV getter = findGetter2(tag, m);
+    ColValueGetterV getter = findGetterV(tag, m);
     if (getter == null) {
       return null;
     }
@@ -148,7 +148,7 @@ public class TableCol {
     return params;
   }
 
-  private static ColValueGetterV findGetter2(String tag, Map<Matcher, ColValueGetterV> m) {
+  private static ColValueGetterV findGetterV(String tag, Map<Matcher, ColValueGetterV> m) {
     for (val entry : m.entrySet()) {
       if (entry.getKey().matches(tag)) {
         return entry.getValue();

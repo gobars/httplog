@@ -15,6 +15,7 @@ import lombok.Cleanup;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.springframework.context.ApplicationContext;
 
 /**
  * HttpLog日志处理器类.
@@ -35,18 +36,20 @@ public class HttpLogProcessor {
       HttpLogAttr httpLog,
       Map<String, TableLogger> sqlGenerators,
       ConnGetter connGetter,
-      Map<String, String> fixes) {
+      Map<String, String> fixes,
+      ApplicationContext appContext) {
     this.httpLog = httpLog;
     this.eager = httpLog.eager();
     this.sqlGenerators = sqlGenerators;
     this.connGetter = connGetter;
-    this.pre = new HttpLogPre.HttpLogPreComposite(createExt(httpLog.pre()));
-    this.post = new HttpLogPost.HttpLogPostComposite(createExt(httpLog.post()));
+    this.pre = new HttpLogPre.HttpLogPreComposite(createExt(httpLog.pre(), appContext));
+    this.post = new HttpLogPost.HttpLogPostComposite(createExt(httpLog.post(), appContext));
     this.fixes = fixes;
   }
 
   @SneakyThrows
-  public static HttpLogProcessor create(HttpLogAttr httpLog, ConnGetter connGetter) {
+  public static HttpLogProcessor create(
+      HttpLogAttr httpLog, ConnGetter connGetter, ApplicationContext appContext) {
     val ms =
         "select column_name, column_comment, data_type,"
             + " character_maximum_length max_length, ordinal_position column_id"
@@ -94,7 +97,7 @@ public class HttpLogProcessor {
       sqlGenerators.put(table, TableLogger.create(table, tableCols, httpLog));
     }
 
-    return new HttpLogProcessor(httpLog, sqlGenerators, connGetter, fixes);
+    return new HttpLogProcessor(httpLog, sqlGenerators, connGetter, fixes, appContext);
   }
 
   private static void setStr(Map<String, String> m, String key, Consumer<String> consumer) {
@@ -120,11 +123,11 @@ public class HttpLogProcessor {
     }
   }
 
-  private <T> List<T> createExt(Class<? extends T>[] exts) {
+  private <T> List<T> createExt(Class<? extends T>[] exts, ApplicationContext appContext) {
     val composite = new ArrayList<T>(exts.length);
 
     for (val ext : exts) {
-      val p = create(ext);
+      val p = create(appContext, ext);
       if (p != null) {
         composite.add(p);
       }
@@ -133,7 +136,14 @@ public class HttpLogProcessor {
     return composite;
   }
 
-  private <T> T create(Class<? extends T> ext) {
+  private <T> T create(ApplicationContext appContext, Class<? extends T> ext) {
+    if (appContext != null) {
+      val beans = appContext.getBeansOfType(ext);
+      if (beans.size() == 1) {
+        return beans.entrySet().iterator().next().getValue();
+      }
+    }
+
     try {
       return ext.getConstructor().newInstance();
     } catch (Exception ex) {

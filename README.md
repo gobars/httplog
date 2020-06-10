@@ -33,32 +33,10 @@ create table biz_log
     req_url     varchar(60) comment '请求url',
     req_heads   varchar(600) comment '请求头',
     req_method  varchar(60) comment '请求方法',
-    rsp_body    varchar(60) comment '响应体',
+    rsp_body    varchar(60) comment '响应体 httplog:"rsp_body"',
     bizdesc     varchar(60) comment '响应体 httplog:"fix_desc"'
 ) engine = innodb
   default charset = utf8mb4 comment 'biz_log';
-
-drop table if exists biz_log_post;
-create table biz_log_post
-(
-    id          bigint  primary key comment '日志记录ID',
-    created     datetime default current_timestamp comment '创建时间',
-    started       datetime comment '请求时间',
-    end         datetime comment '结束时间',
-    cost        int comment '费时毫秒',
-    ip          varchar(60) comment '当前机器IP',
-    hostname    varchar(60) comment '当前机器名称',
-    pid         int comment '应用程序PID',
-    biz         varchar(60) comment '当前业务名称',
-    req_path_id varchar(60) comment '请求路径变量id',
-    req_url     varchar(60) comment '请求url',
-    req_heads   varchar(600) comment '请求头',
-    req_method  varchar(60) comment '请求方法',
-    exception          text comment '异常',
-    rsp         varchar(60) comment '响应体 httplog:"rsp_body"',
-    dtoid       varchar(60) comment '响应体 httplog:"rsp_json_id"'
-) engine = innodb
-  default charset = utf8mb4 comment 'biz_log_post';
 ```
 
 日志表建表规范
@@ -102,7 +80,7 @@ create table biz_log_post
 固定值:||
 `httplog:"fix_xxx"`|fix_xxx| 由fix参数指定的固定值 
 扩展类:||
-`httplog:"pre_xxx"`|pre_xxx| 由自定义扩展器pre给出属性值
+`httplog:"pre_xxx"`|pre_xxx| 由自定义扩展器pre给出属性值，见[示例](src/test/java/com/github/gobars/httplog/spring/mysql/MyHttpLog.java)
 `httplog:"post_xxx"`|post_xxx| 由自定义扩展器post给出属性值
 
 ### Setup interceptors and filters
@@ -111,16 +89,21 @@ create table biz_log_post
 @Slf4j
 @Configuration
 public class HttpLogWebMvcConf extends WebMvcConfigurationSupport {
-  @Autowired DataSource dataSource;
+  @Autowired HttpLogInterceptor httpLogInterceptor;
 
   @Bean
   public HttpLogFilter httpLogFilter() {
     return new HttpLogFilter();
   }
 
+  @Bean
+  public HttpLogInterceptor httpLogInterceptor(@Autowired DataSource dataSource) {
+    return new HttpLogInterceptor(dataSource);
+  }
+
   @Override
   protected void addInterceptors(InterceptorRegistry registry) {
-    registry.addInterceptor(new HttpLogInterceptor(dataSource)).addPathPatterns("/**");
+    registry.addInterceptor(httpLogInterceptor).addPathPatterns("/**");
     log.info("Configure Interceptor.....");
     super.addInterceptors(registry);
   }
@@ -234,22 +217,22 @@ public class ReqRspLogConfig extends com.github.gobars.httplog.HttpLogFilter {}
 ### Method GET
 
 ```log
-2020-06-04 20:43:31.665  INFO 81103 --- [o-auto-1-exec-1] c.github.gobars.httplog.ReqRspLogFilter  : req: Req(super=ReqRsp(headers={host=localhost:57413, connection=keep-alive, accept=text/plain, application/json, application/*+json, */*, user-agent=Java/11.0.7}, startNs=13514944034314, tookMs=0, bodyBytes=0, body=, error=null), method=GET, requestUri=/test/10, protocol=HTTP/1.1)
-2020-06-04 20:43:31.669  INFO 81103 --- [o-auto-1-exec-1] c.github.gobars.httplog.ReqRspLogFilter  : rsp: Rsp(super=ReqRsp(headers={Keep-Alive=timeout=60, Connection=keep-alive, Content-Length=12, Date=Thu, 04 Jun 2020 12:43:31 GMT, Content-Type=text/plain;charset=UTF-8}, startNs=13514944034314, tookMs=51, bodyBytes=12, body=test id : 10, error=null), status=200, reasonPhrase=OK)
+2020-06-04 20:43:31.665  INFO 81103 --- [o-auto-1-exec-1] c.github.gobars.httplog.HttpLogFilter  : req: Req(super=ReqRsp(headers={host=localhost:57413, connection=keep-alive, accept=text/plain, application/json, application/*+json, */*, user-agent=Java/11.0.7}, startNs=13514944034314, tookMs=0, bodyBytes=0, body=, error=null), method=GET, requestUri=/test/10, protocol=HTTP/1.1)
+2020-06-04 20:43:31.669  INFO 81103 --- [o-auto-1-exec-1] c.github.gobars.httplog.HttpLogFilter  : rsp: Rsp(super=ReqRsp(headers={Keep-Alive=timeout=60, Connection=keep-alive, Content-Length=12, Date=Thu, 04 Jun 2020 12:43:31 GMT, Content-Type=text/plain;charset=UTF-8}, startNs=13514944034314, tookMs=51, bodyBytes=12, body=test id : 10, error=null), status=200, reasonPhrase=OK)
 ```
 
 ### Method POST
 
 ```log
-2020-06-04 20:43:31.900  INFO 81103 --- [o-auto-1-exec-2] c.github.gobars.httplog.ReqRspLogFilter  : req: Req(super=ReqRsp(headers={content-length=9, host=localhost:57413, content-type=application/json, connection=keep-alive, accept=application/json, application/*+json, user-agent=Java/11.0.7}, startNs=13515206496154, tookMs=0, bodyBytes=9, body={"id":10}, error=null), method=POST, requestUri=/test, protocol=HTTP/1.1)
-2020-06-04 20:43:31.900  INFO 81103 --- [o-auto-1-exec-2] c.github.gobars.httplog.ReqRspLogFilter  : rsp: Rsp(super=ReqRsp(headers={Keep-Alive=timeout=60, Connection=keep-alive, Content-Length=9, Date=Thu, 04 Jun 2020 12:43:31 GMT, Content-Type=application/json}, startNs=13515206496154, tookMs=29, bodyBytes=9, body={"id":10}, error=null), status=200, reasonPhrase=OK)
+2020-06-04 20:43:31.900  INFO 81103 --- [o-auto-1-exec-2] c.github.gobars.httplog.HttpLogFilter  : req: Req(super=ReqRsp(headers={content-length=9, host=localhost:57413, content-type=application/json, connection=keep-alive, accept=application/json, application/*+json, user-agent=Java/11.0.7}, startNs=13515206496154, tookMs=0, bodyBytes=9, body={"id":10}, error=null), method=POST, requestUri=/test, protocol=HTTP/1.1)
+2020-06-04 20:43:31.900  INFO 81103 --- [o-auto-1-exec-2] c.github.gobars.httplog.HttpLogFilter  : rsp: Rsp(super=ReqRsp(headers={Keep-Alive=timeout=60, Connection=keep-alive, Content-Length=9, Date=Thu, 04 Jun 2020 12:43:31 GMT, Content-Type=application/json}, startNs=13515206496154, tookMs=29, bodyBytes=9, body={"id":10}, error=null), status=200, reasonPhrase=OK)
 ```
 
 ### Method PUT exception
 
 ```log
-2020-06-04 20:43:31.917  INFO 81103 --- [o-auto-1-exec-3] c.github.gobars.httplog.ReqRspLogFilter  : req: Req(super=ReqRsp(headers={content-length=9, host=localhost:57413, content-type=application/json, connection=keep-alive, accept=application/json, application/*+json, user-agent=Java/11.0.7}, startNs=13515248933063, tookMs=0, bodyBytes=9, body={"id":10}, error=null), method=PUT, requestUri=/test, protocol=HTTP/1.1)
-2020-06-04 20:43:31.917  INFO 81103 --- [o-auto-1-exec-3] c.github.gobars.httplog.ReqRspLogFilter  : rsp: Rsp(super=ReqRsp(headers=null, startNs=13515248933063, tookMs=4, bodyBytes=0, body=null, error=org.springframework.web.util.NestedServletException: Request processing failed; nested exception is com.github.gobars.httplog.spring.TestException: TestDto(id=10)
+2020-06-04 20:43:31.917  INFO 81103 --- [o-auto-1-exec-3] c.github.gobars.httplog.HttpLogFilter  : req: Req(super=ReqRsp(headers={content-length=9, host=localhost:57413, content-type=application/json, connection=keep-alive, accept=application/json, application/*+json, user-agent=Java/11.0.7}, startNs=13515248933063, tookMs=0, bodyBytes=9, body={"id":10}, error=null), method=PUT, requestUri=/test, protocol=HTTP/1.1)
+2020-06-04 20:43:31.917  INFO 81103 --- [o-auto-1-exec-3] c.github.gobars.httplog.HttpLogFilter  : rsp: Rsp(super=ReqRsp(headers=null, startNs=13515248933063, tookMs=4, bodyBytes=0, body=null, error=org.springframework.web.util.NestedServletException: Request processing failed; nested exception is com.github.gobars.httplog.spring.TestException: TestDto(id=10)
 	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1014)
 	at org.springframework.web.servlet.FrameworkServlet.doPut(FrameworkServlet.java:920)
 	at javax.servlet.http.HttpServlet.service(HttpServlet.java:663)
@@ -260,7 +243,7 @@ public class ReqRspLogConfig extends com.github.gobars.httplog.HttpLogFilter {}
 	at org.apache.tomcat.websocket.server.WsFilter.doFilter(WsFilter.java:53)
 	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:193)
 	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:166)
-	at com.github.gobars.httplog.HttpLogFilter.doFilterInternal(ReqRspLogFilter.java:56)
+	at com.github.gobars.httplog.HttpLogFilter.doFilterInternal(HttpLogFilter.java:56)
 	at org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:119)
 	at org.apache.catalina.core.ApplicationFilterChain.internalDoFilter(ApplicationFilterChain.java:193)
 	at org.apache.catalina.core.ApplicationFilterChain.doFilter(ApplicationFilterChain.java:166)

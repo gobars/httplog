@@ -17,13 +17,13 @@ import lombok.val;
 public interface TableLogger {
   static TableLogger create(String table, List<TableCol> tableCols, HttpLogAttr httpLog) {
     if (httpLog.eager()) {
-      return createEagerTableLogger(table, tableCols);
+      return createEager(table, tableCols);
     }
 
-    return createNonEagerTableLogger(table, tableCols);
+    return createNonEager(table, tableCols);
   }
 
-  static TableLogger createNonEagerTableLogger(String table, List<TableCol> tableCols) {
+  static TableLogger createNonEager(String table, List<TableCol> tableCols) {
     StringBuilder insertSql = new StringBuilder("insert into ").append(table).append("(");
     val insertValueGetters = new ArrayList<ColValueGetter>(10);
     val columnNames = new ArrayList<String>(10);
@@ -49,9 +49,9 @@ public interface TableLogger {
     return new NonEagerTableLogger(insertSql.toString(), insertValueGetters);
   }
 
-  static EagerTableLogger createEagerTableLogger(String table, List<TableCol> tableCols) {
-    StringBuilder insertSql = new StringBuilder("insert into ").append(table).append("(");
-    StringBuilder updateSql = new StringBuilder("update ").append(table).append(" set ");
+  static EagerTableLogger createEager(String table, List<TableCol> tableCols) {
+    val insertSql = new StringBuilder("insert into ").append(table).append("(");
+    val updateSql = new StringBuilder("update ").append(table).append(" set ");
     val insertValueGetters = new ArrayList<ColValueGetter>(10);
     val updateValueGetters = new ArrayList<ColValueGetter>(10);
     val insertMarks = new ArrayList<String>(10);
@@ -131,10 +131,9 @@ public interface TableLogger {
     @Override
     public void req(SqlRunner run, HttpServletRequest r, Req req, HttpLogAttr httpLog) {
       val params = new ArrayList<>(insertValueGetters.size());
-      for (val colValueGetter : insertValueGetters) {
+      for (val c : insertValueGetters) {
         try {
-          Object obj = colValueGetter.get(req, null, r, null, httpLog);
-          params.add(obj);
+          params.add(c.get(req, null, r, null, httpLog));
         } catch (Exception ex) {
           params.add(null);
           log.warn("colValueGetter get error", ex);

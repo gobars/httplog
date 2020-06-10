@@ -10,6 +10,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.ModelAndView;
@@ -21,11 +24,13 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
  * @author bingoobjca
  */
 @Slf4j
-public class HttpLogInterceptor extends HandlerInterceptorAdapter {
+public class HttpLogInterceptor extends HandlerInterceptorAdapter
+    implements ApplicationContextAware {
   public static final String HTTPLOG_PROCESSOR = "HTTPLOG_PROCESSOR";
 
   private final ConcurrentMap<HttpLogAttr, HttpLogProcessor> cache = new ConcurrentHashMap<>(100);
   private final ConnGetter connGetter;
+  private ApplicationContext appContext;
 
   public HttpLogInterceptor(DataSource dataSource) {
     this(new ConnGetter.DsConnGetter(dataSource));
@@ -83,7 +88,7 @@ public class HttpLogInterceptor extends HandlerInterceptorAdapter {
     }
 
     synchronized (this) {
-      val p = HttpLogProcessor.create(httpLog, connGetter);
+      val p = HttpLogProcessor.create(httpLog, connGetter, appContext);
       cache.put(httpLog, p);
       return p;
     }
@@ -111,5 +116,10 @@ public class HttpLogInterceptor extends HandlerInterceptorAdapter {
   @Override
   public void afterCompletion(HttpServletRequest r, HttpServletResponse p, Object h, Exception e) {
     log.debug("afterCompletion method:{} URI:{} ex:{}", r.getMethod(), r.getRequestURI(), e);
+  }
+
+  @Override
+  public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+    this.appContext = applicationContext;
   }
 }
