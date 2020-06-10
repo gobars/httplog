@@ -1,5 +1,6 @@
 package com.github.gobars.httplog;
 
+import com.github.gobars.id.db.SqlRunner;
 import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
@@ -142,7 +143,7 @@ public interface TableLogger {
       try {
         run.insert(insertSql, params.toArray(new Object[0]));
       } catch (Exception ex) {
-        log.warn("insert get error", ex);
+        log.warn("sql:{} with params:{} get error", insertSql, params, ex);
       }
     }
 
@@ -191,7 +192,7 @@ public interface TableLogger {
       try {
         run.insert(sql, params.toArray(new Object[0]));
       } catch (Exception ex) {
-        log.warn("insert get error", ex);
+        log.warn("sql:{} with params:{} get error", sql, params, ex);
       }
     }
 

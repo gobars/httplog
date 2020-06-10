@@ -3,18 +3,17 @@ dist: xenial
 services:
   - docker
 before_install:
-  - docker pull mysql:5.7
-  - docker run -p 3306:3306 --name mysql -e MYSQL_ROOT_PASSWORD=root -d mysql:5.7
+  - docker pull mysql:5.7.29
+  - docker run --name mysql -d -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root -v ${PWD}:/data mysql:5.7.29
   - docker pull epiclabs/docker-oracle-xe-11g
-  - docker run --name oracle -d -p 127.0.0.1:1521:1521 -e ORACLE_ALLOW_REMOTE=true epiclabs/docker-oracle-xe-11g
+  - docker run --name oracle -d -p 127.0.0.1:1521:1521 -e ORACLE_ALLOW_REMOTE=true -v ${PWD}:/data epiclabs/docker-oracle-xe-11g
   # - docker inspect oracle
   # - docker ps -a
   - echo "Wait to allow Oracle to be initialized"
   - travis_wait sleep 10
   - docker top oracle
-  - docker exec -it mysql mysql -u root -p'root' -s -e "create database id;create table id.worker_id(id bigint auto_increment primary key,created datetime default current_timestamp,ip varchar(60),hostname varchar(60),pid int,reason varchar(60),biz varchar(60))engine=innodb default charset=utf8mb4;"
-  - docker exec -it mysql mysql -u root -p'root' -s -e "drop table if exists id.biz_log;create table id.biz_log(id bigint  primary key comment '日志记录ID',created datetime default current_timestamp comment '创建时间',start datetime comment '请求时间',end datetime comment '结束时间',cost int comment '费时毫秒',ip varchar(60) comment '当前机器IP',hostname varchar(60) comment '当前机器名称',pid int comment '应用程序PID',biz varchar(60) comment '当前业务名称',req_path_id varchar(60) comment '请求路径变量id',req_url varchar(60) comment '请求url',req_heads varchar(600) comment '请求头',req_method varchar(60) comment '请求方法',rsp_body varchar(60) comment '响应体',bizdesc varchar(60) comment '响应体 httplog:"fix_desc"') engine = innodb default charset = utf8mb4 comment 'biz_log';"
-  - docker exec -it mysql mysql -u root -p'root' -s -e "drop table if exists id.biz_log_post;create table id.biz_log_post(id bigint  primary key comment '日志记录ID',created datetime default current_timestamp comment '创建时间',start datetime comment '请求时间',end datetime comment '结束时间',cost int comment '费时毫秒',ip varchar(60) comment '当前机器IP',hostname varchar(60) comment '当前机器名称',pid int comment '应用程序PID',biz varchar(60) comment '当前业务名称',req_path_id varchar(60) comment '请求路径变量id',req_url varchar(60) comment '请求url',req_heads varchar(600) comment '请求头',req_method varchar(60) comment '请求方法',rsp varchar(60) comment '响应体 httplog:"req_body"',dtoid varchar(60) comment '响应体 httplog:"req_json_id"') engine = innodb default charset = utf8mb4 comment 'biz_log_post';"
+  - docker exec -it mysql /bin/bash -c "mysql -u root -proot -s < /data/scripts/mysql-ddl.sql"
+  - docker exec -it oracle /bin/bash /data/scripts/wait-for-oracle.sh
 
 language: java
 install: mvn install -DskipTests -Dgpg.skip

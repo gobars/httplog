@@ -1,4 +1,4 @@
-package com.github.gobars.httplog.spring.ex;
+package com.github.gobars.httplog.spring;
 
 public class TestException extends RuntimeException {
 

@@ -1,4 +1,4 @@
-package com.github.gobars.httplog.spring;
+package com.github.gobars.httplog.spring.mysql;
 
 import com.github.gobars.httplog.HttpLogFilter;
 import com.github.gobars.httplog.HttpLogInterceptor;

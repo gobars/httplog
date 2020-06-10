@@ -1,4 +1,4 @@
-package com.github.gobars.httplog.spring.dto;
+package com.github.gobars.httplog.spring;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

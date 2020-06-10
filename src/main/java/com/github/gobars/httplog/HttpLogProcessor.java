@@ -1,6 +1,8 @@
 package com.github.gobars.httplog;
 
 import com.github.gobars.id.conf.ConnGetter;
+import com.github.gobars.id.db.SqlRunner;
+import com.github.gobars.id.util.DbType;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,12 +37,26 @@ public class HttpLogProcessor {
 
   @SneakyThrows
   public static HttpLogProcessor create(HttpLog httpLog, ConnGetter connGetter) {
-    val s =
-        "select column_name, column_comment, data_type, column_type, character_maximum_length, ordinal_position"
+    val ms =
+        "select column_name, column_comment, data_type,"
+            + " character_maximum_length max_length, ordinal_position column_id"
             + " from information_schema.columns"
             + " where table_schema = database()"
             + "  and table_name = ?";
+    val os =
+        "select tc.column_id,"
+            + "       tc.COLUMN_NAME column_name,"
+            + "       tc.DATA_TYPE   data_type,"
+            + "       tc.DATA_LENGTH max_length,"
+            + "       cc.COMMENTS    column_comment"
+            + " from user_col_comments cc"
+            + "   inner join user_tab_cols tc"
+            + "   on (cc.table_name = tc.table_name and cc.column_name = tc.column_name)"
+            + " where cc.table_name = upper(?)";
     @Cleanup val conn = connGetter.getConn();
+
+    DbType dbType = DbType.getDbType(conn);
+    val s = dbType == DbType.MYSQL ? ms : os;
     val runner = new SqlRunner(conn, false);
 
     val sqlGenerators = new HashMap<String, TableLogger>(httpLog.tables().length);
@@ -57,9 +73,8 @@ public class HttpLogProcessor {
         setStr(m, "column_name", tableCol::setName);
         setStr(m, "column_comment", tableCol::setComment);
         setStr(m, "data_type", tableCol::setDataType);
-        setStr(m, "column_type", tableCol::setType);
-        setInt(m, "character_maximum_length", tableCol::setMaxLen);
-        setInt(m, "ordinal_position", tableCol::setSeq);
+        setInt(m, "max_length", tableCol::setMaxLen);
+        setInt(m, "column_id", tableCol::setSeq);
 
         tableCol.parseComment(fixes, httpLog);
       }
@@ -74,6 +89,10 @@ public class HttpLogProcessor {
 
   private static void setStr(Map<String, String> m, String key, Consumer<String> consumer) {
     String v = m.get(key);
+    if (v == null) {
+      v = m.get(key.toUpperCase());
+    }
+
     if (v != null) {
       consumer.accept(v);
     }

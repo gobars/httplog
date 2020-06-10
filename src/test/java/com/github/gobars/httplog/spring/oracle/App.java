@@ -1,4 +1,4 @@
-package com.github.gobars.httplog.spring;
+package com.github.gobars.httplog.spring.oracle;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

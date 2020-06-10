@@ -1,6 +1,6 @@
-package com.github.gobars.httplog.spring;
+package com.github.gobars.httplog.spring.oracle;
 
-import com.github.gobars.httplog.spring.dto.TestDto;
+import com.github.gobars.httplog.spring.TestDto;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -36,10 +36,10 @@ public class TableCol {
   static {
     builtins.put(eqOf("id"), of((req, rsp, r, p, hl) -> req.getId()));
     builtins.put(eqOf("created"), of((req, rsp, r, p, hl) -> req.getStartTime()));
-    builtins.put(eqOf("ip"), of((req, rsp, r, p, hl) -> WorkerIdIp.localIP));
+    builtins.put(eqOf("ip"), of((req, rsp, r, p, hl) -> WorkerIdIp.LOCAL_IP));
     builtins.put(eqOf("hostname"), of((req, rsp, r, p, hl) -> WorkerIdHostname.HOSTNAME));
-    builtins.put(eqOf("pid"), of((req, rsp, r, p, hl) -> Pid.pid));
-    builtins.put(eqOf("start"), of((req, rsp, r, p, hl) -> req.getStartTime()));
+    builtins.put(eqOf("pid"), of((req, rsp, r, p, hl) -> Pid.PROCESS_ID));
+    builtins.put(eqOf("started"), of((req, rsp, r, p, hl) -> req.getStartTime()));
     builtins.put(eqOf("end"), of((req, rsp, r, p, hl) -> rsp == null ? null : rsp.getEndTime()));
     builtins.put(eqOf("cost"), of((req, rsp, r, p, hl) -> rsp == null ? null : rsp.getTookMs()));
     builtins.put(eqOf("biz"), of((req, rsp, r, p, hl) -> hl.biz()));
@@ -48,11 +48,11 @@ public class TableCol {
   }
 
   static {
-    rsps.put(startsOf("head_"), (req, rsp, r, p, hl, v) -> req.getHeaders().get(v.substring(5)));
-    rsps.put(eqOf("heads"), (req, rsp, r, p, hl, v) -> req.getHeaders());
-    rsps.put(eqOf("body"), (req, rsp, r, p, hl, v) -> req.getBody());
-    rsps.put(eqOf("json"), (req, rsp, r, p, hl, v) -> getJsonBody(req));
-    rsps.put(startsOf("json_"), (req, rsp, r, hl, p, v) -> jsonpath(v.substring(5), req));
+    rsps.put(startsOf("head_"), (req, rsp, r, p, hl, v) -> rsp.getHeaders().get(v.substring(5)));
+    rsps.put(eqOf("heads"), (req, rsp, r, p, hl, v) -> rsp.getHeaders());
+    rsps.put(eqOf("body"), (req, rsp, r, p, hl, v) -> rsp.getBody());
+    rsps.put(eqOf("json"), (req, rsp, r, p, hl, v) -> getJsonBody(rsp));
+    rsps.put(startsOf("json_"), (req, rsp, r, hl, p, v) -> jsonpath(v.substring(5), rsp));
     rsps.put(eqOf("status"), (req, rsp, r, p, hl, v) -> p.getStatus());
   }
 
@@ -90,12 +90,6 @@ public class TableCol {
    * <p>eg. bigint
    */
   private String dataType;
-  /**
-   * 字段类型
-   *
-   * <p>eg. bigint(20)
-   */
-  private String type;
   /**
    * 字符最大长度
    *
@@ -211,10 +205,12 @@ public class TableCol {
   }
 
   public void parseComment(Map<String, String> fixes, HttpLog httpLog) {
-    val m = TAG_PATTERN.matcher(comment);
-    String tag = name;
-    if (m.find()) {
-      tag = m.group(1);
+    String tag = name.toLowerCase();
+    if (comment != null) {
+      val m = TAG_PATTERN.matcher(comment);
+      if (m.find()) {
+        tag = m.group(1);
+      }
     }
 
     if (tag.startsWith("req_")) {
