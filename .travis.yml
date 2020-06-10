@@ -12,6 +12,7 @@ before_install:
   - echo "Wait to allow Oracle to be initialized"
   - travis_wait sleep 10
   - docker top oracle
+  - docker exec -it mysql mysqladmin ping -uroot -proot --wait=30 --silent
   - docker exec -it mysql /bin/bash -c "mysql -u root -proot -s < /data/scripts/mysql-ddl.sql"
   - docker exec -it oracle /bin/bash /data/scripts/wait-for-oracle.sh
 
