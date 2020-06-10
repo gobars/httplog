@@ -14,11 +14,7 @@ import lombok.val;
  * @author bingoobjca
  */
 public interface HttpLogPost {
-  /**
-   * 获得扩展属性.
-   *
-   * @return Map<String, String>
-   */
+  /** 生成扩展属性. */
   Map<String, String> create(
       HttpServletRequest r,
       HttpServletResponse p,
