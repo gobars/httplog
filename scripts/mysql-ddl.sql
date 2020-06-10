@@ -18,6 +18,8 @@ create table biz_log
     req_heads   varchar(600) comment '请求头',
     req_method  varchar(60) comment '请求方法',
     rsp_body    varchar(60) comment '响应体',
+    pre_hi      varchar(60) comment 'hi',
+    post_bye    varchar(60) comment 'bye',
     bizdesc     varchar(60) comment '响应体 httplog:"fix_desc"'
 ) engine = innodb
   default charset = utf8mb4 comment 'biz_log';

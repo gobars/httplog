@@ -1,5 +1,7 @@
 package com.github.gobars.httplog;
 
+import static org.springframework.core.annotation.AnnotatedElementUtils.getMergedAnnotationAttributes;
+
 import com.github.gobars.id.conf.ConnGetter;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -8,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
@@ -20,9 +23,8 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 @Slf4j
 public class HttpLogInterceptor extends HandlerInterceptorAdapter {
   public static final String HTTPLOG_PROCESSOR = "HTTPLOG_PROCESSOR";
-  public static final String HTTPLOG_ANN = "HTTPLOG_ANN";
 
-  private final ConcurrentMap<HttpLog, HttpLogProcessor> cache = new ConcurrentHashMap<>(100);
+  private final ConcurrentMap<HttpLogAttr, HttpLogProcessor> cache = new ConcurrentHashMap<>(100);
   private final ConnGetter connGetter;
 
   public HttpLogInterceptor(DataSource dataSource) {
@@ -43,6 +45,7 @@ public class HttpLogInterceptor extends HandlerInterceptorAdapter {
    * <p>false表示流程中断（如登录检查失败），不会继续调用其他的拦截器或处理器，此时我们需要通过response来产生响应
    */
   @Override
+  @SuppressWarnings("unchecked")
   public boolean preHandle(HttpServletRequest r, HttpServletResponse p, Object h) {
     if (!(h instanceof HandlerMethod)) {
       log.warn("no permission....");
@@ -51,30 +54,32 @@ public class HttpLogInterceptor extends HandlerInterceptorAdapter {
 
     val hm = (HandlerMethod) h;
 
-    val httpLog = hm.getMethodAnnotation(HttpLog.class);
-    if (httpLog == null) {
+    if (!AnnotatedElementUtils.isAnnotated(hm.getMethod(), HttpLog.class)) {
       return true;
     }
 
-    val processor = cacheGet(httpLog);
-    Req req = (Req) r.getAttribute(HttpLogFilter.HTTPLOG_REQ);
+    val attrs = getMergedAnnotationAttributes(hm.getMethod(), HttpLog.class);
+    val hl = HttpLogAttr.create(attrs);
+    log.info("HttpLog: {}", attrs);
+
+    val ps = cacheGet(hl);
+    val req = (Req) r.getAttribute(HttpLogFilter.HTTPLOG_REQ);
     try {
-      processor.logReq(r, req, httpLog);
+      ps.logReq(r, req);
     } catch (Exception ex) {
       log.warn("failed to log req {}", req, ex);
     }
 
-    r.setAttribute(HTTPLOG_PROCESSOR, processor);
-    r.setAttribute(HTTPLOG_ANN, httpLog);
-    log.debug("preHandle method:{} URI:{} httpLog:{}", r.getMethod(), r.getRequestURI(), httpLog);
+    r.setAttribute(HTTPLOG_PROCESSOR, ps);
+    log.debug("preHandle method:{} URI:{} httpLog:{}", r.getMethod(), r.getRequestURI(), hl);
 
     return true;
   }
 
-  private HttpLogProcessor cacheGet(HttpLog httpLog) {
-    val processor = cache.get(httpLog);
-    if (processor != null) {
-      return processor;
+  private HttpLogProcessor cacheGet(HttpLogAttr httpLog) {
+    val ps = cache.get(httpLog);
+    if (ps != null) {
+      return ps;
     }
 
     synchronized (this) {

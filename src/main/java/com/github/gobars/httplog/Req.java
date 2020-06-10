@@ -11,4 +11,5 @@ public class Req extends ReqRsp {
   private String requestUri;
   private String protocol;
   private Map<String, String> queries;
+  private Map<String, String> pres;
 }

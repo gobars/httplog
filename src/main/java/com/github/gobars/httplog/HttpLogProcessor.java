@@ -5,6 +5,7 @@ import com.github.gobars.id.db.SqlRunner;
 import com.github.gobars.id.util.DbType;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
@@ -22,21 +23,30 @@ import lombok.val;
  */
 @Slf4j
 public class HttpLogProcessor {
-  private final HttpLog httpLog;
+  private final HttpLogAttr httpLog;
   private final boolean eager;
   private final Map<String, TableLogger> sqlGenerators;
   private final ConnGetter connGetter;
+  private final HttpLogPre pre;
+  private final HttpLogPost post;
+  private final Map<String, String> fixes;
 
   public HttpLogProcessor(
-      HttpLog httpLog, Map<String, TableLogger> sqlGenerators, ConnGetter connGetter) {
+      HttpLogAttr httpLog,
+      Map<String, TableLogger> sqlGenerators,
+      ConnGetter connGetter,
+      Map<String, String> fixes) {
     this.httpLog = httpLog;
     this.eager = httpLog.eager();
     this.sqlGenerators = sqlGenerators;
     this.connGetter = connGetter;
+    this.pre = new HttpLogPre.HttpLogPreComposite(createExt(httpLog.pre()));
+    this.post = new HttpLogPost.HttpLogPostComposite(createExt(httpLog.post()));
+    this.fixes = fixes;
   }
 
   @SneakyThrows
-  public static HttpLogProcessor create(HttpLog httpLog, ConnGetter connGetter) {
+  public static HttpLogProcessor create(HttpLogAttr httpLog, ConnGetter connGetter) {
     val ms =
         "select column_name, column_comment, data_type,"
             + " character_maximum_length max_length, ordinal_position column_id"
@@ -76,7 +86,7 @@ public class HttpLogProcessor {
         setInt(m, "max_length", tableCol::setMaxLen);
         setInt(m, "column_id", tableCol::setSeq);
 
-        tableCol.parseComment(fixes, httpLog);
+        tableCol.parseComment(fixes);
       }
 
       log.info("tableCols: {}", tableCols);
@@ -84,7 +94,7 @@ public class HttpLogProcessor {
       sqlGenerators.put(table, TableLogger.create(table, tableCols, httpLog));
     }
 
-    return new HttpLogProcessor(httpLog, sqlGenerators, connGetter);
+    return new HttpLogProcessor(httpLog, sqlGenerators, connGetter, fixes);
   }
 
   private static void setStr(Map<String, String> m, String key, Consumer<String> consumer) {
@@ -110,13 +120,38 @@ public class HttpLogProcessor {
     }
   }
 
+  private <T> List<T> createExt(Class<? extends T>[] exts) {
+    val composite = new ArrayList<T>(exts.length);
+
+    for (val ext : exts) {
+      val p = create(ext);
+      if (p != null) {
+        composite.add(p);
+      }
+    }
+
+    return composite;
+  }
+
+  private <T> T create(Class<? extends T> ext) {
+    try {
+      return ext.getConstructor().newInstance();
+    } catch (Exception ex) {
+      log.warn("failed to newInstance of {}", ext, ex);
+    }
+
+    return null;
+  }
+
   @SneakyThrows
-  public void logReq(HttpServletRequest r, Req req, HttpLog httpLog) {
+  public void logReq(HttpServletRequest r, Req req) {
     if (!this.eager) {
       return;
     }
 
     log.info("eager req:{}", req);
+
+    req.setPres(createPre(r, req, httpLog));
 
     @Cleanup val conn = connGetter.getConn();
     for (val table : httpLog.tables()) {
@@ -128,16 +163,49 @@ public class HttpLogProcessor {
   }
 
   @SneakyThrows
-  public void complete(HttpServletRequest r, HttpServletResponse p, Rsp rsp, HttpLog httpLog) {
+  public void complete(HttpServletRequest r, HttpServletResponse p, Rsp rsp) {
     Req req = (Req) r.getAttribute(HttpLogFilter.HTTPLOG_REQ);
     log.info("eager complete:{}", req);
 
+    rsp.setPosts(createPost(req, rsp, r, p, httpLog));
+
     @Cleanup val conn = connGetter.getConn();
-    for (val table : this.httpLog.tables()) {
+    for (val table : httpLog.tables()) {
       val runner = new SqlRunner(conn, false);
       val sqlGenerator = sqlGenerators.get(table);
 
       sqlGenerator.rsp(runner, r, p, req, rsp, httpLog);
     }
+  }
+
+  private Map<String, String> createPre(HttpServletRequest r, Req req, HttpLogAttr hl) {
+    val m = new HashMap<String, String>(10);
+    if (this.pre == null) {
+      return m;
+    }
+
+    try {
+      return pre.create(r, req, hl, fixes);
+    } catch (Exception ex) {
+      log.warn("pre {} create error", pre, ex);
+    }
+
+    return m;
+  }
+
+  private Map<String, String> createPost(
+      Req req, Rsp rsp, HttpServletRequest r, HttpServletResponse p, HttpLogAttr hl) {
+    val m = new HashMap<String, String>(10);
+    if (this.post == null) {
+      return m;
+    }
+
+    try {
+      return post.create(r, p, req, rsp, hl, fixes);
+    } catch (Exception ex) {
+      log.warn("pre {} create error", pre, ex);
+    }
+
+    return m;
   }
 }

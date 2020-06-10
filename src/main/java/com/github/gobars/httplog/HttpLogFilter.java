@@ -75,8 +75,7 @@ public class HttpLogFilter extends OncePerRequestFilter {
       val p = (HttpLogProcessor) rq.getAttribute(HttpLogInterceptor.HTTPLOG_PROCESSOR);
       if (p != null) {
         try {
-          HttpLog httpLog = (HttpLog) rq.getAttribute(HttpLogInterceptor.HTTPLOG_ANN);
-          p.complete(rq, rp, rsp, httpLog);
+          p.complete(rq, rp, rsp);
         } catch (Exception ex) {
           log.warn("failed to complete req:{} rsp:{}", req, rsp, ex);
         }

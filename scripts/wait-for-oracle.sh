@@ -5,8 +5,7 @@ export PATH=$ORACLE_HOME/bin:$PATH
 export ORACLE_SID=XE
 
 status="1"
-while [ "$status" != "0" ]
-do
+while [ "$status" != "0" ]; do
   sleep 1
   sqlplus /nolog @/data/scripts/has-oracle-started.sql
   status=$?

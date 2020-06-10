@@ -101,6 +101,9 @@ create table biz_log_post
 `httplog:"ctx_xxx"` |ctx_xxx|上下文对象xxx的值
 固定值:||
 `httplog:"fix_xxx"`|fix_xxx| 由fix参数指定的固定值 
+扩展类:||
+`httplog:"pre_xxx"`|pre_xxx| 由自定义扩展器pre给出属性值
+`httplog:"post_xxx"`|post_xxx| 由自定义扩展器post给出属性值
 
 ### Setup interceptors and filters
 

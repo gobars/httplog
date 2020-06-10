@@ -15,7 +15,7 @@ import lombok.val;
  * @author bingoobjca
  */
 public interface TableLogger {
-  static TableLogger create(String table, List<TableCol> tableCols, HttpLog httpLog) {
+  static TableLogger create(String table, List<TableCol> tableCols, HttpLogAttr httpLog) {
     if (httpLog.eager()) {
       return createEagerTableLogger(table, tableCols);
     }
@@ -95,7 +95,7 @@ public interface TableLogger {
    * @param req Req
    * @param httpLog
    */
-  default void req(SqlRunner run, HttpServletRequest r, Req req, HttpLog httpLog) {}
+  default void req(SqlRunner run, HttpServletRequest r, Req req, HttpLogAttr httpLog) {}
 
   /**
    * 记录响应日志
@@ -113,7 +113,7 @@ public interface TableLogger {
       HttpServletResponse p,
       Req req,
       Rsp rsp,
-      HttpLog httpLog);
+      HttpLogAttr httpLog);
 
   /**
    * 两阶段记录（req和rsp).
@@ -129,7 +129,7 @@ public interface TableLogger {
     List<ColValueGetter> updateValueGetters;
 
     @Override
-    public void req(SqlRunner run, HttpServletRequest r, Req req, HttpLog httpLog) {
+    public void req(SqlRunner run, HttpServletRequest r, Req req, HttpLogAttr httpLog) {
       val params = new ArrayList<>(insertValueGetters.size());
       for (val colValueGetter : insertValueGetters) {
         try {
@@ -154,7 +154,7 @@ public interface TableLogger {
         HttpServletResponse p,
         Req req,
         Rsp rsp,
-        HttpLog httpLog) {
+        HttpLogAttr httpLog) {
       NonEagerTableLogger.log(updateSql, updateValueGetters, run, r, p, req, rsp, httpLog);
     }
   }
@@ -178,7 +178,7 @@ public interface TableLogger {
         HttpServletResponse p,
         Req req,
         Rsp rsp,
-        HttpLog httpLog) {
+        HttpLogAttr httpLog) {
       val params = new ArrayList<>(valueGetters.size());
       for (val colValueGetter : valueGetters) {
         try {
@@ -203,7 +203,7 @@ public interface TableLogger {
         HttpServletResponse p,
         Req req,
         Rsp rsp,
-        HttpLog httpLog) {
+        HttpLogAttr httpLog) {
       log(sql, valueGetters, run, r, p, req, rsp, httpLog);
     }
   }

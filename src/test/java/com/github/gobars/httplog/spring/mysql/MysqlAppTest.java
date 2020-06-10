@@ -17,7 +17,7 @@ import org.springframework.util.MultiValueMap;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = App.class)
-public class AppTest {
+public class MysqlAppTest {
   /** Data */
   private static final TestDto TEST_DTO = TestDto.builder().id(10).build();
 
