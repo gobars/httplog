@@ -14,7 +14,7 @@ HttpLog会根据`@HttpLog`中定义的日志表的注解及字段名，自动记
 
 ### Prepare log tables
 
-业务日志表定义，根据具体业务需要，必须字段为主键`id`（名字固定）, 示例, [mysql](scripts/mysql-ddl.sql), [oracle](scripts/oracle-ddl.sql):
+业务日志表定义，根据具体业务需要，必须字段为主键`id`（名字固定）, 示例: [mysql](scripts/mysql-ddl.sql), [oracle](scripts/oracle-ddl.sql)
 
 <details>
   <summary>
@@ -207,11 +207,11 @@ sample biz_log_post records:
 
 </details>
 
-## 单纯HttpLogFilter示例
+## 单纯HttpLogFilter打印日志示例
 
 ```
-@Configuration
-public class ReqRspLogConfig extends com.github.gobars.httplog.HttpLogFilter {}
+@org.springframework.context.annotation.Configuration
+public class HttpLogFilterBean extends com.github.gobars.httplog.HttpLogFilter {}
 ```
 
 <details>
@@ -300,3 +300,8 @@ Caused by: com.github.gobars.httplog.spring.TestException: TestDto(id=10)
 ```
 
 </details>
+
+
+## Rationale
+
+[![image](https://user-images.githubusercontent.com/1940588/84857321-56bf0480-b09b-11ea-8fb1-b89212c9e857.png)](doc/rationale.drawio)

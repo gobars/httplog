@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.ToString;
 
 @Data
-@ToString(callSuper = true)
+@ToString(callSuper = true, exclude = "pres")
 public class Req extends ReqRsp {
   private String method;
   private String requestUri;

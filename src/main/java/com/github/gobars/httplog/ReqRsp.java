@@ -4,8 +4,10 @@ import com.github.gobars.httplog.snack.ONode;
 import java.sql.Timestamp;
 import java.util.Map;
 import lombok.Data;
+import lombok.ToString;
 
 @Data
+@ToString(exclude = {"bodyONode", "bodyONodeInitialized"})
 public class ReqRsp {
   private long id;
   private Timestamp startTime = new Timestamp(System.currentTimeMillis());

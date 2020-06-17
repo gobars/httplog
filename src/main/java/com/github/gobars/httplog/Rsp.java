@@ -5,7 +5,7 @@ import lombok.Data;
 import lombok.ToString;
 
 @Data
-@ToString(callSuper = true)
+@ToString(callSuper = true, exclude = "posts")
 public class Rsp extends ReqRsp {
   private int status;
   private String reasonPhrase;
