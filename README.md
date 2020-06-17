@@ -14,32 +14,12 @@ HttpLog会根据`@HttpLog`中定义的日志表的注解及字段名，自动记
 
 ### Prepare log tables
 
-业务日志表定义，根据具体业务需要，必须字段为主键`id`（名字固定）:
+业务日志表定义，根据具体业务需要，必须字段为主键`id`（名字固定）, 示例, [mysql](scripts/mysql-ddl.sql), [oracle](scripts/oracle-ddl.sql):
 
-```sql
-drop table if exists biz_log;
-create table biz_log
-(
-    id          bigint  primary key comment '日志记录ID',
-    created     datetime default current_timestamp comment '创建时间',
-    started       datetime comment '请求时间',
-    end         datetime comment '结束时间',
-    cost        int comment '费时毫秒',
-    ip          varchar(60) comment '当前机器IP',
-    hostname    varchar(60) comment '当前机器名称',
-    pid         int comment '应用程序PID',
-    biz         varchar(60) comment '当前业务名称',
-    req_path_id varchar(60) comment '请求路径变量id',
-    req_url     varchar(60) comment '请求url',
-    req_heads   varchar(600) comment '请求头',
-    req_method  varchar(60) comment '请求方法',
-    rsp_body    varchar(60) comment '响应体 httplog:"rsp_body"',
-    bizdesc     varchar(60) comment '响应体 httplog:"fix_desc"'
-) engine = innodb
-  default charset = utf8mb4 comment 'biz_log';
-```
-
-日志表建表规范
+<details>
+  <summary>
+    <p>日志表建表规范</p>
+  </summary>
 
 字段注释包含| 或者字段名 | 说明
 ---|---|---
@@ -82,9 +62,15 @@ create table biz_log
 扩展类:||
 `httplog:"pre_xxx"`|pre_xxx| 由自定义扩展器pre给出属性值，见[示例](src/test/java/com/github/gobars/httplog/spring/mysql/MyHttpLog.java)
 `httplog:"post_xxx"`|post_xxx| 由自定义扩展器post给出属性值
+</details>
 
 ### Setup interceptors and filters
 
+<details>
+  <summary>
+    <p>Spring配置示例</p>
+  </summary>
+  
 ```java
 @Slf4j
 @Configuration
@@ -109,7 +95,13 @@ public class HttpLogWebMvcConf extends WebMvcConfigurationSupport {
   }
 }
 ```
+</details>
 
+<details>
+  <summary>
+    <p>SpringMVC Controller使用示例</p>
+  </summary>
+  
 ```java
 import com.github.gobars.httplog.HttpLog;
 import com.github.gobars.httplog.spring.TestDto;
@@ -158,6 +150,12 @@ public class TestController {
   }
 }
 ```
+</details>
+
+<details>
+  <summary>
+    <p>日志表记录日志示例</p>
+  </summary>
 
 sample biz_log records:
 
@@ -207,28 +205,35 @@ sample biz_log_post records:
 ]
 ```
 
+</details>
+
+## 单纯HttpLogFilter示例
+
 ```
 @Configuration
 public class ReqRspLogConfig extends com.github.gobars.httplog.HttpLogFilter {}
 ```
 
-## Examples
+<details>
+  <summary>
+    <p>请求响应日志</p>
+  </summary>
 
-### Method GET
+GET：
 
 ```log
 2020-06-04 20:43:31.665  INFO 81103 --- [o-auto-1-exec-1] c.github.gobars.httplog.HttpLogFilter  : req: Req(super=ReqRsp(headers={host=localhost:57413, connection=keep-alive, accept=text/plain, application/json, application/*+json, */*, user-agent=Java/11.0.7}, startNs=13514944034314, tookMs=0, bodyBytes=0, body=, error=null), method=GET, requestUri=/test/10, protocol=HTTP/1.1)
 2020-06-04 20:43:31.669  INFO 81103 --- [o-auto-1-exec-1] c.github.gobars.httplog.HttpLogFilter  : rsp: Rsp(super=ReqRsp(headers={Keep-Alive=timeout=60, Connection=keep-alive, Content-Length=12, Date=Thu, 04 Jun 2020 12:43:31 GMT, Content-Type=text/plain;charset=UTF-8}, startNs=13514944034314, tookMs=51, bodyBytes=12, body=test id : 10, error=null), status=200, reasonPhrase=OK)
 ```
 
-### Method POST
+POST：
 
 ```log
 2020-06-04 20:43:31.900  INFO 81103 --- [o-auto-1-exec-2] c.github.gobars.httplog.HttpLogFilter  : req: Req(super=ReqRsp(headers={content-length=9, host=localhost:57413, content-type=application/json, connection=keep-alive, accept=application/json, application/*+json, user-agent=Java/11.0.7}, startNs=13515206496154, tookMs=0, bodyBytes=9, body={"id":10}, error=null), method=POST, requestUri=/test, protocol=HTTP/1.1)
 2020-06-04 20:43:31.900  INFO 81103 --- [o-auto-1-exec-2] c.github.gobars.httplog.HttpLogFilter  : rsp: Rsp(super=ReqRsp(headers={Keep-Alive=timeout=60, Connection=keep-alive, Content-Length=9, Date=Thu, 04 Jun 2020 12:43:31 GMT, Content-Type=application/json}, startNs=13515206496154, tookMs=29, bodyBytes=9, body={"id":10}, error=null), status=200, reasonPhrase=OK)
 ```
 
-### Method PUT exception
+PUT exception：
 
 ```log
 2020-06-04 20:43:31.917  INFO 81103 --- [o-auto-1-exec-3] c.github.gobars.httplog.HttpLogFilter  : req: Req(super=ReqRsp(headers={content-length=9, host=localhost:57413, content-type=application/json, connection=keep-alive, accept=application/json, application/*+json, user-agent=Java/11.0.7}, startNs=13515248933063, tookMs=0, bodyBytes=9, body={"id":10}, error=null), method=PUT, requestUri=/test, protocol=HTTP/1.1)
@@ -294,3 +299,4 @@ Caused by: com.github.gobars.httplog.spring.TestException: TestDto(id=10)
 ), status=500, reasonPhrase=Internal Server Error)
 ```
 
+</details>
