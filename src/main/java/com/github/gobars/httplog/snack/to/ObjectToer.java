@@ -31,7 +31,7 @@ public class ObjectToer implements Toer {
     ONode o = (ONode) ctx.source;
 
     if (null != o) {
-      ctx.target = analyse(ctx, o, ctx.target_clz, ctx.target_type);
+      ctx.target = analyse(ctx, o, ctx.targetClz, ctx.targetType);
     }
   }
 
@@ -39,7 +39,7 @@ public class ObjectToer implements Toer {
     //
     // 下面使用 .ary(), .oby(), .val() 可以减少检查；从而提高性能
     //
-    if (ctx.target_type == null) {
+    if (ctx.targetType == null) {
       if (o.isObject()) {
         return HashMap.class;
       }
@@ -56,15 +56,13 @@ public class ObjectToer implements Toer {
         //
         // 这段，不能与下面的 o.isObject() 复用
         //
-        ONode n1 = o1.obj().get(ctx.config.type_key);
+        ONode n1 = o1.obj().get(ctx.config.typeKey);
         if (n1 != null) {
           typeStr = n1.val().getString();
         }
       }
-    }
-
-    if (o.isObject()) {
-      ONode n1 = o.obj().get(ctx.config.type_key);
+    } else if (o.isObject()) {
+      ONode n1 = o.obj().get(ctx.config.typeKey);
       if (n1 != null) {
         typeStr = n1.val().getString();
       }
@@ -101,7 +99,7 @@ public class ObjectToer implements Toer {
         return analyseVal(ctx, o.nodeData(), clz);
       case Object:
         clz = getTypeByNode(ctx, o, clz);
-        o.remove(ctx.config.type_key); // 尝试移除类型内容
+        o.remove(ctx.config.typeKey); // 尝试移除类型内容
 
         if (Map.class.isAssignableFrom(clz)) {
           return analyseMap(ctx, o, clz, type);
@@ -170,13 +168,13 @@ public class ObjectToer implements Toer {
     } else if (is(Date.class, clz)) {
       return v.getDate();
     } else if (is(BigDecimal.class, clz)) {
-      if (v.type() == OValueType.Bignumber) {
+      if (v.type() == OValueType.BigNumber) {
         return v.getRawBignumber();
       } else {
         return new BigDecimal(v.getString());
       }
     } else if (is(BigInteger.class, clz)) {
-      if (v.type() == OValueType.Bignumber) {
+      if (v.type() == OValueType.BigNumber) {
         return v.getRawBignumber();
       } else {
         return new BigInteger(v.getString());
@@ -281,14 +279,14 @@ public class ObjectToer implements Toer {
     if (o.count() == 2) {
       ONode o1 = o.get(0);
       // 说明，是有类型的集合
-      if (o1.count() == 1 && o1.contains(ctx.config.type_key)) {
-        // 取第二个节点，做为数据节点（第1个为类型节点）;
+      if (o1.count() == 1 && o1.contains(ctx.config.typeKey)) {
+        // 取第二个节点，做为数据节点（第1个为类型节点）
         o = o.get(1);
       }
     }
 
     Type itemType = null;
-    if (ctx.target_type != null) {
+    if (ctx.targetType != null) {
       itemType = TypeUtil.getCollectionItemType(type);
     }
 

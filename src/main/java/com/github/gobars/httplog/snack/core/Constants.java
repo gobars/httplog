@@ -4,35 +4,33 @@ import com.github.gobars.httplog.snack.core.exts.Act1;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Locale;
-import java.util.TimeZone;
 
 /** 参数配置 */
 public class Constants {
-  public static int features_def =
+  public static final int featuresDefault =
       Feature.of(
           Feature.OrderedField,
           Feature.WriteDateUseTicks,
           Feature.StringNullAsEmpty,
           Feature.QuoteFieldNames);
 
-  public static int features_serialize =
+  public static final int featuresSerialize =
       Feature.of(
           Feature.OrderedField,
           Feature.BrowserCompatible,
           Feature.WriteClassName,
           Feature.QuoteFieldNames);
   /** 日期格式 */
-  public DateFormat date_format = DEFAULTS.DEF_DATE_FORMAT;
+  public DateFormat dateFormat = DEFAULTS.DEF_DATE_FORMAT;
   /** 类型key */
-  public String type_key = DEFAULTS.DEF_TYPE_KEY;
-  /** 时区 */
-  public TimeZone time_zone = DEFAULTS.DEF_TIME_ZONE;
+  public String typeKey = DEFAULTS.DEF_TYPE_KEY;
+
   /** 地区 */
   public Locale locale = DEFAULTS.DEF_LOCALE;
   /** 特性 */
   public int features = DEFAULTS.DEF_FEATURES;
   /** n.get(key)时，只读处理; 即不自动添加新节点 */
-  public boolean get_readonly = false;
+  public boolean readonly = false;
 
   public Constants() {}
 
@@ -41,11 +39,11 @@ public class Constants {
   }
 
   public static Constants def() {
-    return new Constants(features_def);
+    return new Constants(featuresDefault);
   }
 
   public static Constants serialize() {
-    return new Constants(features_serialize);
+    return new Constants(featuresSerialize);
   }
 
   public static Constants of(Feature... features) {
@@ -74,7 +72,7 @@ public class Constants {
   // =================
 
   public final String dateToString(Date date) {
-    return date_format.format(date);
+    return dateFormat.format(date);
   }
 
   public final boolean hasFeature(Feature feature) {
@@ -82,7 +80,7 @@ public class Constants {
   }
 
   /** null string 默认值 */
-  public final String null_string() {
+  public final String nullString() {
     if (hasFeature(Feature.StringNullAsEmpty)) {
       return "";
     }

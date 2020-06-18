@@ -15,8 +15,8 @@ public class Context {
   /** 目标 */
   public Object target;
 
-  public Class<?> target_clz;
-  public Type target_type;
+  public Class<?> targetClz;
+  public Type targetType;
 
   /** 用于来源处理的构造 */
   public Context(Constants config, Object from) {
@@ -39,14 +39,12 @@ public class Context {
 
       initType(type);
       return;
+    }
+
+    if (clz.getName().indexOf("$") > 0) {
+      initType(clz.getGenericSuperclass());
     } else {
-      if (clz.getName().indexOf("$") > 0) {
-        // 临时类：(new ArrayList<UserModel>(){}).getClass(); (new UserModel(){}).getClass();
-        //
-        initType(clz.getGenericSuperclass());
-      } else {
-        initType(clz, clz);
-      }
+      initType(clz, clz);
     }
   }
 
@@ -61,8 +59,8 @@ public class Context {
   }
 
   private void initType(Type type, Class<?> clz) {
-    target_type = type;
-    target_clz = clz;
+    targetType = type;
+    targetClz = clz;
   }
 
   /** 使用代理对当前上下文进行处理 */

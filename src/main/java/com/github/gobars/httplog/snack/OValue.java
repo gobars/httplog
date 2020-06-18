@@ -8,12 +8,12 @@ import java.util.Date;
 
 /** 节点值 */
 public class OValue {
-  protected long _integer; // 整数
-  protected double _decimal; // 小数
-  protected String _string; // 字符串
-  protected boolean _bool; // 布尔值
-  protected Date _date; // 日期
-  protected Number _bignumber; // 大数字
+  protected long _integer;
+  protected double _decimal;
+  protected String _string;
+  protected boolean _bool;
+  protected Date _date;
+  protected Number _bignumber;
   protected ONode _n;
   private OValueType _type = OValueType.Null;
 
@@ -42,48 +42,43 @@ public class OValue {
       return;
     }
 
-    if (val instanceof String) { // string
+    if (val instanceof String) {
       setString((String) val);
       return;
     }
 
-    if (val instanceof Date) { // date
+    if (val instanceof Date) {
       setDate((Date) val);
       return;
     }
 
-    if (val instanceof Integer) { // int
+    if (val instanceof Integer) {
       setInteger((Integer) val);
       return;
     }
 
-    if (val instanceof Long) { // long
+    if (val instanceof Long) {
       setInteger((Long) val);
       return;
     }
 
-    if (val instanceof Double) { // double
+    if (val instanceof Double) {
       setDecimal((Double) val);
       return;
     }
 
-    if (val instanceof Float) { // float
+    if (val instanceof Float) {
       setDecimal((Float) val);
       return;
     }
 
-    if (val instanceof Boolean) { // bool
+    if (val instanceof Boolean) {
       setBool((Boolean) val);
       return;
     }
 
-    if (val instanceof BigInteger) { // big interger
-      setBignumber((BigInteger) val);
-      return;
-    }
-
-    if (val instanceof BigDecimal) { // big decimal
-      setBignumber((BigDecimal) val);
+    if (val instanceof BigInteger || val instanceof BigDecimal) {
+      setBigNumber((Number) val);
       return;
     }
 
@@ -104,8 +99,8 @@ public class OValue {
     _decimal = val;
   }
 
-  public void setBignumber(Number val) {
-    _type = OValueType.Bignumber;
+  public void setBigNumber(Number val) {
+    _type = OValueType.BigNumber;
     _bignumber = val;
   }
 
@@ -127,7 +122,7 @@ public class OValue {
         return _bool;
       case Decimal:
         return _decimal;
-      case Bignumber:
+      case BigNumber:
         return _bignumber;
       default:
         return null;
@@ -176,11 +171,14 @@ public class OValue {
         return (char) _integer;
       case Decimal:
         return (char) _decimal;
-      case Bignumber:
+      case BigNumber:
         return (char) _bignumber.longValue();
       case String:
-        if (_string == null || _string.length() == 0) return 0;
-        else return _string.charAt(0);
+        if (_string == null || _string.length() == 0) {
+          return 0;
+        }
+
+        return _string.charAt(0);
       case Boolean:
         return _bool ? '1' : '0';
       case DateTime:
@@ -207,13 +205,14 @@ public class OValue {
         return _integer;
       case Decimal:
         return (long) _decimal;
-      case Bignumber:
+      case BigNumber:
         return _bignumber.longValue();
       case String:
-        {
-          if (_string == null || _string.length() == 0) return 0;
-          else return Long.parseLong(_string);
+        if (_string == null || _string.length() == 0) {
+          return 0;
         }
+
+        return Long.parseLong(_string);
       case Boolean:
         return _bool ? 1 : 0;
       case DateTime:
@@ -234,13 +233,14 @@ public class OValue {
         return _decimal;
       case Integer:
         return _integer;
-      case Bignumber:
+      case BigNumber:
         return _bignumber.doubleValue();
       case String:
-        {
-          if (_string == null || _string.length() == 0) return 0;
-          else return Double.parseDouble(_string);
+        if (_string == null || _string.length() == 0) {
+          return 0;
         }
+
+        return Double.parseDouble(_string);
       case Boolean:
         return _bool ? 1 : 0;
       case DateTime:
@@ -259,14 +259,14 @@ public class OValue {
         return String.valueOf(_integer);
       case Decimal:
         return String.valueOf(_decimal);
-      case Bignumber:
+      case BigNumber:
         return String.valueOf(_bignumber);
       case Boolean:
         return String.valueOf(_bool);
       case DateTime:
         return String.valueOf(_date);
       default:
-        return _n.co.null_string();
+        return _n.co.nullString();
     }
   }
 
@@ -284,12 +284,8 @@ public class OValue {
         return _integer > 0;
       case Decimal:
         return _decimal > 0;
-      case Bignumber:
+      case BigNumber:
         return _bignumber.longValue() > 0;
-      case String:
-        return false;
-      case DateTime:
-        return false;
       default:
         return false;
     }
@@ -342,7 +338,7 @@ public class OValue {
           return _bool == o2._bool;
         case Decimal:
           return _decimal == o2._decimal;
-        case Bignumber:
+        case BigNumber:
           return _bignumber.equals(o2._bignumber);
         default:
           return isNull() && o2.isNull();
@@ -353,35 +349,27 @@ public class OValue {
         case String:
           return _string.equals(o);
         case Integer:
-          {
-            if (o instanceof Number) {
-              return ((Number) o).longValue() == _integer;
-            } else {
-              return false;
-            }
+          if (o instanceof Number) {
+            return ((Number) o).longValue() == _integer;
+          } else {
+            return false;
           }
         case DateTime:
           return _date.equals(o);
         case Boolean:
-          {
-            if (o instanceof Boolean) {
-              return _bool == (Boolean) o;
-            } else {
-              return false;
-            }
+          if (o instanceof Boolean) {
+            return _bool == (Boolean) o;
+          } else {
+            return false;
           }
         case Decimal:
-          {
-            if (o instanceof Number) {
-              return ((Number) o).doubleValue() == _decimal;
-            } else {
-              return false;
-            }
+          if (o instanceof Number) {
+            return ((Number) o).doubleValue() == _decimal;
+          } else {
+            return false;
           }
-        case Bignumber:
-          {
-            return _bignumber.equals(o);
-          }
+        case BigNumber:
+          return _bignumber.equals(o);
         default:
           return false;
       }
@@ -401,7 +389,7 @@ public class OValue {
         return Boolean.hashCode(_bool);
       case Decimal:
         return Double.hashCode(_decimal);
-      case Bignumber:
+      case BigNumber:
         return _bignumber.hashCode();
       default:
         return 0;

@@ -273,9 +273,9 @@ public class JsonFromer implements Fromer {
       } else if ((c >= '0' && c <= '9') || (c == '-')) { // number
         if (sval.length() > 16) { // 超过16位长度；采用大数字处理
           if (sval.indexOf('.') > 0) {
-            oval.setBignumber(new BigDecimal(sval));
+            oval.setBigNumber(new BigDecimal(sval));
           } else {
-            oval.setBignumber(new BigInteger(sval));
+            oval.setBigNumber(new BigInteger(sval));
           }
         } else { // 小于16位长度；采用常规数字处理
           if (sval.indexOf('.') > 0) {

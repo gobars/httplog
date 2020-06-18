@@ -306,7 +306,7 @@ public class ONode {
         return toJson();
       }
 
-      return co.null_string();
+      return co.nullString();
     }
   }
 
@@ -421,7 +421,7 @@ public class ONode {
 
   /** 只读模式 get(key) 不会自动产生新节点 */
   public ONode readonly(boolean readonly) {
-    co.get_readonly = readonly;
+    co.readonly = readonly;
     return this;
   }
 
@@ -465,7 +465,7 @@ public class ONode {
     if (tmp == null) {
       tmp = new ONode(co);
 
-      if (!co.get_readonly) {
+      if (!co.readonly) {
         da.object.put(key, tmp);
       }
     }

@@ -15,5 +15,5 @@ public enum OValueType {
   /** datetime 类型 */
   DateTime,
   /** 大数字（为序列化做准备） */
-  Bignumber,
+  BigNumber,
 }

@@ -54,7 +54,7 @@ public class ObjectFromer implements Fromer {
     } else if (source instanceof Boolean) {
       rst.val().setBool((boolean) source);
     } else if (source instanceof Number) {
-      rst.val().setBignumber((Number) source);
+      rst.val().setBigNumber((Number) source);
     } else if (source instanceof Throwable) { // 新补充的类型
       analyseBean(cfg, rst, clz, source);
     } else if (analyseArray(cfg, rst, clz, source)) { // 新补充的类型::可适用任何数组
@@ -116,7 +116,7 @@ public class ObjectFromer implements Fromer {
   }
 
   private ONode typeSet(Constants cfg, ONode o, Class<?> clz) {
-    return o.set(cfg.type_key, clz.getName());
+    return o.set(cfg.typeKey, clz.getName());
   }
 
   private boolean analyseArray(Constants cfg, ONode rst, Class<?> clz, Object obj) {
@@ -177,7 +177,7 @@ public class ObjectFromer implements Fromer {
 
     // 为序列化添加特性支持
     if (cfg.hasFeature(Feature.WriteClassName)) {
-      rst.set(cfg.type_key, clz.getName());
+      rst.set(cfg.typeKey, clz.getName());
     }
 
     Collection<FieldWrap> list = BeanUtil.getAllFields(clz);
@@ -209,7 +209,7 @@ public class ObjectFromer implements Fromer {
   @SuppressWarnings("unchecked")
   private boolean analyseOther(Constants cfg, ONode rst, Class<?> clz, Object obj) {
     if (obj instanceof SimpleDateFormat) {
-      rst.set(cfg.type_key, clz.getName());
+      rst.set(cfg.typeKey, clz.getName());
       rst.set("val", ((SimpleDateFormat) obj).toPattern());
     } else if (clz == Class.class) {
       rst.val().setString(clz.getName());

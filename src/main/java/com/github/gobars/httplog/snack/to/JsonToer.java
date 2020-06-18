@@ -108,7 +108,7 @@ public class JsonToer implements Toer {
         writeValBool(cfg, sBuf, v.getRawBoolean());
         break;
 
-      case Bignumber:
+      case BigNumber:
         writeValBignum(cfg, sBuf, v.getRawBignumber()); // 添加对大数字的处理
         break;
 
