@@ -1,8 +1,18 @@
 package com.github.gobars.httplog;
 
-import static java.util.Collections.list;
-
 import com.github.gobars.id.Id;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.util.ContentCachingRequestWrapper;
+import org.springframework.web.util.ContentCachingResponseWrapper;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -10,16 +20,8 @@ import java.io.UnsupportedEncodingException;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import lombok.extern.slf4j.Slf4j;
-import lombok.val;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.web.util.ContentCachingRequestWrapper;
-import org.springframework.web.util.ContentCachingResponseWrapper;
+
+import static java.util.Collections.list;
 
 /**
  * Log request and response for the http.
@@ -33,11 +35,8 @@ import org.springframework.web.util.ContentCachingResponseWrapper;
  * @author bingoo.
  */
 @Slf4j
+@Component
 public class HttpLogFilter extends OncePerRequestFilter {
-
-  public static final String HTTPLOG_REQ = "HTTPLOG_REQ";
-  public static final String HTTPLOG_RSP = "HTTPLOG_RSP";
-
   @Override
   protected void doFilterInternal(HttpServletRequest r, HttpServletResponse s, FilterChain c)
       throws ServletException, IOException {
@@ -59,8 +58,8 @@ public class HttpLogFilter extends OncePerRequestFilter {
     logReqStatusAndHeaders(rq, req);
 
     try {
-      rq.setAttribute(HTTPLOG_REQ, req);
-      rq.setAttribute(HTTPLOG_RSP, rsp);
+      rq.setAttribute(Const.REQ, req);
+      rq.setAttribute(Const.RSP, rsp);
       c.doFilter(rq, rp);
       logStart(rq, req, rsp, startNs, rp.getStatus());
       rsp.setEndTime(new Timestamp(System.currentTimeMillis()));
@@ -74,10 +73,10 @@ public class HttpLogFilter extends OncePerRequestFilter {
       // Throw the exception to not continue the treatment
       throw e;
     } finally {
-      val p = rq.getAttribute(HttpLogInterceptor.HTTPLOG_PROCESSOR);
+      val p = rq.getAttribute(Const.PROCESSOR);
       if (p != null) {
         try {
-          ((HttpLogProcessor) p).complete(rq, rp, rsp);
+          ((HttpLogProcessor) p).complete(rq, rp, req, rsp);
         } catch (Exception ex) {
           log.warn("failed to complete req:{} rsp:{}", req, rsp, ex);
         }

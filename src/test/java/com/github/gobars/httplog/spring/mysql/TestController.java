@@ -1,10 +1,13 @@
 package com.github.gobars.httplog.spring.mysql;
 
 import com.github.gobars.httplog.HttpLog;
+import com.github.gobars.httplog.HttpLogCustom;
 import com.github.gobars.httplog.spring.TestDto;
 import com.github.gobars.httplog.spring.TestException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+
+import static com.google.common.truth.Truth.assertThat;
 
 @Slf4j
 @RestController
@@ -45,5 +48,11 @@ public class TestController {
   public void error(@RequestBody TestDto testDto) {
     log.warn("error TestException will be thrown");
     throw new TestException(testDto.toString());
+  }
+
+  @GetMapping("/custom")
+  String listContributors(HttpLogCustom httpLogCustom) {
+    assertThat(httpLogCustom).isNotNull();
+    return "custom OK";
   }
 }

@@ -3,19 +3,20 @@ package com.github.gobars.httplog;
 import com.github.gobars.id.conf.ConnGetter;
 import com.github.gobars.id.db.SqlRunner;
 import com.github.gobars.id.util.DbType;
+import lombok.Cleanup;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
+import org.springframework.context.ApplicationContext;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import lombok.Cleanup;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
-import lombok.val;
-import org.springframework.context.ApplicationContext;
 
 /**
  * HttpLog日志处理器类.
@@ -173,8 +174,7 @@ public class HttpLogProcessor {
   }
 
   @SneakyThrows
-  public void complete(HttpServletRequest r, HttpServletResponse p, Rsp rsp) {
-    Req req = (Req) r.getAttribute(HttpLogFilter.HTTPLOG_REQ);
+  public void complete(HttpServletRequest r, HttpServletResponse p, Req req, Rsp rsp) {
     log.info("eager complete:{}", req);
 
     rsp.setPosts(createPost(req, rsp, r, p, httpLog));

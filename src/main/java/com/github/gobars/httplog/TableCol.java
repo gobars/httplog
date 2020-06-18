@@ -1,23 +1,24 @@
 package com.github.gobars.httplog;
 
-import static com.github.gobars.httplog.TableCol.Equals.eq;
-import static com.github.gobars.httplog.TableCol.Factory.of;
-import static com.github.gobars.httplog.TableCol.Starts.starts;
-
 import com.github.gobars.httplog.snack.ONode;
 import com.github.gobars.id.util.Pid;
 import com.github.gobars.id.worker.WorkerIdHostname;
 import com.github.gobars.id.worker.WorkerIdIp;
-import java.sql.Timestamp;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Pattern;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.web.servlet.HandlerMapping;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Pattern;
+
+import static com.github.gobars.httplog.TableCol.Equals.eq;
+import static com.github.gobars.httplog.TableCol.Factory.of;
+import static com.github.gobars.httplog.TableCol.Starts.starts;
 
 /**
  * 表定义
@@ -222,6 +223,9 @@ public class TableCol {
     } else if (tag.startsWith("ctx_")) {
       this.tagType = Type.CTX;
       this.valueGetter = createCtxValueGetter(tag.substring(4));
+    } else if (tag.startsWith("custom_")) {
+      this.tagType = Type.CTX;
+      this.valueGetter = createCustomValueGetter(tag.substring(7));
     } else if (tag.startsWith("fix_")) {
       this.tagType = Type.FIX;
       this.valueGetter = createFixValueGetter(tag.substring(4), fixes);
@@ -285,6 +289,17 @@ public class TableCol {
     };
   }
 
+  private ColValueGetter createCustomValueGetter(String tag) {
+    return (req, rsp, r, p, hl) -> {
+      val custom = (HttpLogCustom) r.getAttribute(Const.CUSTOM);
+      if (custom != null) {
+        return custom.getMap().get(tag);
+      }
+
+      return null;
+    };
+  }
+
   public enum Type {
     /** 请求 */
     REQ,
@@ -298,6 +313,8 @@ public class TableCol {
     PRE,
     /** post扩展类 */
     POST,
+    /** 自定义 */
+    CUSTOM,
     /** 内建 */
     BUILTIN,
     /** 忽略，由数据库insert时自动创建 */

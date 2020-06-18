@@ -1,22 +1,24 @@
 package com.github.gobars.httplog;
 
-import static org.springframework.core.annotation.AnnotatedElementUtils.getMergedAnnotationAttributes;
-
 import com.github.gobars.id.conf.ConnGetter;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.annotation.AnnotatedElementUtils;
+import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.sql.DataSource;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+import static org.springframework.core.annotation.AnnotatedElementUtils.getMergedAnnotationAttributes;
 
 /**
  * Spring拦截器.
@@ -24,10 +26,9 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
  * @author bingoobjca
  */
 @Slf4j
+@Component
 public class HttpLogInterceptor extends HandlerInterceptorAdapter
     implements ApplicationContextAware {
-  public static final String HTTPLOG_PROCESSOR = "HTTPLOG_PROCESSOR";
-
   private final ConcurrentMap<HttpLogAttr, HttpLogProcessor> cache = new ConcurrentHashMap<>(100);
   private final ConnGetter connGetter;
   private ApplicationContext appContext;
@@ -68,14 +69,14 @@ public class HttpLogInterceptor extends HandlerInterceptorAdapter
     log.info("HttpLog: {}", attrs);
 
     val ps = cacheGet(hl);
-    val req = (Req) r.getAttribute(HttpLogFilter.HTTPLOG_REQ);
+    val req = (Req) r.getAttribute(Const.REQ);
     try {
       ps.logReq(r, req);
     } catch (Exception ex) {
       log.warn("failed to log req {}", req, ex);
     }
 
-    r.setAttribute(HTTPLOG_PROCESSOR, ps);
+    r.setAttribute(Const.PROCESSOR, ps);
     log.debug("preHandle method:{} URI:{} httpLog:{}", r.getMethod(), r.getRequestURI(), hl);
 
     return true;
