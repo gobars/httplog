@@ -90,7 +90,7 @@ mvn install:install-file -Dfile=ojdbc5.jar -DgroupId=com.oracle -DartifactId=ojd
         <dependency>
             <groupId>com.github.gobars</groupId>
             <artifactId>id</artifactId>
-            <version>0.0.6</version>
+            <version>0.0.7</version>
         </dependency>
 
         <dependency>
