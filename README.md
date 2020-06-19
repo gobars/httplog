@@ -63,7 +63,7 @@ HttpLog会根据`@HttpLog`中定义的日志表的注解及字段名，自动记
 `httplog:"pre_xxx"`|pre_xxx| 由自定义扩展器pre给出属性值，见[示例](src/test/java/com/github/gobars/httplog/spring/mysql/MyHttpLog.java)
 `httplog:"post_xxx"`|post_xxx| 由自定义扩展器post给出属性值
 自定义:||自助引入HttpLogCustom实例
-`httplog:"custom_xxx"`|custom_xxx| 由HttpLogCustom提供的自定义xxx值 
+`httplog:"custom_xxx"`|custom_xxx| 由HttpLogCustom提供的自定义xxx值, eg: `HttpLogCustom.get().put("xxx", "bingoo");`
 
 </details>
 
