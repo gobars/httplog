@@ -75,27 +75,10 @@ HttpLog会根据`@HttpLog`中定义的日志表的注解及字段名，自动记
   </summary>
   
 ```java
-@Slf4j
-@Configuration
-public class HttpLogWebMvcConf extends WebMvcConfigurationSupport {
-  @Autowired HttpLogInterceptor httpLogInterceptor;
-
-  @Bean
-  public HttpLogFilter httpLogFilter() {
-    return new HttpLogFilter();
-  }
-
-  @Bean
-  public HttpLogInterceptor httpLogInterceptor(@Autowired DataSource dataSource) {
-    return new HttpLogInterceptor(dataSource);
-  }
-
-  @Override
-  protected void addInterceptors(InterceptorRegistry registry) {
-    registry.addInterceptor(httpLogInterceptor).addPathPatterns("/**");
-    log.info("Configure Interceptor.....");
-    super.addInterceptors(registry);
-  }
+@HttpLogEnabled
+@SpringBootApplication
+public class App {
+    
 }
 ```
 </details>
