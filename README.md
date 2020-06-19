@@ -291,3 +291,8 @@ Caused by: com.github.gobars.httplog.spring.TestException: TestDto(id=10)
 ## Rationale
 
 [![image](https://user-images.githubusercontent.com/1940588/84857321-56bf0480-b09b-11ea-8fb1-b89212c9e857.png)](doc/rationale.drawio)
+
+## Release 
+
+1. `export GPG_TTY=$(tty)`
+1. `mvn clean install -Prelease -Dgpg.passphrase=thephrase`
