@@ -51,12 +51,16 @@ public class TestController {
   }
 
   @GetMapping("/custom")
+  @HttpLog(tables = "biz_log_custom")
   String listContributors(HttpLogCustom httpLogCustom) {
     assertThat(httpLogCustom).isNotNull();
+
+    httpLogCustom.put("name", "custom");
     return "custom OK";
   }
 
   @GetMapping("/customLocal")
+  @HttpLog(tables = "biz_log_custom")
   String listContributors() {
     HttpLogCustom.get().put("name", "customLocal");
     return "custom OK";

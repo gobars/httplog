@@ -45,3 +45,16 @@ create table biz_log_post
     dtoid       varchar(60) comment '响应体 httplog:"rsp_json_id"'
 ) engine = innodb
   default charset = utf8mb4 comment 'biz_log_post';
+
+drop table if exists biz_log_custom;
+create table biz_log_custom
+(
+    id      bigint primary key comment '日志记录ID',
+    req_url varchar(60) comment '请求url',
+    created datetime default current_timestamp comment '创建时间',
+    started datetime comment '请求时间',
+    end     datetime comment '结束时间',
+    cost    int comment '费时毫秒',
+    name    varchar(60) comment '响应体 httplog:"custom_name"'
+) engine = innodb
+  default charset = utf8mb4 comment 'biz_log_custom';
