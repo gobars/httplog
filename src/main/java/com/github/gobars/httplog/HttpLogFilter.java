@@ -1,18 +1,8 @@
 package com.github.gobars.httplog;
 
-import com.github.gobars.id.Id;
-import lombok.extern.slf4j.Slf4j;
-import lombok.val;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
-import org.springframework.web.util.ContentCachingRequestWrapper;
-import org.springframework.web.util.ContentCachingResponseWrapper;
+import static java.util.Collections.list;
 
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import com.github.gobars.id.Id;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -20,8 +10,16 @@ import java.io.UnsupportedEncodingException;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-
-import static java.util.Collections.list;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.util.ContentCachingRequestWrapper;
+import org.springframework.web.util.ContentCachingResponseWrapper;
 
 /**
  * Log request and response for the http.
@@ -35,7 +33,6 @@ import static java.util.Collections.list;
  * @author bingoo.
  */
 @Slf4j
-@Component
 public class HttpLogFilter extends OncePerRequestFilter {
   @Override
   protected void doFilterInternal(HttpServletRequest r, HttpServletResponse s, FilterChain c)
@@ -57,9 +54,14 @@ public class HttpLogFilter extends OncePerRequestFilter {
     // Registration of request status and headers
     logReqStatusAndHeaders(rq, req);
 
+    rq.setAttribute(Const.REQ, req);
+    rq.setAttribute(Const.RSP, rsp);
+
+    HttpLogCustom custom = new HttpLogCustom();
+    rq.setAttribute(Const.CUSTOM, custom);
+    HttpLogCustom.set(custom);
+
     try {
-      rq.setAttribute(Const.REQ, req);
-      rq.setAttribute(Const.RSP, rsp);
       c.doFilter(rq, rp);
       logStart(rq, req, rsp, startNs, rp.getStatus());
       rsp.setEndTime(new Timestamp(System.currentTimeMillis()));
@@ -84,6 +86,9 @@ public class HttpLogFilter extends OncePerRequestFilter {
 
       log.info("req: {}", req);
       log.info("rsp: {}", rsp);
+      log.info("custom: {}", custom);
+
+      HttpLogCustom.clear();
     }
   }
 

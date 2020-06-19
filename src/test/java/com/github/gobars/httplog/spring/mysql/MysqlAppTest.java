@@ -73,7 +73,21 @@ public class MysqlAppTest {
     HttpEntity<String> entity = new HttpEntity<>(null, EMPTY_HEADER);
 
     ResponseEntity<String> response =
-        restTemplate.exchange(createURLWithPort("/custom"), HttpMethod.GET, entity, String.class);
+        restTemplate.exchange(
+            createURLWithPort("/test/custom"), HttpMethod.GET, entity, String.class);
+
+    Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    Assertions.assertThat(response.getBody()).isEqualTo("custom OK");
+  }
+
+  @Test
+  public void customLocal() {
+    TestRestTemplate restTemplate = new TestRestTemplate();
+    HttpEntity<String> entity = new HttpEntity<>(null, EMPTY_HEADER);
+
+    ResponseEntity<String> response =
+        restTemplate.exchange(
+            createURLWithPort("/test/customLocal"), HttpMethod.GET, entity, String.class);
 
     Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     Assertions.assertThat(response.getBody()).isEqualTo("custom OK");

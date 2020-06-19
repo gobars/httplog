@@ -1,13 +1,13 @@
 package com.github.gobars.httplog.spring.mysql;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import com.github.gobars.httplog.HttpLog;
 import com.github.gobars.httplog.HttpLogCustom;
 import com.github.gobars.httplog.spring.TestDto;
 import com.github.gobars.httplog.spring.TestException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-
-import static com.google.common.truth.Truth.assertThat;
 
 @Slf4j
 @RestController
@@ -53,6 +53,12 @@ public class TestController {
   @GetMapping("/custom")
   String listContributors(HttpLogCustom httpLogCustom) {
     assertThat(httpLogCustom).isNotNull();
+    return "custom OK";
+  }
+
+  @GetMapping("/customLocal")
+  String listContributors() {
+    HttpLogCustom.get().put("name", "customLocal");
     return "custom OK";
   }
 }
