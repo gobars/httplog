@@ -68,6 +68,7 @@ public @interface HttpLog {
    *   <li>httplog:"ctx_xxx" 上下文对象xxx的值
    *   <li>固定值:
    *   <li>httplog:"fix_xxx" 由fix参数指定的固定值
+   *   <li>更多详见Readme.md#Prepare-log-tables的说明
    * </ul>
    *
    * @return 表名列表
