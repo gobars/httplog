@@ -8,6 +8,7 @@ import lombok.ToString;
 @ToString
 public class HttpLogCustom {
   private static final ThreadLocal<HttpLogCustom> LOCAL = new InheritableThreadLocal<>();
+  @Getter private final Map<String, String> map = new HashMap<>(10);
 
   public static void set(HttpLogCustom custom) {
     LOCAL.set(custom);
@@ -20,8 +21,6 @@ public class HttpLogCustom {
   public static HttpLogCustom get() {
     return LOCAL.get();
   }
-
-  @Getter private final Map<String, String> map = new HashMap<>(10);
 
   public HttpLogCustom put(String name, String value) {
     map.put(name, value);

@@ -69,7 +69,7 @@ public class BeanUtil {
       if (!Modifier.isTransient(mod) && !Modifier.isStatic(mod)) {
         f.setAccessible(true);
 
-        if (fields.containsKey(f.getName()) == false) {
+        if (!fields.containsKey(f.getName())) {
           fields.put(f.getName(), new FieldWrap(f));
         }
       }
@@ -84,7 +84,7 @@ public class BeanUtil {
   /** 将 Clob 转为 String */
   public static String clobToString(Clob clob) {
 
-    Reader reader = null;
+    Reader reader;
     StringBuilder buf = new StringBuilder();
 
     try {
@@ -104,12 +104,10 @@ public class BeanUtil {
 
     String text = buf.toString();
 
-    if (reader != null) {
-      try {
-        reader.close();
-      } catch (Exception ex) {
-        throw new RuntimeException("read string from reader error", ex);
-      }
+    try {
+      reader.close();
+    } catch (Exception ex) {
+      throw new RuntimeException("read string from reader error", ex);
     }
 
     return text;

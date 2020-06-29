@@ -1,24 +1,22 @@
 package com.github.gobars.httplog;
 
+import static com.github.gobars.httplog.TableCol.Equals.eq;
+import static com.github.gobars.httplog.TableCol.Starts.starts;
+
 import com.github.gobars.httplog.snack.ONode;
 import com.github.gobars.id.util.Pid;
 import com.github.gobars.id.worker.WorkerIdHostname;
 import com.github.gobars.id.worker.WorkerIdIp;
-import lombok.Data;
-import lombok.extern.slf4j.Slf4j;
-import lombok.val;
-import org.springframework.web.servlet.HandlerMapping;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
-
-import static com.github.gobars.httplog.TableCol.Equals.eq;
-import static com.github.gobars.httplog.TableCol.Factory.of;
-import static com.github.gobars.httplog.TableCol.Starts.starts;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
+import org.springframework.web.servlet.HandlerMapping;
 
 /**
  * 表定义
@@ -31,21 +29,21 @@ public class TableCol {
   public static final String PATH_ATTR = HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE;
   static final Pattern TAG_PATTERN = Pattern.compile("httplog:\"(.*?)\"");
 
-  static Map<Matcher, Factory> blts = new HashMap<>(10);
+  static Map<Matcher, ColValueGetter> blts = new HashMap<>(10);
   static Map<Matcher, ColValueGetterV> rsps = new HashMap<>(5);
   static Map<Matcher, ColValueGetterV> reqs = new HashMap<>(13);
 
   static {
-    blts.put(eq("id"), of((req, rsp, r, p, hl) -> req.getId()));
-    blts.put(eq("created"), of((req, rsp, r, p, hl) -> req.getStartTime()));
-    blts.put(eq("ip"), of((req, rsp, r, p, hl) -> WorkerIdIp.LOCAL_IP));
-    blts.put(eq("hostname"), of((req, rsp, r, p, hl) -> WorkerIdHostname.HOSTNAME));
-    blts.put(eq("pid"), of((req, rsp, r, p, hl) -> Pid.PROCESS_ID));
-    blts.put(eq("started"), of((req, rsp, r, p, hl) -> req.getStartTime()));
-    blts.put(eq("end"), of((req, rsp, r, p, hl) -> rsp == null ? null : rsp.getEndTime()));
-    blts.put(eq("cost"), of((req, rsp, r, p, hl) -> rsp == null ? null : rsp.getTookMs()));
-    blts.put(eq("biz"), of((req, rsp, r, p, hl) -> hl.biz()));
-    blts.put(eq("exception"), of((req, rsp, r, p, hl) -> rsp == null ? null : rsp.getError()));
+    blts.put(eq("id"), (req, rsp, r, p, hl) -> req.getId());
+    blts.put(eq("created"), (req, rsp, r, p, hl) -> req.getStartTime());
+    blts.put(eq("ip"), (req, rsp, r, p, hl) -> WorkerIdIp.LOCAL_IP);
+    blts.put(eq("hostname"), (req, rsp, r, p, hl) -> WorkerIdHostname.HOSTNAME);
+    blts.put(eq("pid"), (req, rsp, r, p, hl) -> Pid.PROCESS_ID);
+    blts.put(eq("started"), (req, rsp, r, p, hl) -> req.getStartTime());
+    blts.put(eq("end"), (req, rsp, r, p, hl) -> rsp == null ? null : rsp.getEndTime());
+    blts.put(eq("cost"), (req, rsp, r, p, hl) -> rsp == null ? null : rsp.getTookMs());
+    blts.put(eq("biz"), (req, rsp, r, p, hl) -> hl.biz());
+    blts.put(eq("exception"), (req, rsp, r, p, hl) -> rsp == null ? null : rsp.getError());
   }
 
   static {
@@ -108,10 +106,10 @@ public class TableCol {
   /** 字段取值器 */
   private ColValueGetter valueGetter;
 
-  private static ColValueGetter findGetter(String tag, Map<Matcher, Factory> m) {
+  private static ColValueGetter findGetter(String tag, Map<Matcher, ColValueGetter> m) {
     for (val entry : m.entrySet()) {
       if (entry.getKey().matches(tag)) {
-        return entry.getValue().create();
+        return entry.getValue();
       }
     }
 
@@ -224,7 +222,7 @@ public class TableCol {
       this.tagType = Type.CTX;
       this.valueGetter = createCtxValueGetter(tag.substring(4));
     } else if (tag.startsWith("custom_")) {
-      this.tagType = Type.CTX;
+      this.tagType = Type.CUSTOM;
       this.valueGetter = createCustomValueGetter(tag.substring(7));
     } else if (tag.startsWith("fix_")) {
       this.tagType = Type.FIX;
@@ -361,22 +359,6 @@ public class TableCol {
     @Override
     public boolean matches(String tag) {
       return tag != null && tag.startsWith(value);
-    }
-  }
-
-  static class Factory {
-    private final ColValueGetter colValueGetter;
-
-    Factory(ColValueGetter colValueGetter) {
-      this.colValueGetter = colValueGetter;
-    }
-
-    static Factory of(ColValueGetter colValueGetter) {
-      return new Factory(colValueGetter);
-    }
-
-    public ColValueGetter create() {
-      return colValueGetter;
     }
   }
 }
