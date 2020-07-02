@@ -1,9 +1,10 @@
 package com.github.gobars.httplog.snack;
 
-import com.github.gobars.httplog.snack.core.DEFAULTS;
+import com.github.gobars.httplog.snack.core.Defaults;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /** 节点值 */
@@ -24,7 +25,7 @@ public class OValue {
   /** 尝试解析时间 */
   private static Date parseDate(String dateString) {
     try {
-      return DEFAULTS.DEF_DATE_FORMAT.parse(dateString);
+      return new SimpleDateFormat(Defaults.DEF_DATE_FORMAT_STRING).parse(dateString);
     } catch (ParseException ex) {
       return null;
     }

@@ -1,7 +1,7 @@
 package com.github.gobars.httplog.snack.core;
 
 import com.github.gobars.httplog.snack.core.exts.Act1;
-import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
@@ -20,17 +20,16 @@ public class Constants {
           Feature.BrowserCompatible,
           Feature.WriteClassName,
           Feature.QuoteFieldNames);
-  /** 日期格式 */
-  public DateFormat dateFormat = DEFAULTS.DEF_DATE_FORMAT;
-  /** 类型key */
-  public String typeKey = DEFAULTS.DEF_TYPE_KEY;
 
-  /** 地区 */
-  public Locale locale = DEFAULTS.DEF_LOCALE;
+  /** 类型key */
+  public String typeKey = Defaults.DEF_TYPE_KEY;
+
   /** 特性 */
-  public int features = DEFAULTS.DEF_FEATURES;
+  public int features = Defaults.DEF_FEATURES;
   /** n.get(key)时，只读处理; 即不自动添加新节点 */
   public boolean readonly = false;
+
+  public String dateFormat = Defaults.DEF_DATE_FORMAT_STRING;
 
   public Constants() {}
 
@@ -72,6 +71,8 @@ public class Constants {
   // =================
 
   public final String dateToString(Date date) {
+    SimpleDateFormat dateFormat =
+        new SimpleDateFormat(Defaults.DEF_DATE_FORMAT_STRING, Locale.getDefault());
     return dateFormat.format(date);
   }
 

@@ -2,7 +2,7 @@ package com.github.gobars.httplog.snack;
 
 import com.github.gobars.httplog.snack.core.Constants;
 import com.github.gobars.httplog.snack.core.Context;
-import com.github.gobars.httplog.snack.core.DEFAULTS;
+import com.github.gobars.httplog.snack.core.Defaults;
 import com.github.gobars.httplog.snack.core.JsonPath;
 import com.github.gobars.httplog.snack.core.exts.Act1;
 import com.github.gobars.httplog.snack.core.exts.Act2;
@@ -97,9 +97,9 @@ public class ONode {
   private static ONode doLoad(Object source, boolean isString, Constants cfg, Fromer fromer) {
     if (fromer == null) {
       if (isString) {
-        fromer = DEFAULTS.DEF_STRING_FROMER;
+        fromer = Defaults.DEF_STRING_FROMER;
       } else {
-        fromer = DEFAULTS.DEF_OBJECT_FROMER;
+        fromer = Defaults.DEF_OBJECT_FROMER;
       }
     }
 
@@ -118,13 +118,13 @@ public class ONode {
   /** 字会串化 （由序列化器决定格式） */
   public static String stringify(Object source, Constants cfg) {
     // 加载java object，须指定Fromer
-    return load(source, cfg, DEFAULTS.DEF_OBJECT_FROMER).toString();
+    return load(source, cfg, Defaults.DEF_OBJECT_FROMER).toString();
   }
 
   /** 序列化为 string（由序列化器决定格式） */
   public static String serialize(Object source) {
     // 加载java object，须指定Fromer
-    return load(source, Constants.serialize(), DEFAULTS.DEF_OBJECT_FROMER).toJson();
+    return load(source, Constants.serialize(), Defaults.DEF_OBJECT_FROMER).toJson();
   }
 
   /** 反序列化为 java object（由返序列化器决定格式） */
@@ -731,22 +731,22 @@ public class ONode {
   /** 将当前ONode 转为 string（由 stringToer 决定） */
   @Override
   public String toString() {
-    return to(DEFAULTS.DEF_STRING_TOER);
+    return to(Defaults.DEF_STRING_TOER);
   }
 
   /** 将当前ONode 转为 json string */
   public String toJson() {
-    return to(DEFAULTS.DEF_JSON_TOER);
+    return to(Defaults.DEF_JSON_TOER);
   }
 
   /** 将当前ONode 转为 数据结构体（Map or List or val） */
   public Object toData() {
-    return to(DEFAULTS.DEF_OBJECT_TOER);
+    return to(Defaults.DEF_OBJECT_TOER);
   }
 
   /** 将当前ONode 转为 java object */
   public <T> T toObject(Class<?> clz) {
-    return to(DEFAULTS.DEF_OBJECT_TOER, clz);
+    return to(Defaults.DEF_OBJECT_TOER, clz);
   }
 
   public <T> List<T> toArray(Class<T> clz) {

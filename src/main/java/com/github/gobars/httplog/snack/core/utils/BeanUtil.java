@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import lombok.SneakyThrows;
 
 /** Bean工具类 */
 public class BeanUtil {
@@ -20,18 +21,15 @@ public class BeanUtil {
 
   /////////////////
 
+  @SneakyThrows
   public static Class<?> loadClass(String clzName) {
-    try {
-      Class<?> clz = clzCached.get(clzName);
-      if (clz == null) {
-        clz = Class.forName(clzName);
-        clzCached.put(clzName, clz);
-      }
-
-      return clz;
-    } catch (Exception ex) {
-      throw new RuntimeException(ex);
+    Class<?> clz = clzCached.get(clzName);
+    if (clz == null) {
+      clz = Class.forName(clzName);
+      clzCached.put(clzName, clz);
     }
+
+    return clz;
   }
 
   /** 获取一个类的所有字段 （已实现缓存） */
@@ -39,22 +37,24 @@ public class BeanUtil {
     String key = clz.getName();
 
     Collection<FieldWrap> list = fieldsCached.get(key);
-    if (list == null) {
-      synchronized (key.intern()) {
-        list = fieldsCached.get(key);
-
-        if (list == null) {
-          Map<String, FieldWrap> map = new LinkedHashMap<>();
-          scanAllFields(clz, map);
-
-          list = map.values();
-
-          fieldsCached.put(key, list);
-        }
-      }
+    if (list != null) {
+      return list;
     }
 
-    return list;
+    synchronized (fieldsCached) {
+      list = fieldsCached.get(key);
+      if (list != null) {
+        return list;
+      }
+
+      Map<String, FieldWrap> map = new LinkedHashMap<>();
+      scanAllFields(clz, map);
+
+      list = map.values();
+
+      fieldsCached.put(key, list);
+      return list;
+    }
   }
 
   /** 扫描一个类的所有字段 */

@@ -14,8 +14,8 @@ import java.util.regex.Pattern;
 
 /** json path */
 public class JsonPath {
-  private static final ThData<CharBuffer> tlBuilder = new ThData<>(() -> new CharBuffer());
-  private static final ThData<TmpCache> tlCache = new ThData<>(() -> new TmpCache());
+  private static final ThData<CharBuffer> tlBuilder = new ThData<>(CharBuffer::new);
+  private static final ThData<TmpCache> tlCache = new ThData<>(TmpCache::new);
   private static final int _cacheSize = 1024;
   private static final Map<String, JsonPath> _jpathCache = new HashMap<>(128);
   private static final Map<String, Pattern> _regexLib = new HashMap<>();
@@ -84,94 +84,73 @@ public class JsonPath {
       (s, root, tmp, usd) -> {
         switch (s.cmd) {
           case "size()":
-            {
+            return new ONode(tmp.cfg()).val(tmp.count());
+          case "length()":
+            if (tmp.isValue()) {
+              return new ONode(tmp.cfg()).val(tmp.getString().length());
+            } else {
               return new ONode(tmp.cfg()).val(tmp.count());
             }
-          case "length()":
-            {
-              if (tmp.isValue()) {
-                return new ONode(tmp.cfg()).val(tmp.getString().length());
-              } else {
-                return new ONode(tmp.cfg()).val(tmp.count());
-              }
-            }
           case "min()":
-            {
-              if (tmp.isArray()) {
-                ONode min_n = null;
-                for (ONode n1 : tmp.ary()) {
-                  if (n1.isValue()) {
-                    if (min_n == null) {
-                      min_n = n1;
-                    } else if (n1.getDouble() < min_n.getDouble()) {
-                      min_n = n1;
-                    }
+            if (tmp.isArray()) {
+              ONode min_n = null;
+              for (ONode n1 : tmp.ary()) {
+                if (n1.isValue()) {
+                  if (min_n == null) {
+                    min_n = n1;
+                  } else if (n1.getDouble() < min_n.getDouble()) {
+                    min_n = n1;
                   }
                 }
-                return min_n;
               }
-
-              //                if (tmp.isValue()) {
-              //                    return tmp;
-              //                }
-
-              return null;
+              return min_n;
             }
+
+            return null;
 
           case "max()":
-            {
-              if (tmp.isArray()) {
-                ONode max_n = null;
-                for (ONode n1 : tmp.ary()) {
-                  if (n1.isValue()) {
-                    if (max_n == null) {
-                      max_n = n1;
-                    } else if (n1.getDouble() > max_n.getDouble()) {
-                      max_n = n1;
-                    }
+            if (tmp.isArray()) {
+              ONode max_n = null;
+              for (ONode n1 : tmp.ary()) {
+                if (n1.isValue()) {
+                  if (max_n == null) {
+                    max_n = n1;
+                  } else if (n1.getDouble() > max_n.getDouble()) {
+                    max_n = n1;
                   }
                 }
-                return max_n;
               }
-
-              //                if(tmp.isValue()){
-              //                    return tmp;
-              //                }
-
-              return null;
+              return max_n;
             }
+
+            return null;
 
           case "avg()":
-            {
-              if (tmp.isArray()) {
-                double sum = 0;
-                int num = 0;
-                for (ONode n1 : tmp.ary()) {
-                  if (n1.isValue()) {
-                    sum += n1.getDouble();
-                    num++;
-                  }
-                }
-
-                if (num > 0) {
-                  return new ONode(tmp.cfg()).val(sum / num);
+            if (tmp.isArray()) {
+              double sum = 0;
+              int num = 0;
+              for (ONode n1 : tmp.ary()) {
+                if (n1.isValue()) {
+                  sum += n1.getDouble();
+                  num++;
                 }
               }
 
-              return null;
+              if (num > 0) {
+                return new ONode(tmp.cfg()).val(sum / num);
+              }
             }
 
+            return null;
           case "sum()":
-            {
-              if (tmp.isArray()) {
-                double sum = 0;
-                for (ONode n1 : tmp.ary()) {
-                  sum += n1.getDouble();
-                }
-                return new ONode(tmp.cfg()).val(sum);
-              } else {
-                return null;
+            if (tmp.isArray()) {
+              double sum = 0;
+              for (ONode n1 : tmp.ary()) {
+                sum += n1.getDouble();
               }
+              return new ONode(tmp.cfg()).val(sum);
+            } else {
+              return null;
             }
 
           default:
@@ -374,11 +353,11 @@ public class JsonPath {
 
   private static ONode do_get(ONode source, String jpath, boolean cacheJpath, boolean useStandard) {
     // 解析出指令
-    JsonPath jsonPath = null;
+    JsonPath jsonPath;
     if (cacheJpath) {
       jsonPath = _jpathCache.get(jpath);
       if (jsonPath == null) {
-        synchronized (jpath.intern()) {
+        synchronized (_jpathCache) {
           jsonPath = _jpathCache.get(jpath);
           if (jsonPath == null) {
             jsonPath = compile(jpath);
@@ -537,7 +516,6 @@ public class JsonPath {
       for (ONode n1 : source.ary()) {
         scanByName(name, n1, target);
       }
-      return;
     }
   }
 
@@ -603,101 +581,83 @@ public class JsonPath {
 
     switch (op) {
       case "==":
-        {
-          if (right == null) {
-            return false;
-          }
+        if (right == null) {
+          return false;
+        }
 
-          if (right.startsWith("'")) {
-            return left.getString().equals(right.substring(1, right.length() - 1));
-          } else {
-            return left.getDouble() == Double.parseDouble(right);
-          }
+        if (right.startsWith("'")) {
+          return left.getString().equals(right.substring(1, right.length() - 1));
+        } else {
+          return left.getDouble() == Double.parseDouble(right);
         }
       case "!=":
-        {
-          if (right == null) {
-            return false;
-          }
+        if (right == null) {
+          return false;
+        }
 
-          if (right.startsWith("'")) {
-            return !left.getString().equals(right.substring(1, right.length() - 1));
-          } else {
-            return left.getDouble() != Double.parseDouble(right);
-          }
+        if (right.startsWith("'")) {
+          return !left.getString().equals(right.substring(1, right.length() - 1));
+        } else {
+          return left.getDouble() != Double.parseDouble(right);
         }
       case "<":
-        {
-          if (right == null) {
-            return false;
-          }
+        if (right == null) {
+          return false;
+        }
 
-          return left.getDouble() < Double.parseDouble(right);
-        }
+        return left.getDouble() < Double.parseDouble(right);
       case "<=":
-        {
-          if (right == null) {
-            return false;
-          }
-          return left.getDouble() <= Double.parseDouble(right);
+        if (right == null) {
+          return false;
         }
+        return left.getDouble() <= Double.parseDouble(right);
       case ">":
-        {
-          if (right == null) {
-            return false;
-          }
-          return left.getDouble() > Double.parseDouble(right);
+        if (right == null) {
+          return false;
         }
+        return left.getDouble() > Double.parseDouble(right);
       case ">=":
-        {
-          if (right == null) {
-            return false;
-          }
-          return left.getDouble() >= Double.parseDouble(right);
+        if (right == null) {
+          return false;
         }
+        return left.getDouble() >= Double.parseDouble(right);
       case "=~":
-        {
-          if (right == null) {
-            return false;
-          }
-          int end = right.lastIndexOf('/');
-          String exp = right.substring(1, end);
-          return regex(right, exp).matcher(left.getString()).find();
+        if (right == null) {
+          return false;
         }
+        int end = right.lastIndexOf('/');
+        String exp = right.substring(1, end);
+        return regex(right, exp).matcher(left.getString()).find();
       case "in":
-        {
-          if (right == null) {
-            Object val = left.getRaw();
-            for (ONode n1 : rightO.ary()) {
-              if (n1.val().getRaw().equals(val)) {
-                return true;
-              }
+        if (right == null) {
+          Object val = left.getRaw();
+          for (ONode n1 : rightO.ary()) {
+            if (n1.val().getRaw().equals(val)) {
+              return true;
             }
-            return false;
+          }
+          return false;
+        } else {
+          if (right.indexOf("'") > 0) {
+            return getStringAry(right).contains(left.getString());
           } else {
-            if (right.indexOf("'") > 0) {
-              return getStringAry(right).contains(left.getString());
-            } else {
-              return getDoubleAry(right).contains(left.getDouble());
-            }
+            return getDoubleAry(right).contains(left.getDouble());
           }
         }
       case "nin":
-        {
-          if (right == null) {
-            Object val = left.getRaw();
-            for (ONode n1 : rightO.ary()) {
-              if (n1.val().getRaw().equals(val)) {
-                return false;
-              }
+        if (right == null) {
+          Object val = left.getRaw();
+          for (ONode n1 : rightO.ary()) {
+            if (n1.val().getRaw().equals(val)) {
+              return false;
             }
-            return true;
+          }
+          return true;
+        } else {
+          if (right.indexOf("'") > 0) {
+            return !getStringAry(right).contains(left.getString());
           } else {
-            if (right.indexOf("'") > 0) {
-              return getStringAry(right).contains(left.getString()) == false;
-            } else {
-              return getDoubleAry(right).contains(left.getDouble()) == false;
-            }
+            return !getDoubleAry(right).contains(left.getDouble());
           }
         }
     }
@@ -731,20 +691,25 @@ public class JsonPath {
 
   private static Pattern regex(String exprFull, String expr) {
     Pattern p = _regexLib.get(exprFull);
-    if (p == null) {
-      synchronized (exprFull.intern()) {
-        if (p == null) {
-          if (exprFull.endsWith("i")) {
-            p = Pattern.compile(expr, Pattern.CASE_INSENSITIVE);
-          } else {
-            p = Pattern.compile(expr);
-          }
-          _regexLib.put(exprFull, p);
-        }
-      }
+    if (p != null) {
+      return p;
     }
 
-    return p;
+    synchronized (_regexLib) {
+      p = _regexLib.get(exprFull);
+      if (p != null) {
+        return p;
+      }
+
+      if (exprFull.endsWith("i")) {
+        p = Pattern.compile(expr, Pattern.CASE_INSENSITIVE);
+      } else {
+        p = Pattern.compile(expr);
+      }
+      _regexLib.put(exprFull, p);
+
+      return p;
+    }
   }
 
   private static class Segment {

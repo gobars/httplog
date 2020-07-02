@@ -4,7 +4,6 @@ import com.github.gobars.httplog.snack.ONode;
 import com.github.gobars.httplog.snack.core.Constants;
 import com.github.gobars.httplog.snack.core.Feature;
 import com.github.gobars.httplog.snack.core.TypeRef;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -117,8 +116,7 @@ public class Demo3 {
     Date date = new Date();
 
     Constants cfg =
-        Constants.of(Feature.WriteDateUseFormat)
-            .build(c -> c.dateFormat = new SimpleDateFormat("yyyy-MM-dd", c.locale));
+        Constants.of(Feature.WriteDateUseFormat).build(c -> c.dateFormat = "yyyy-MM-dd");
 
     System.out.println(ONode.load(date, cfg).toJson()); // 2019-12-06
   }

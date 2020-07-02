@@ -86,11 +86,7 @@ public class ObjectToer implements Toer {
   }
 
   private Object analyse(Context ctx, ONode o, Class<?> clz, Type type) throws Exception {
-    if (o == null) {
-      return null;
-    }
-
-    if (clz != null && ONode.class.isAssignableFrom(clz)) {
+    if (o == null || clz != null && ONode.class.isAssignableFrom(clz)) {
       return o;
     }
 
@@ -115,7 +111,7 @@ public class ObjectToer implements Toer {
       case Array:
         clz = getTypeByNode(ctx, o, clz);
 
-        if (clz.isArray()) {
+        if (clz != null && clz.isArray()) {
           return analyseArray(ctx, o.nodeData(), clz);
         } else {
           return analyseCollection(ctx, o, clz, type);
@@ -186,7 +182,7 @@ public class ObjectToer implements Toer {
     } else if (is(Object.class, clz)) {
       return v.getRaw();
     } else {
-      throw new RuntimeException("unsupport type " + clz.getName());
+      throw new RuntimeException("unsupported type " + clz.getName());
     }
   }
 
@@ -342,7 +338,7 @@ public class ObjectToer implements Toer {
       return new InetSocketAddress(o.get("address").getString(), o.get("port").getInt());
     }
 
-    Object rst = null;
+    Object rst;
     try {
       rst = target.newInstance();
     } catch (Exception ex) {

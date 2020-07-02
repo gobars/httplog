@@ -3,11 +3,12 @@ package com.github.gobars.httplog.snack.features;
 import com.github.gobars.httplog.snack.ONode;
 import com.github.gobars.httplog.snack.core.Constants;
 import com.github.gobars.httplog.snack.core.Context;
-import com.github.gobars.httplog.snack.core.DEFAULTS;
+import com.github.gobars.httplog.snack.core.Defaults;
 import com.github.gobars.httplog.snack.core.Feature;
 import com.github.gobars.httplog.snack.from.JsonFromer;
 import com.github.gobars.httplog.snack.to.JsonToer;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import org.junit.Test;
 
 /**
@@ -143,7 +144,9 @@ public class JsonTest {
     assert 123.45 == ((ONode) c.target).get(1).getDouble();
     assert "123.45".equals(((ONode) c.target).get(2).getString());
     assert "2019-01-02T03:04:05"
-        .equals(DEFAULTS.DEF_DATE_FORMAT.format(((ONode) c.target).get(3).getDate()));
+        .equals(
+            new SimpleDateFormat(Defaults.DEF_DATE_FORMAT_STRING)
+                .format(((ONode) c.target).get(3).getDate()));
     assert ((ONode) c.target).get(4).getBoolean();
     assert !((ONode) c.target).get(5).getBoolean();
 
