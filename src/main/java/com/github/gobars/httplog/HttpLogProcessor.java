@@ -45,7 +45,7 @@ public class HttpLogProcessor {
     this.pre = new HttpLogPre.HttpLogPreComposite(createExt(httpLog.pre(), appContext));
     this.post = new HttpLogPost.HttpLogPostComposite(createExt(httpLog.post(), appContext));
     this.fixes = fixes;
-    this.taskExecutor = createTaskExecutor(appContext);
+    this.taskExecutor = createTaskExecutor(httpLog, appContext);
   }
 
   @SneakyThrows
@@ -124,14 +124,18 @@ public class HttpLogProcessor {
     }
   }
 
-  private TaskExecutor createTaskExecutor(ApplicationContext appContext) {
+  private TaskExecutor createTaskExecutor(HttpLogAttr httpLog, ApplicationContext appContext) {
+    if (httpLog.sync()) {
+      return Runnable::run;
+    }
+
     try {
       return appContext.getBean(TaskExecutor.class);
     } catch (Exception ex) {
       log.warn("failed to get TaskExecutor bean");
     }
 
-    return task -> task.run();
+    return Runnable::run;
   }
 
   private <T> List<T> createExt(Class<? extends T>[] exts, ApplicationContext appContext) {

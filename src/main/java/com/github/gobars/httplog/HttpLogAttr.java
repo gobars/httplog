@@ -12,6 +12,7 @@ public class HttpLogAttr {
   private String fix;
   private Class<? extends HttpLogPre>[] pre;
   private Class<? extends HttpLogPost>[] post;
+  private boolean sync;
 
   @SuppressWarnings("unchecked")
   public static HttpLogAttr create(AnnotationAttributes attrs) {
@@ -20,6 +21,7 @@ public class HttpLogAttr {
         .tables(attrs.getStringArray("tables"))
         .fix(attrs.getString("fix"))
         .pre((Class<? extends HttpLogPre>[]) attrs.get("pre"))
-        .post((Class<? extends HttpLogPost>[]) attrs.get("post"));
+        .post((Class<? extends HttpLogPost>[]) attrs.get("post"))
+        .sync(attrs.getBoolean("sync"));
   }
 }

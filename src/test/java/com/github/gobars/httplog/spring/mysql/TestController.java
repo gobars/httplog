@@ -32,7 +32,7 @@ public class TestController {
    * @param testDto testDto
    * @return testDto
    */
-  @HttpLog(tables = "biz_log_post")
+  @HttpLog(tables = "biz_log_post", sync = true)
   @PostMapping
   public TestDto post(@RequestBody TestDto testDto) {
     return testDto;

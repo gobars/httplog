@@ -89,4 +89,11 @@ public @interface HttpLog {
    * @return HttpLogPostExt
    */
   Class<? extends HttpLogPost>[] post() default {};
+
+  /**
+   * 是否同步写日志(默认异步写).
+   *
+   * @return true 同步写.
+   */
+  boolean sync() default false;
 }
