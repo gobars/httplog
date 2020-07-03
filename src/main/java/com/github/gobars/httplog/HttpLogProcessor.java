@@ -3,20 +3,20 @@ package com.github.gobars.httplog;
 import com.github.gobars.id.conf.ConnGetter;
 import com.github.gobars.id.db.SqlRunner;
 import com.github.gobars.id.util.DbType;
-import lombok.Cleanup;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
-import lombok.val;
-import org.springframework.context.ApplicationContext;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import lombok.Cleanup;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
+import org.springframework.context.ApplicationContext;
+import org.springframework.core.task.TaskExecutor;
 
 /**
  * HttpLog日志处理器类.
@@ -26,12 +26,12 @@ import java.util.function.IntConsumer;
 @Slf4j
 public class HttpLogProcessor {
   private final HttpLogAttr httpLog;
-  private final boolean eager;
   private final Map<String, TableLogger> sqlGenerators;
   private final ConnGetter connGetter;
   private final HttpLogPre pre;
   private final HttpLogPost post;
   private final Map<String, String> fixes;
+  private final TaskExecutor taskExecutor;
 
   public HttpLogProcessor(
       HttpLogAttr httpLog,
@@ -40,12 +40,12 @@ public class HttpLogProcessor {
       Map<String, String> fixes,
       ApplicationContext appContext) {
     this.httpLog = httpLog;
-    this.eager = httpLog.eager();
     this.sqlGenerators = sqlGenerators;
     this.connGetter = connGetter;
     this.pre = new HttpLogPre.HttpLogPreComposite(createExt(httpLog.pre(), appContext));
     this.post = new HttpLogPost.HttpLogPostComposite(createExt(httpLog.post(), appContext));
     this.fixes = fixes;
+    this.taskExecutor = createTaskExecutor(appContext);
   }
 
   @SneakyThrows
@@ -95,7 +95,7 @@ public class HttpLogProcessor {
 
       log.info("tableCols: {}", tableCols);
 
-      sqlGenerators.put(table, TableLogger.create(table, tableCols, httpLog));
+      sqlGenerators.put(table, TableLogger.create(table, tableCols));
     }
 
     return new HttpLogProcessor(httpLog, sqlGenerators, connGetter, fixes, appContext);
@@ -122,6 +122,16 @@ public class HttpLogProcessor {
     } catch (NumberFormatException ex) {
       // ignore
     }
+  }
+
+  private TaskExecutor createTaskExecutor(ApplicationContext appContext) {
+    try {
+      return appContext.getBean(TaskExecutor.class);
+    } catch (Exception ex) {
+      log.warn("failed to get TaskExecutor bean");
+    }
+
+    return task -> task.run();
   }
 
   private <T> List<T> createExt(Class<? extends T>[] exts, ApplicationContext appContext) {
@@ -156,35 +166,30 @@ public class HttpLogProcessor {
 
   @SneakyThrows
   public void logReq(HttpServletRequest r, Req req) {
-    if (!this.eager) {
-      return;
-    }
-
-    log.info("eager req:{}", req);
-
     req.setPres(createPre(r, req, httpLog));
-
-    @Cleanup val conn = connGetter.getConn();
-    for (val table : httpLog.tables()) {
-      val runner = new SqlRunner(conn, false);
-      val sqlGenerator = sqlGenerators.get(table);
-
-      sqlGenerator.req(runner, r, req, httpLog);
-    }
   }
 
   @SneakyThrows
   public void complete(HttpServletRequest r, HttpServletResponse p, Req req, Rsp rsp) {
-    log.info("eager complete:{}", req);
+    taskExecutor.execute(() -> run(r, p, req, rsp));
+  }
 
-    rsp.setPosts(createPost(req, rsp, r, p, httpLog));
+  public void run(HttpServletRequest r, HttpServletResponse p, Req req, Rsp rsp) {
+    log.info("req: {}", req);
+    log.info("rsp: {}", rsp);
+    log.info("custom: {}", HttpLogCustom.get());
 
-    @Cleanup val conn = connGetter.getConn();
-    for (val table : httpLog.tables()) {
-      val runner = new SqlRunner(conn, false);
-      val sqlGenerator = sqlGenerators.get(table);
+    try {
+      rsp.setPosts(createPost(req, rsp, r, p, httpLog));
 
-      sqlGenerator.rsp(runner, r, p, req, rsp, httpLog);
+      @Cleanup val conn = connGetter.getConn();
+      for (val table : httpLog.tables()) {
+        val runner = new SqlRunner(conn, false);
+
+        sqlGenerators.get(table).rsp(runner, r, p, req, rsp, httpLog);
+      }
+    } catch (Exception ex) {
+      log.warn("failed to log req:{} rsp:{} for httpLog:{}", req, rsp, httpLog, ex);
     }
   }
 

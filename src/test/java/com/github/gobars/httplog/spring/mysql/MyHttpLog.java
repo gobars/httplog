@@ -6,10 +6,12 @@ import com.github.gobars.httplog.HttpLogPre;
 import java.lang.annotation.*;
 
 @Documented
-@HttpLog(tables = "biz_log", fix = "desc:ID查找", eager = true)
+@HttpLog(tables = "biz_log", fix = "desc:ID查找")
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.TYPE})
 public @interface MyHttpLog {
+  String biz() default "";
+
   String fix() default "";
 
   /**

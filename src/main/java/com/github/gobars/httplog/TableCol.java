@@ -101,8 +101,7 @@ public class TableCol {
    * <p>从1开始
    */
   private int seq;
-  /** 表字段类型 */
-  private Type tagType;
+
   /** 字段取值器 */
   private ColValueGetter valueGetter;
 
@@ -195,14 +194,6 @@ public class TableCol {
     return node.select(path).getString();
   }
 
-  public boolean eagerSupport() {
-    return tagType == Type.REQ
-        || tagType == Type.CTX
-        || tagType == Type.FIX
-        || tagType == Type.PRE
-        || tagType == Type.BUILTIN;
-  }
-
   public void parseComment(Map<String, String> fixes) {
     String tag = name.toLowerCase();
     if (comment != null) {
@@ -213,30 +204,21 @@ public class TableCol {
     }
 
     if (tag.startsWith("req_")) {
-      this.tagType = Type.REQ;
       this.valueGetter = createValueGetter(tag.substring(4), reqs);
     } else if (tag.startsWith("rsp_")) {
-      this.tagType = Type.RSP;
       this.valueGetter = createValueGetter(tag.substring(4), rsps);
     } else if (tag.startsWith("ctx_")) {
-      this.tagType = Type.CTX;
       this.valueGetter = createCtxValueGetter(tag.substring(4));
     } else if (tag.startsWith("custom_")) {
-      this.tagType = Type.CUSTOM;
       this.valueGetter = createCustomValueGetter(tag.substring(7));
     } else if (tag.startsWith("fix_")) {
-      this.tagType = Type.FIX;
       this.valueGetter = createFixValueGetter(tag.substring(4), fixes);
     } else if (tag.startsWith("pre_")) {
-      this.tagType = Type.PRE;
       this.valueGetter = createPreValueGetter(tag.substring(4));
     } else if (tag.startsWith("post_")) {
-      this.tagType = Type.POST;
       this.valueGetter = createPostValueGetter(tag.substring(5));
     } else if ("-".equals(tag)) {
-      this.tagType = Type.IGNORE;
     } else {
-      this.tagType = Type.BUILTIN;
       this.valueGetter = createBuiltinValueGetter(tag);
     }
 
@@ -296,27 +278,6 @@ public class TableCol {
 
       return null;
     };
-  }
-
-  public enum Type {
-    /** 请求 */
-    REQ,
-    /** 响应 */
-    RSP,
-    /** 上下文 */
-    CTX,
-    /** 固定值 */
-    FIX,
-    /** pre扩展类 */
-    PRE,
-    /** post扩展类 */
-    POST,
-    /** 自定义 */
-    CUSTOM,
-    /** 内建 */
-    BUILTIN,
-    /** 忽略，由数据库insert时自动创建 */
-    IGNORE,
   }
 
   public interface Matcher {

@@ -20,7 +20,7 @@ public class TestController {
    * @param id id
    * @return id
    */
-  @MyHttpLog(fix = "desc:ID查找")
+  @MyHttpLog(fix = "desc:ID查找", biz = "测试查询")
   @GetMapping(value = "/{id}")
   public String get(@PathVariable Integer id) {
     return "test id : " + id;

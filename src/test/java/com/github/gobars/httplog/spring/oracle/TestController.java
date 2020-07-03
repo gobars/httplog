@@ -17,7 +17,7 @@ public class TestController {
    * @param id id
    * @return id
    */
-  @HttpLog(tables = "biz_log", fix = "desc:ID查找", eager = true)
+  @HttpLog(tables = "biz_log", fix = "desc:ID查找")
   @GetMapping(value = "/{id}")
   public String get(@PathVariable Integer id) {
     return "test id : " + id;

@@ -7,7 +7,6 @@ import org.springframework.core.annotation.AnnotationAttributes;
 @Data
 @Accessors(fluent = true)
 public class HttpLogAttr {
-  private boolean eager;
   private String biz;
   private String[] tables;
   private String fix;
@@ -17,7 +16,6 @@ public class HttpLogAttr {
   @SuppressWarnings("unchecked")
   public static HttpLogAttr create(AnnotationAttributes attrs) {
     return new HttpLogAttr()
-        .eager(attrs.getBoolean("eager"))
         .biz(attrs.getString("biz"))
         .tables(attrs.getStringArray("tables"))
         .fix(attrs.getString("fix"))
