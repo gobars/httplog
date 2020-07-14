@@ -1,10 +1,10 @@
 package com.github.gobars.httplog.snack.to;
 
-import com.github.gobars.httplog.snack.ONode;
-import com.github.gobars.httplog.snack.ONodeData;
-import com.github.gobars.httplog.snack.OValue;
-import com.github.gobars.httplog.snack.core.Constants;
-import com.github.gobars.httplog.snack.core.Context;
+import com.github.gobars.httplog.snack.Odata;
+import com.github.gobars.httplog.snack.Onode;
+import com.github.gobars.httplog.snack.Ovalue;
+import com.github.gobars.httplog.snack.core.Cnf;
+import com.github.gobars.httplog.snack.core.Ctx;
 import com.github.gobars.httplog.snack.core.Feature;
 import com.github.gobars.httplog.snack.core.exts.ThData;
 import com.github.gobars.httplog.snack.core.utils.IOUtil;
@@ -24,8 +24,8 @@ public class JsonToer implements Toer {
       new ThData<>(() -> new StringBuilder(1024 * 5));
 
   @Override
-  public void handle(Context ctx) {
-    ONode o = (ONode) ctx.source;
+  public void handle(Ctx ctx) {
+    Onode o = (Onode) ctx.source;
 
     if (null != o) {
       StringBuilder sb = tlBuilder.get();
@@ -37,22 +37,22 @@ public class JsonToer implements Toer {
     }
   }
 
-  public void analyse(Constants cfg, ONode o, StringBuilder sb) {
+  public void analyse(Cnf cnf, Onode o, StringBuilder sb) {
     if (o == null) {
       return;
     }
 
     switch (o.nodeType()) {
       case Value:
-        writeValue(cfg, sb, o.nodeData());
+        writeValue(cnf, sb, o.nodeData());
         break;
 
       case Array:
-        writeArray(cfg, sb, o.nodeData());
+        writeArray(cnf, sb, o.nodeData());
         break;
 
       case Object:
-        writeObject(cfg, sb, o.nodeData());
+        writeObject(cnf, sb, o.nodeData());
         break;
 
       default:
@@ -61,12 +61,12 @@ public class JsonToer implements Toer {
     }
   }
 
-  private void writeArray(Constants cfg, StringBuilder sBuf, ONodeData d) {
+  private void writeArray(Cnf cnf, StringBuilder sBuf, Odata d) {
     sBuf.append("[");
-    Iterator<ONode> iterator = d.array.iterator();
+    Iterator<Onode> iterator = d.array.iterator();
     while (iterator.hasNext()) {
-      ONode sub = iterator.next();
-      analyse(cfg, sub, sBuf);
+      Onode sub = iterator.next();
+      analyse(cnf, sub, sBuf);
       if (iterator.hasNext()) {
         sBuf.append(",");
       }
@@ -74,14 +74,14 @@ public class JsonToer implements Toer {
     sBuf.append("]");
   }
 
-  private void writeObject(Constants cfg, StringBuilder sBuf, ONodeData d) {
+  private void writeObject(Cnf cnf, StringBuilder sBuf, Odata d) {
     sBuf.append("{");
     Iterator<String> itr = d.object.keySet().iterator();
     while (itr.hasNext()) {
       String k = itr.next();
-      writeName(cfg, sBuf, k);
+      writeName(cnf, sBuf, k);
       sBuf.append(":");
-      analyse(cfg, d.object.get(k), sBuf);
+      analyse(cnf, d.object.get(k), sBuf);
       if (itr.hasNext()) {
         sBuf.append(",");
       }
@@ -89,27 +89,27 @@ public class JsonToer implements Toer {
     sBuf.append("}");
   }
 
-  private void writeValue(Constants cfg, StringBuilder sBuf, ONodeData d) {
-    OValue v = d.value;
+  private void writeValue(Cnf cnf, StringBuilder sBuf, Odata d) {
+    Ovalue v = d.value;
     switch (v.type()) {
       case Null:
         sBuf.append("null");
         break;
 
       case String:
-        writeValString(cfg, sBuf, v.getRawString(), true);
+        writeValString(cnf, sBuf, v.getRawString(), true);
         break;
 
       case DateTime:
-        writeValDate(cfg, sBuf, v.getRawDate());
+        writeValDate(cnf, sBuf, v.getRawDate());
         break;
 
       case Boolean:
-        writeValBool(cfg, sBuf, v.getRawBoolean());
+        writeValBool(cnf, sBuf, v.getRawBoolean());
         break;
 
       case BigNumber:
-        writeValBignum(cfg, sBuf, v.getRawBignumber()); // 添加对大数字的处理
+        writeValBignum(cnf, sBuf, v.getRawBignumber()); // 添加对大数字的处理
         break;
 
       case Integer:
@@ -126,9 +126,9 @@ public class JsonToer implements Toer {
     }
   }
 
-  private void writeName(Constants cfg, StringBuilder sBuf, String val) {
-    if (cfg.hasFeature(Feature.QuoteFieldNames)) {
-      if (cfg.hasFeature(Feature.UseSingleQuotes)) {
+  private void writeName(Cnf cnf, StringBuilder sBuf, String val) {
+    if (cnf.hasFeature(Feature.QuoteFieldNames)) {
+      if (cnf.hasFeature(Feature.UseSingleQuotes)) {
         sBuf.append("'").append(val).append("'");
       } else {
         sBuf.append("\"").append(val).append("\"");
@@ -138,25 +138,25 @@ public class JsonToer implements Toer {
     }
   }
 
-  private void writeValDate(Constants cfg, StringBuilder sBuf, Date val) {
-    if (cfg.hasFeature(Feature.WriteDateUseTicks)) {
+  private void writeValDate(Cnf cnf, StringBuilder sBuf, Date val) {
+    if (cnf.hasFeature(Feature.WriteDateUseTicks)) {
       sBuf.append(val.getTime());
-    } else if (cfg.hasFeature(Feature.WriteDateUseFormat)) {
-      writeValString(cfg, sBuf, cfg.dateToString(val), false);
+    } else if (cnf.hasFeature(Feature.WriteDateUseFormat)) {
+      writeValString(cnf, sBuf, cnf.dateToString(val), false);
     } else {
       sBuf.append("new Date(").append(val.getTime()).append(")");
     }
   }
 
-  private void writeValBool(Constants cfg, StringBuilder sBuf, Boolean val) {
-    if (cfg.hasFeature(Feature.WriteBoolUse01)) {
+  private void writeValBool(Cnf cnf, StringBuilder sBuf, Boolean val) {
+    if (cnf.hasFeature(Feature.WriteBoolUse01)) {
       sBuf.append(val ? 1 : 0);
     } else {
       sBuf.append(val ? "true" : "false");
     }
   }
 
-  private void writeValBignum(Constants cfg, StringBuilder sBuf, Number val) {
+  private void writeValBignum(Cnf cnf, StringBuilder sBuf, Number val) {
     String sVal = val.toString();
 
     if (val instanceof BigInteger) {
@@ -164,8 +164,8 @@ public class JsonToer implements Toer {
       // 数字太大时，可用string来表示；
       if (sVal.length() > 16
           && (v.compareTo(TypeUtil.INT_LOW) < 0 || v.compareTo(TypeUtil.INT_HIGH) > 0)
-          && cfg.hasFeature(Feature.BrowserCompatible)) {
-        writeValString(cfg, sBuf, sVal, false);
+          && cnf.hasFeature(Feature.BrowserCompatible)) {
+        writeValString(cnf, sBuf, sVal, false);
       } else {
         sBuf.append(sVal);
       }
@@ -177,8 +177,8 @@ public class JsonToer implements Toer {
       // 数字太大时，可用string来表示；
       if (sVal.length() > 16
           && (v.compareTo(TypeUtil.DEC_LOW) < 0 || v.compareTo(TypeUtil.DEC_HIGH) > 0)
-          && cfg.hasFeature(Feature.BrowserCompatible)) {
-        writeValString(cfg, sBuf, sVal, false);
+          && cnf.hasFeature(Feature.BrowserCompatible)) {
+        writeValString(cnf, sBuf, sVal, false);
       } else {
         sBuf.append(sVal);
       }
@@ -188,16 +188,16 @@ public class JsonToer implements Toer {
     sBuf.append(sVal);
   }
 
-  private void writeValString(Constants cfg, StringBuilder sBuf, String val, boolean isStr) {
+  private void writeValString(Cnf cnf, StringBuilder sBuf, String val, boolean isStr) {
     // 引号开始
-    boolean useSingleQuotes = cfg.hasFeature(Feature.UseSingleQuotes);
+    boolean useSingleQuotes = cnf.hasFeature(Feature.UseSingleQuotes);
     char quote = (useSingleQuotes ? '\'' : '\"');
     sBuf.append(quote);
 
     // 内容
     if (isStr) {
-      boolean isCompatible = cfg.hasFeature(Feature.BrowserCompatible);
-      boolean isSecure = cfg.hasFeature(Feature.BrowserSecure);
+      boolean isCompatible = cnf.hasFeature(Feature.BrowserCompatible);
+      boolean isSecure = cnf.hasFeature(Feature.BrowserSecure);
       for (int i = 0, len = val.length(); i < len; i++) {
         char c = val.charAt(i);
 

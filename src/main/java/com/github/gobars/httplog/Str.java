@@ -16,7 +16,7 @@ import lombok.val;
 @UtilityClass
 public class Str {
   public String abbreviate(String s, int maxLen) {
-    if (s.length() <= maxLen) {
+    if (s.length() <= maxLen || maxLen <= 0) {
       return s;
     }
 

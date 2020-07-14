@@ -1,8 +1,8 @@
 package com.github.gobars.httplog.snack.core;
 
-import com.github.gobars.httplog.snack.ONode;
-import com.github.gobars.httplog.snack.OValue;
-import com.github.gobars.httplog.snack.OValueType;
+import com.github.gobars.httplog.snack.Onode;
+import com.github.gobars.httplog.snack.Otype;
+import com.github.gobars.httplog.snack.Ovalue;
 import com.github.gobars.httplog.snack.core.exts.*;
 import com.github.gobars.httplog.snack.core.utils.IOUtil;
 import java.util.ArrayList;
@@ -14,19 +14,17 @@ import java.util.regex.Pattern;
 
 /** json path */
 public class JsonPath {
-  private static final ThData<CharBuffer> tlBuilder = new ThData<>(CharBuffer::new);
+  private static final ThData<CharBuf> tlBuilder = new ThData<>(CharBuf::new);
   private static final ThData<TmpCache> tlCache = new ThData<>(TmpCache::new);
-  private static final int _cacheSize = 1024;
-  private static final Map<String, JsonPath> _jpathCache = new HashMap<>(128);
-  private static final Map<String, Pattern> _regexLib = new HashMap<>();
-  private static final Fun4<ONode, Segment, ONode, ONode, Boolean> handler_$ =
-      (s, root, tmp, usd) -> {
-        return tmp;
-      };
-  private static final Fun4<ONode, Segment, ONode, ONode, Boolean> handler_xx =
+  private static final int CACHE_SIZE = 1024;
+  private static final Map<String, JsonPath> JPATH_CACHE = new HashMap<>(128);
+  private static final Map<String, Pattern> REGEX_LIB = new HashMap<>();
+  private static final Call4<Onode, Segment, Onode, Onode, Boolean> handler_$ =
+      (s, root, tmp, usd) -> tmp;
+  private static final Call4<Onode, Segment, Onode, Onode, Boolean> handler_xx =
       (s, root, tmp, usd) -> {
         if (s.name.length() > 0) {
-          ONode tmp2 = new ONode().asArray();
+          Onode tmp2 = new Onode().asArray();
           if ("*".equals(s.name)) {
             scanByAll(s.name, tmp, true, tmp2.ary());
           } else {
@@ -40,12 +38,12 @@ public class JsonPath {
 
         return null;
       };
-  private static final Fun4<ONode, Segment, ONode, ONode, Boolean> handler_x =
+  private static final Call4<Onode, Segment, Onode, Onode, Boolean> handler_x =
       (s, root, tmp, usd) -> {
-        ONode tmp2 = null;
+        Onode tmp2 = null;
 
         if (tmp.count() > 0) {
-          tmp2 = new ONode(tmp.cfg()).asArray(); // 有节点时，才初始化
+          tmp2 = new Onode(tmp.cfg()).asArray(); // 有节点时，才初始化
 
           if (tmp.isObject()) {
             tmp2.addAll(tmp.obj().values());
@@ -56,7 +54,7 @@ public class JsonPath {
 
         return tmp2;
       };
-  private static final Fun4<ONode, Segment, ONode, ONode, Boolean> handler_prop =
+  private static final Call4<Onode, Segment, Onode, Onode, Boolean> handler_prop =
       (s, root, tmp, usd) -> {
         // .name 指令
         //
@@ -66,10 +64,10 @@ public class JsonPath {
         }
 
         if (tmp.isArray()) {
-          ONode tmp2 = new ONode(tmp.cfg()).asArray();
-          for (ONode n1 : tmp.ary()) {
+          Onode tmp2 = new Onode(tmp.cfg()).asArray();
+          for (Onode n1 : tmp.ary()) {
             if (n1.isObject()) {
-              ONode n2 = n1.nodeData().object.get(s.cmd);
+              Onode n2 = n1.nodeData().object.get(s.cmd);
               if (n2 != null) {
                 tmp2.add(n2);
               }
@@ -80,21 +78,21 @@ public class JsonPath {
 
         return null;
       };
-  private static final Fun4<ONode, Segment, ONode, ONode, Boolean> handler_fun =
+  private static final Call4<Onode, Segment, Onode, Onode, Boolean> handler_fun =
       (s, root, tmp, usd) -> {
         switch (s.cmd) {
           case "size()":
-            return new ONode(tmp.cfg()).val(tmp.count());
+            return new Onode(tmp.cfg()).val(tmp.count());
           case "length()":
             if (tmp.isValue()) {
-              return new ONode(tmp.cfg()).val(tmp.getString().length());
+              return new Onode(tmp.cfg()).val(tmp.getString().length());
             } else {
-              return new ONode(tmp.cfg()).val(tmp.count());
+              return new Onode(tmp.cfg()).val(tmp.count());
             }
           case "min()":
             if (tmp.isArray()) {
-              ONode min_n = null;
-              for (ONode n1 : tmp.ary()) {
+              Onode min_n = null;
+              for (Onode n1 : tmp.ary()) {
                 if (n1.isValue()) {
                   if (min_n == null) {
                     min_n = n1;
@@ -110,8 +108,8 @@ public class JsonPath {
 
           case "max()":
             if (tmp.isArray()) {
-              ONode max_n = null;
-              for (ONode n1 : tmp.ary()) {
+              Onode max_n = null;
+              for (Onode n1 : tmp.ary()) {
                 if (n1.isValue()) {
                   if (max_n == null) {
                     max_n = n1;
@@ -129,7 +127,7 @@ public class JsonPath {
             if (tmp.isArray()) {
               double sum = 0;
               int num = 0;
-              for (ONode n1 : tmp.ary()) {
+              for (Onode n1 : tmp.ary()) {
                 if (n1.isValue()) {
                   sum += n1.getDouble();
                   num++;
@@ -137,7 +135,7 @@ public class JsonPath {
               }
 
               if (num > 0) {
-                return new ONode(tmp.cfg()).val(sum / num);
+                return new Onode(tmp.cfg()).val(sum / num);
               }
             }
 
@@ -145,10 +143,10 @@ public class JsonPath {
           case "sum()":
             if (tmp.isArray()) {
               double sum = 0;
-              for (ONode n1 : tmp.ary()) {
+              for (Onode n1 : tmp.ary()) {
                 sum += n1.getDouble();
               }
-              return new ONode(tmp.cfg()).val(sum);
+              return new Onode(tmp.cfg()).val(sum);
             } else {
               return null;
             }
@@ -157,31 +155,31 @@ public class JsonPath {
             return null;
         }
       };
-  private static final Fun4<ONode, Segment, ONode, ONode, Boolean> handler_ary_x =
+  private static final Call4<Onode, Segment, Onode, Onode, Boolean> handler_ary_x =
       (s, root, tmp, usd) -> {
-        ONode tmp2 = null;
+        Onode tmp2 = null;
         if (tmp.isArray()) {
           tmp2 = tmp;
         }
 
         if (tmp.isObject()) {
-          tmp2 = new ONode(tmp.cfg()).asArray();
+          tmp2 = new Onode(tmp.cfg()).asArray();
           tmp2.addAll(tmp.obj().values());
         }
 
         return tmp2;
       };
-  private static final Fun4<ONode, Segment, ONode, ONode, Boolean> handler_ary_exp =
+  private static final Call4<Onode, Segment, Onode, Onode, Boolean> handler_ary_exp =
       (s, root, tmp, usd) -> {
-        ONode tmp2 = tmp;
+        Onode tmp2 = tmp;
         if (s.op == null) {
           if (tmp.isObject()) {
             if (do_get(tmp, s.left, true, usd).isNull()) {
               return null;
             }
           } else if (tmp.isArray()) {
-            tmp2 = new ONode(tmp.cfg()).asArray();
-            for (ONode n1 : tmp.ary()) {
+            tmp2 = new Onode(tmp.cfg()).asArray();
+            for (Onode n1 : tmp.ary()) {
               if (do_get(n1, s.left, true, usd).isNull() == false) {
                 tmp2.nodeData().array.add(n1);
               }
@@ -193,21 +191,21 @@ public class JsonPath {
               return null;
             }
 
-            ONode leftO = do_get(tmp, s.left, true, usd);
+            Onode leftO = do_get(tmp, s.left, true, usd);
             if (compare(root, tmp, leftO, s.op, s.right, usd) == false) {
               return null;
             }
           } else if (tmp.isArray()) {
-            tmp2 = new ONode(tmp.cfg()).asArray();
+            tmp2 = new Onode(tmp.cfg()).asArray();
             if ("@".equals(s.left)) {
-              for (ONode n1 : tmp.ary()) {
+              for (Onode n1 : tmp.ary()) {
                 if (compare(root, n1, n1, s.op, s.right, usd)) {
                   tmp2.addNode(n1);
                 }
               }
             } else {
-              for (ONode n1 : tmp.ary()) {
-                ONode leftO = do_get(n1, s.left, true, usd);
+              for (Onode n1 : tmp.ary()) {
+                Onode leftO = do_get(n1, s.left, true, usd);
 
                 if (compare(root, n1, leftO, s.op, s.right, usd)) {
                   tmp2.addNode(n1);
@@ -225,17 +223,17 @@ public class JsonPath {
 
         return tmp2;
       };
-  private static final Fun4<ONode, Segment, ONode, ONode, Boolean> handler_ary_multi =
+  private static final Call4<Onode, Segment, Onode, Onode, Boolean> handler_ary_multi =
       (s, root, tmp, usd) -> {
-        ONode tmp2 = null;
+        Onode tmp2 = null;
 
         if (s.cmdAry.indexOf("'") >= 0) {
           if (tmp.isObject()) {
             for (String k : s.nameS) {
-              ONode n1 = tmp.obj().get(k);
+              Onode n1 = tmp.obj().get(k);
               if (n1 != null) {
                 if (tmp2 == null) {
-                  tmp2 = new ONode(tmp.cfg()).asArray();
+                  tmp2 = new Onode(tmp.cfg()).asArray();
                 }
 
                 tmp2.addNode(n1);
@@ -245,12 +243,12 @@ public class JsonPath {
 
           // 不知道，该不访加::??
           if (tmp.isArray()) {
-            tmp2 = new ONode(tmp.cfg()).asArray();
+            tmp2 = new Onode(tmp.cfg()).asArray();
 
-            for (ONode tmp1 : tmp.ary()) {
+            for (Onode tmp1 : tmp.ary()) {
               if (tmp1.isObject()) {
                 for (String k : s.nameS) {
-                  ONode n1 = tmp1.obj().get(k);
+                  Onode n1 = tmp1.obj().get(k);
                   if (n1 != null) {
                     tmp2.addNode(n1);
                   }
@@ -260,13 +258,13 @@ public class JsonPath {
           }
         } else {
           if (tmp.isArray()) {
-            List<ONode> list2 = tmp.nodeData().array;
+            List<Onode> list2 = tmp.nodeData().array;
             int len2 = list2.size();
 
             for (int idx : s.indexS) {
               if (idx >= 0 && idx < len2) {
                 if (tmp2 == null) {
-                  tmp2 = new ONode(tmp.cfg()).asArray();
+                  tmp2 = new Onode(tmp.cfg()).asArray();
                 }
 
                 tmp2.addNode(list2.get(idx));
@@ -277,7 +275,7 @@ public class JsonPath {
 
         return tmp2;
       };
-  private static final Fun4<ONode, Segment, ONode, ONode, Boolean> handler_ary_range =
+  private static final Call4<Onode, Segment, Onode, Onode, Boolean> handler_ary_range =
       (s, root, tmp, usd) -> {
         if (tmp.isArray()) {
           int count = tmp.count();
@@ -303,12 +301,12 @@ public class JsonPath {
             end = count;
           }
 
-          return new ONode(tmp.cfg()).addAll(tmp.ary().subList(start, end));
+          return new Onode(tmp.cfg()).addAll(tmp.ary().subList(start, end));
         } else {
           return null;
         }
       };
-  private static final Fun4<ONode, Segment, ONode, ONode, Boolean> handler_ary_prop =
+  private static final Call4<Onode, Segment, Onode, Onode, Boolean> handler_ary_prop =
       (s, root, tmp, usd) -> {
         // 如果是value,会返回null
         if (s.cmdHasQuote) {
@@ -318,10 +316,10 @@ public class JsonPath {
 
           // 不知道，该不访加::??
           if (tmp.isArray()) {
-            ONode tmp2 = new ONode(tmp.cfg()).asArray();
-            for (ONode n1 : tmp.ary()) {
+            Onode tmp2 = new Onode(tmp.cfg()).asArray();
+            for (Onode n1 : tmp.ary()) {
               if (n1.isObject()) {
-                ONode n2 = n1.nodeData().object.get(s.name);
+                Onode n2 = n1.nodeData().object.get(s.name);
                 if (n2 != null) {
                   tmp2.add(n2);
                 }
@@ -346,23 +344,23 @@ public class JsonPath {
     segments = new ArrayList<>();
   }
 
-  public static ONode eval(ONode source, String jpath, boolean useStandard, boolean cacheJpath) {
+  public static Onode eval(Onode source, String jpath, boolean useStandard, boolean cacheJpath) {
     tlCache.get().clear();
     return do_get(source, jpath, cacheJpath, useStandard);
   }
 
-  private static ONode do_get(ONode source, String jpath, boolean cacheJpath, boolean useStandard) {
+  private static Onode do_get(Onode source, String jpath, boolean cacheJpath, boolean useStandard) {
     // 解析出指令
     JsonPath jsonPath;
     if (cacheJpath) {
-      jsonPath = _jpathCache.get(jpath);
+      jsonPath = JPATH_CACHE.get(jpath);
       if (jsonPath == null) {
-        synchronized (_jpathCache) {
-          jsonPath = _jpathCache.get(jpath);
+        synchronized (JPATH_CACHE) {
+          jsonPath = JPATH_CACHE.get(jpath);
           if (jsonPath == null) {
             jsonPath = compile(jpath);
-            if (_jpathCache.size() < _cacheSize) {
-              _jpathCache.put(jpath, jsonPath);
+            if (JPATH_CACHE.size() < CACHE_SIZE) {
+              JPATH_CACHE.put(jpath, jsonPath);
             }
           }
         }
@@ -382,7 +380,7 @@ public class JsonPath {
 
     char token = 0;
     char c = 0;
-    CharBuffer buffer = tlBuilder.get();
+    CharBuf buffer = tlBuilder.get();
     buffer.setLength(0);
     CharReader reader = new CharReader(jpath2);
     while (true) {
@@ -452,8 +450,8 @@ public class JsonPath {
   }
 
   /** 执行jpath指令 */
-  private static ONode exec(JsonPath jsonPath, ONode source, boolean useStandard) {
-    ONode tmp = source;
+  private static Onode exec(JsonPath jsonPath, Onode source, boolean useStandard) {
+    Onode tmp = source;
     boolean branch_do = false;
     for (Segment s : jsonPath.segments) {
       if (tmp == null) { // 多次转换后，可能为null
@@ -461,11 +459,11 @@ public class JsonPath {
       }
 
       if (branch_do && (useStandard || s.cmdAry != null)) { // ..a[x] 下属进行分支处理 //s.cmdAry != null
-        ONode tmp2 = new ONode().asArray();
+        Onode tmp2 = new Onode().asArray();
 
-        Consumer<ONode> act1 =
+        Consumer<Onode> act1 =
             (n1) -> {
-              ONode n2 = s.handler.run(s, source, n1, useStandard);
+              Onode n2 = s.handler.run(s, source, n1, useStandard);
               if (n2 != null) {
                 if (s.cmdAry != null) {
                   if (n2.isArray()) {
@@ -493,16 +491,16 @@ public class JsonPath {
     }
 
     if (tmp == null) {
-      return new ONode();
+      return new Onode();
     } else {
       return tmp;
     }
   }
 
   /** 深度扫描 */
-  private static void scanByName(String name, ONode source, List<ONode> target) {
+  private static void scanByName(String name, Onode source, List<Onode> target) {
     if (source.isObject()) {
-      for (Map.Entry<String, ONode> kv : source.obj().entrySet()) {
+      for (Map.Entry<String, Onode> kv : source.obj().entrySet()) {
         if (name.equals(kv.getKey())) {
           target.add(kv.getValue());
         }
@@ -513,26 +511,26 @@ public class JsonPath {
     }
 
     if (source.isArray()) {
-      for (ONode n1 : source.ary()) {
+      for (Onode n1 : source.ary()) {
         scanByName(name, n1, target);
       }
     }
   }
 
-  private static void scanByAll(String name, ONode source, boolean isRoot, List<ONode> target) {
+  private static void scanByAll(String name, Onode source, boolean isRoot, List<Onode> target) {
     if (!isRoot) {
       target.add(source);
     }
 
     if (source.isObject()) {
-      for (Map.Entry<String, ONode> kv : source.obj().entrySet()) {
+      for (Map.Entry<String, Onode> kv : source.obj().entrySet()) {
         scanByAll(name, kv.getValue(), false, target);
       }
       return;
     }
 
     if (source.isArray()) {
-      for (ONode n1 : source.ary()) {
+      for (Onode n1 : source.ary()) {
         scanByAll(name, n1, false, target);
       }
     }
@@ -542,7 +540,7 @@ public class JsonPath {
    * ?(left op right)
    * */
   private static boolean compare(
-      ONode root, ONode parent, ONode leftO, String op, String right, boolean useStandard) {
+      Onode root, Onode parent, Onode leftO, String op, String right, boolean useStandard) {
     if (leftO == null) {
       return false;
     }
@@ -551,8 +549,8 @@ public class JsonPath {
       return false;
     }
 
-    OValue left = leftO.val();
-    ONode rightO = null;
+    Ovalue left = leftO.val();
+    Onode rightO = null;
 
     if (right.startsWith("$")) {
       // 全局描扫的数据，进行缓存
@@ -569,7 +567,7 @@ public class JsonPath {
 
     if (rightO != null) {
       if (rightO.isValue()) {
-        if (rightO.val().type() == OValueType.String) {
+        if (rightO.val().type() == Otype.String) {
           right = "'" + rightO.getString() + "'";
         } else {
           right = rightO.getDouble() + "";
@@ -631,7 +629,7 @@ public class JsonPath {
       case "in":
         if (right == null) {
           Object val = left.getRaw();
-          for (ONode n1 : rightO.ary()) {
+          for (Onode n1 : rightO.ary()) {
             if (n1.val().getRaw().equals(val)) {
               return true;
             }
@@ -647,7 +645,7 @@ public class JsonPath {
       case "nin":
         if (right == null) {
           Object val = left.getRaw();
-          for (ONode n1 : rightO.ary()) {
+          for (Onode n1 : rightO.ary()) {
             if (n1.val().getRaw().equals(val)) {
               return false;
             }
@@ -690,13 +688,13 @@ public class JsonPath {
   }
 
   private static Pattern regex(String exprFull, String expr) {
-    Pattern p = _regexLib.get(exprFull);
+    Pattern p = REGEX_LIB.get(exprFull);
     if (p != null) {
       return p;
     }
 
-    synchronized (_regexLib) {
-      p = _regexLib.get(exprFull);
+    synchronized (REGEX_LIB) {
+      p = REGEX_LIB.get(exprFull);
       if (p != null) {
         return p;
       }
@@ -706,7 +704,7 @@ public class JsonPath {
       } else {
         p = Pattern.compile(expr);
       }
-      _regexLib.put(exprFull, p);
+      REGEX_LIB.put(exprFull, p);
 
       return p;
     }
@@ -728,7 +726,7 @@ public class JsonPath {
     public String op;
     public String right;
 
-    public Fun4<ONode, Segment, ONode, ONode, Boolean> handler;
+    public Call4<Onode, Segment, Onode, Onode, Boolean> handler;
 
     public Segment(String test) {
       cmd = test.trim();

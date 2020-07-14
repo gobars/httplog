@@ -2,7 +2,7 @@ package com.github.gobars.httplog.snack.features;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.github.gobars.httplog.snack.ONode;
+import com.github.gobars.httplog.snack.Onode;
 import java.util.Date;
 import java.util.List;
 import org.junit.Test;
@@ -47,27 +47,27 @@ public class Contains {
   @Test
   public void test21() {
 
-    assert Long.hashCode(2) == new ONode().val(2).hashCode();
+    assert Long.hashCode(2) == new Onode().val(2).hashCode();
 
-    ONode tmp = ONode.loadStr("[1,2,3,4,5]");
-    assert tmp.ary().contains(new ONode().val(2));
+    Onode tmp = Onode.loadStr("[1,2,3,4,5]");
+    assert tmp.ary().contains(new Onode().val(2));
 
-    tmp = ONode.loadStr("[1,'2',3,4,5]");
-    assert tmp.ary().contains(new ONode().val("2"));
+    tmp = Onode.loadStr("[1,'2',3,4,5]");
+    assert tmp.ary().contains(new Onode().val("2"));
 
     long times = System.currentTimeMillis();
     Date time = new Date(times);
 
-    tmp = ONode.loadStr("[1,'2',3,4,new Date(" + times + ")]");
-    assert tmp.ary().contains(new ONode().val(time));
+    tmp = Onode.loadStr("[1,'2',3,4,new Date(" + times + ")]");
+    assert tmp.ary().contains(new Onode().val(time));
   }
 
   @Test
   public void test22() {
 
-    assert Long.hashCode(2) == new ONode().val(2).hashCode();
+    assert Long.hashCode(2) == new Onode().val(2).hashCode();
 
-    ONode tmp = ONode.loadStr("[1,2,3,4,5,true, null]");
+    Onode tmp = Onode.loadStr("[1,2,3,4,5,true, null]");
     assert tmp.ary().contains(2l);
 
     assert tmp.ary().contains(2);
@@ -76,31 +76,31 @@ public class Contains {
 
     assert tmp.ary().contains(null);
 
-    assert tmp.ary().contains(new ONode().asNull());
+    assert tmp.ary().contains(new Onode().asNull());
 
-    tmp = ONode.loadStr("[1,'2',3,4,5]");
+    tmp = Onode.loadStr("[1,'2',3,4,5]");
     assert tmp.ary().contains("2");
 
     long times = System.currentTimeMillis();
     Date time = new Date(times);
 
-    tmp = ONode.loadStr("[1,'2',3,4,new Date(" + times + ")]");
+    tmp = Onode.loadStr("[1,'2',3,4,new Date(" + times + ")]");
     assert tmp.ary().contains(time);
   }
 
   @Test
   public void test3() {
 
-    ONode tmp = ONode.loadStr("{a:[1,2,3,4,5],b:2}");
-    ONode tmp2 = ONode.loadStr("{a:[1,2,3,4,5],b:2}");
+    Onode tmp = Onode.loadStr("{a:[1,2,3,4,5],b:2}");
+    Onode tmp2 = Onode.loadStr("{a:[1,2,3,4,5],b:2}");
 
     assert tmp.equals(tmp2);
 
-    ONode tmp3 = ONode.loadStr("[1,2,3,4,5]");
-    List<Integer> tmp4 = ONode.loadStr("[1,2,3,4,5]").toObject(List.class);
+    Onode tmp3 = Onode.loadStr("[1,2,3,4,5]");
+    List<Integer> tmp4 = Onode.loadStr("[1,2,3,4,5]").toObject(List.class);
 
-    List<Integer> tmp41 = ONode.loadStr("[1,2,3,5,4]").toObject(List.class);
-    List<Integer> tmp42 = ONode.loadStr("[1,2,3,4]").toObject(List.class);
+    List<Integer> tmp41 = Onode.loadStr("[1,2,3,5,4]").toObject(List.class);
+    List<Integer> tmp42 = Onode.loadStr("[1,2,3,4]").toObject(List.class);
 
     assert tmp.obj().containsKey("a");
     assert tmp.obj().containsValue(tmp3);
@@ -114,9 +114,9 @@ public class Contains {
 
   @Test
   public void test4() {
-    ONode tmp = ONode.loadStr("[1,2,{c:1,d:2,b:[4]}]");
+    Onode tmp = Onode.loadStr("[1,2,{c:1,d:2,b:[4]}]");
 
-    ONode tmp2 = ONode.loadStr("{c:1,d:2,b:[4]}");
+    Onode tmp2 = Onode.loadStr("{c:1,d:2,b:[4]}");
 
     assert tmp.ary().contains(tmp2);
 

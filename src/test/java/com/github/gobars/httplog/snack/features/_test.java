@@ -1,8 +1,8 @@
 package com.github.gobars.httplog.snack.features;
 
-import com.github.gobars.httplog.snack.ONode;
+import com.github.gobars.httplog.snack.Onode;
 import com.github.gobars.httplog.snack._models.UserModel;
-import com.github.gobars.httplog.snack.core.Constants;
+import com.github.gobars.httplog.snack.core.Cnf;
 import com.github.gobars.httplog.snack.core.Feature;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,7 +46,7 @@ public class _test {
             + "\t\"_source\": [\"post_id\"]\n"
             + "}";
 
-    ONode tmp = ONode.loadStr(str);
+    Onode tmp = Onode.loadStr(str);
 
     assert tmp.isObject();
   }
@@ -55,7 +55,7 @@ public class _test {
   public void test1() {
     String str =
         "{\"g_udid\":\"1EFB07BFE0D98F8BF9EAF276C92C95FA4BEA3423\",\"g_imid\":\"864499040824376\",\"g_lkey\":\"d359a30a239e9e17daa8f8367ef35422\",\"g_encode\":\"1\",\"g_time\":1572511666,\"g_platform\":\"Android\",\"g_system\":\"8.1.0\",\"g_model\":\"PACM00\",\"g_brand\":\"OPPO\"}";
-    ONode n = ONode.load(str);
+    Onode n = Onode.load(str);
 
     n.readonly(true);
 
@@ -82,14 +82,14 @@ public class _test {
 
   @Test
   public void test2() {
-    ONode n = new ONode(); // 默认,null string 为 空字符
+    Onode n = new Onode(); // 默认,null string 为 空字符
 
     assert "".equals(n.getString());
   }
 
   @Test
   public void test3() {
-    ONode n = new ONode(Constants.of()); // 空特性，什么都没有
+    Onode n = new Onode(Cnf.of()); // 空特性，什么都没有
 
     assert "".equals(n.getString()) == false;
   }
@@ -107,7 +107,7 @@ public class _test {
     u2.name = "name2";
     list.add(u2);
 
-    ONode o = ONode.load("{code:1,msg:'succeed'}", Constants.serialize()); // 当toJson(),会产生@type
+    Onode o = Onode.load("{code:1,msg:'succeed'}", Cnf.serialize()); // 当toJson(),会产生@type
     o.get("data").get("list").fill(list);
 
     assert o.select("data.list").count() == 2;
@@ -134,7 +134,7 @@ public class _test {
     u2.name = "name2";
     list.add(u2);
 
-    ONode o = ONode.load("{code:1,msg:'succeed'}"); // 当toJson(),不会产生@type
+    Onode o = Onode.load("{code:1,msg:'succeed'}"); // 当toJson(),不会产生@type
     o.get("data").get("list").fill(list);
 
     assert o.select("data.list").count() == 2;
@@ -154,7 +154,7 @@ public class _test {
 
   @Test
   public void test6() {
-    ONode tmp = ONode.load("{asdfasdf}");
+    Onode tmp = Onode.load("{asdfasdf}");
 
     System.out.println(tmp.toString());
 
@@ -163,7 +163,7 @@ public class _test {
 
   @Test
   public void test7() {
-    ONode tmp = ONode.loadObj("{asdfasdf}");
+    Onode tmp = Onode.loadObj("{asdfasdf}");
 
     System.out.println(tmp.getString());
 
@@ -177,13 +177,13 @@ public class _test {
     um.id = 1;
     um.note = "你好世界!";
 
-    String json = ONode.serialize(um);
+    String json = Onode.serialize(um);
     System.out.println(json);
 
-    String json2 = ONode.loadStr(json).toJson();
+    String json2 = Onode.loadStr(json).toJson();
     System.out.println(json2);
 
-    UserModel um2 = ONode.deserialize(json, UserModel.class);
+    UserModel um2 = Onode.deserialize(json, UserModel.class);
 
     assert um2.name.equals(um.name);
   }
@@ -201,7 +201,7 @@ public class _test {
     // 单引号输出
     //
     String txt = "{id:1,name:'x'}";
-    ONode tmp = ONode.load(txt);
+    Onode tmp = Onode.load(txt);
 
     tmp.cfg()
         .sub(Feature.QuoteFieldNames) // 取消字段引号
@@ -214,14 +214,14 @@ public class _test {
 
   @Test
   public void test11() {
-    ONode tmp = ONode.loadObj("46qh", Constants.serialize().sub(Feature.BrowserCompatible));
+    Onode tmp = Onode.loadObj("46qh", Cnf.serialize().sub(Feature.BrowserCompatible));
 
     assert "46qh".equals(tmp.val().getString());
   }
 
   @Test
   public void test12() {
-    ONode n = ONode.load("{code:1,msg:'Hello world!',data:[{a:'b',c:'d'}]}");
+    Onode n = Onode.load("{code:1,msg:'Hello world!',data:[{a:'b',c:'d'}]}");
 
     System.out.println(n.select("$.data[*].a"));
 

@@ -1,6 +1,6 @@
 package com.github.gobars.httplog.snack.features;
 
-import com.github.gobars.httplog.snack.ONode;
+import com.github.gobars.httplog.snack.Onode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,12 +28,12 @@ public class ComplicatedTest {
     list2.add(map2);
 
     // 开始序列化
-    String json = ONode.serialize(list2);
+    String json = Onode.serialize(list2);
     //    System.out.println(json);
 
     // 开始反序列化
-    Object obj2 = ONode.deserialize(json);
-    String json2 = ONode.serialize(obj2);
+    Object obj2 = Onode.deserialize(json);
+    String json2 = Onode.serialize(obj2);
 
     assert obj2 instanceof List;
     assert json.equals(json2);
@@ -52,12 +52,12 @@ public class ComplicatedTest {
     map2.put("key1", map1);
 
     // 开始序列化
-    String json = ONode.serialize(map2);
+    String json = Onode.serialize(map2);
     //    System.out.println(json);
 
     // 开始反序列化
-    Object obj2 = ONode.deserialize(json);
-    String json2 = ONode.serialize(obj2);
+    Object obj2 = Onode.deserialize(json);
+    String json2 = Onode.serialize(obj2);
 
     assert obj2 instanceof Map;
     assert json.equals(json2);
@@ -75,12 +75,12 @@ public class ComplicatedTest {
     map2.put("key1", list1);
 
     // 开始序列化
-    String json = ONode.serialize(map2);
+    String json = Onode.serialize(map2);
     //    System.out.println(json);
 
     // 开始反序列化
-    Object obj2 = ONode.deserialize(json);
-    String json2 = ONode.serialize(obj2);
+    Object obj2 = Onode.deserialize(json);
+    String json2 = Onode.serialize(obj2);
 
     assert obj2 instanceof Map;
     assert json.equals(json2);

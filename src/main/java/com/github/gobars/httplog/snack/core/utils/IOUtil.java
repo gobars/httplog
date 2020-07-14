@@ -2,7 +2,8 @@ package com.github.gobars.httplog.snack.core.utils;
 
 /** IO工具类 */
 public final class IOUtil {
-  public static final char EOI = 0; // 0x1A;
+  // 0x1A;
+  public static final char EOI = 0;
   public static final char[] DIGITS = {
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
   };

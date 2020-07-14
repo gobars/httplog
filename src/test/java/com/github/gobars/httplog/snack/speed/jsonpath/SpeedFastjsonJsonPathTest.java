@@ -41,7 +41,6 @@ public class SpeedFastjsonJsonPathTest {
     JSONObject obj = JSON.parseObject(text);
 
     Object tmp = JSONPath.eval(obj, "$..*");
-    ;
 
     long start = System.currentTimeMillis();
     for (int i = 0, len = 10000; i < len; i++) {

@@ -18,9 +18,7 @@ import org.springframework.util.MultiValueMap;
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = App.class)
 public class OracleAppTest {
-  /** Data */
   private static final TestDto TEST_DTO = TestDto.builder().id(10).build();
-
   private static final TestDto TEST_DTO_EMPTY = TestDto.builder().build();
   private static final MultiValueMap<String, String> EMPTY_HEADER = new LinkedMultiValueMap<>();
   private static final MultiValueMap<String, String> JSON_HEADER = new LinkedMultiValueMap<>();

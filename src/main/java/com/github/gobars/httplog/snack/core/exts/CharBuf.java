@@ -1,17 +1,16 @@
 package com.github.gobars.httplog.snack.core.exts;
 
 /** 字符缓冲器 */
-public class CharBuffer {
-
-  public boolean isString = false;
+public class CharBuf {
+  public boolean isString;
   private char[] buffer;
   private int length;
 
-  public CharBuffer() {
+  public CharBuf() {
     this(1024 * 5);
   }
 
-  public CharBuffer(int capacity) {
+  public CharBuf(int capacity) {
     this.buffer = new char[capacity];
     this.length = 0;
   }
@@ -42,6 +41,7 @@ public class CharBuffer {
     this.length = 0;
   }
 
+  @Override
   public String toString() {
     return new String(buffer, 0, length);
   }

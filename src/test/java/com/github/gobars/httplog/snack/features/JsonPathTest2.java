@@ -1,6 +1,6 @@
 package com.github.gobars.httplog.snack.features;
 
-import com.github.gobars.httplog.snack.ONode;
+import com.github.gobars.httplog.snack.Onode;
 import java.util.List;
 import java.util.Map;
 import org.junit.Test;
@@ -11,7 +11,7 @@ public class JsonPathTest2 {
     final String json =
         "{\"store\":{\"book\":[{\"category\":\"reference\",\"author\":\"Nigel Rees\",\"title\":\"Sayings of the Century\",\"price\":8.95},{\"category\":\"fiction\",\"author\":\"Evelyn Waugh\",\"title\":\"Sword of Honour\",\"price\":12.99},{\"category\":\"fiction\",\"author\":\"Herman Melville\",\"title\":\"Moby Dick\",\"isbn\":\"0-553-21311-3\",\"price\":8.99},{\"category\":\"fiction\",\"author\":\"J. R. R. Tolkien\",\"title\":\"The Lord of the Rings\",\"isbn\":\"0-395-19395-8\",\"price\":22.99}],\"bicycle\":{\"color\":\"red\",\"price\":19.95}},\"expensive\":10}";
 
-    ONode n = ONode.load(json);
+    Onode n = Onode.load(json);
 
     String t1 = n.select("$.store.book [0].title").getString();
     System.out.println(t1);
@@ -21,69 +21,69 @@ public class JsonPathTest2 {
     System.out.println(t2);
     assert "Sayings of the Century".equals(t1);
 
-    ONode t3 = n.select("$.store.book[*].author");
+    Onode t3 = n.select("$.store.book[*].author");
     System.out.println(t3);
 
-    ONode t4 = n.select("$..author");
+    Onode t4 = n.select("$..author");
     System.out.println(t4);
     assert t3.toJson().equals(t4.toJson());
 
-    ONode t5 = n.select("$.store.*");
+    Onode t5 = n.select("$.store.*");
     System.out.println(t5);
     assert t5.count() == 2;
 
-    ONode t6 = n.select("$.store..price");
+    Onode t6 = n.select("$.store..price");
     System.out.println(t6);
     assert t6.isArray();
 
     Map<String, Object> t7 = n.select("$..book[2]").toObject(Map.class);
     System.out.println(t7);
 
-    ONode t8 = n.select("$..book[-2]");
+    Onode t8 = n.select("$..book[-2]");
     System.out.println(t8);
     assert "Herman Melville".equals(t8.get(0).get("author").getString());
 
-    ONode t9 = n.select("$..book[0,1]");
+    Onode t9 = n.select("$..book[0,1]");
     System.out.println(t9);
     assert "reference".equals(t9.get(0).get("category").getString());
 
-    ONode ta = n.select("$..book[:2]");
+    Onode ta = n.select("$..book[:2]");
     System.out.println(ta);
     assert ta.count() == 2;
 
-    ONode tb = n.select("$..book[1:2]");
+    Onode tb = n.select("$..book[1:2]");
     System.out.println(tb);
     assert tb.count() == 1;
 
-    ONode tc = n.select("$..book[-2:]");
+    Onode tc = n.select("$..book[-2:]");
     System.out.println(tc);
     assert tc.count() == 2;
 
-    ONode td = n.select("$..book[2:]");
+    Onode td = n.select("$..book[2:]");
     System.out.println(td);
     assert tc.count() == 2;
 
-    ONode te = n.select("$..book[?(@.isbn)]");
+    Onode te = n.select("$..book[?(@.isbn)]");
     System.out.println(te);
     assert tc.count() == 2;
 
-    ONode tf = n.select("$.store.book[?(@.price < 10)]");
+    Onode tf = n.select("$.store.book[?(@.price < 10)]");
     System.out.println(tf);
     assert tc.count() == 2;
 
-    ONode tg = n.select("$..book[?(@.author =~ /.*REES/i)]");
+    Onode tg = n.select("$..book[?(@.author =~ /.*REES/i)]");
     System.out.println(tg);
     assert tg.count() == 1;
 
-    ONode th = n.select("$..*");
+    Onode th = n.select("$..*");
     System.out.println(th);
     assert th.count() == 28;
 
-    ONode ti = n.select("$..book[?(@.price <= $['expensive'])]");
+    Onode ti = n.select("$..book[?(@.price <= $['expensive'])]");
     System.out.println(ti);
     assert ti.count() == 2;
 
-    ONode tj = n.select("$..book[?(@.price <= $.expensive)]");
+    Onode tj = n.select("$..book[?(@.price <= $.expensive)]");
     System.out.println(tj);
     assert tj.count() == 2;
   }
@@ -92,7 +92,7 @@ public class JsonPathTest2 {
   public void test2() {
     String json =
         "{\"store\":{\"book\":[{\"category\":\"reference\",\"author\":\"Nigel Rees\",\"title\":\"Sayings of the Century\",\"price\":8.95},{\"category\":\"fiction\",\"author\":\"Evelyn Waugh\",\"title\":\"Sword of Honour\",\"price\":12.99,\"isbn\":\"0-553-21311-3\"}],\"bicycle\":{\"color\":\"red\",\"price\":19.95}}}";
-    ONode n = ONode.load(json);
+    Onode n = Onode.load(json);
 
     String t1 = n.select("$.store.book[0].author").getString();
     System.out.println(t1);
@@ -106,22 +106,22 @@ public class JsonPathTest2 {
     System.out.println(t3);
     assert t3.size() == 1;
 
-    ONode t4 = n.select("$.store.book[?(@.price > 10)]");
+    Onode t4 = n.select("$.store.book[?(@.price > 10)]");
     System.out.println(t4);
     assert t4.isArray() && t4.count() == 1;
 
-    ONode t5 = n.select("$.store.book[?(@.isbn)]");
+    Onode t5 = n.select("$.store.book[?(@.isbn)]");
     System.out.println(t5);
     assert t5.isArray() && t5.count() == 1;
 
     List<Double> t6 = n.select("$..price").toObject(List.class);
     System.out.println(t6);
 
-    ONode t7 = n.select("$.store.book[*]");
+    Onode t7 = n.select("$.store.book[*]");
     System.out.println(t7);
     assert t7.isArray() && t7.count() == 2;
 
-    ONode t8 = n.select("$..book[*].author");
+    Onode t8 = n.select("$..book[*].author");
     System.out.println(t8);
     assert t8.isArray() && t8.count() == 2;
   }
@@ -130,17 +130,17 @@ public class JsonPathTest2 {
   public void test3() {
     String json =
         "{\"store\":{\"book\":[{\"category\":\"reference\",\"author\":\"Nigel Rees\",\"title\":\"Sayings of the Century\",\"price\":8.95},{\"category\":\"fiction\",\"author\":\"Evelyn Waugh\",\"title\":\"Sword of Honour\",\"price\":12.99,\"isbn\":\"0-553-21311-3\"}],\"bicycle\":{\"color\":\"red\",\"price\":19.95}}}";
-    ONode n = ONode.load(json);
+    Onode n = Onode.load(json);
 
     List<Map> t3 = n.select("$.store.book[?(@.category == 'reference')]").toObject(List.class);
     System.out.println(t3);
     assert t3.size() == 1;
 
-    ONode t4 = n.select("$.store.book[?(@.price > 10)]");
+    Onode t4 = n.select("$.store.book[?(@.price > 10)]");
     System.out.println(t4);
     assert t4.isArray() && t4.count() == 1;
 
-    ONode t5 = n.select("$.store.book[?(@.isbn)]");
+    Onode t5 = n.select("$.store.book[?(@.isbn)]");
     System.out.println(t5);
     assert t5.isArray() && t5.count() == 1;
   }

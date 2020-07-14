@@ -14,19 +14,15 @@ import lombok.SneakyThrows;
 
 /** Bean工具类 */
 public class BeanUtil {
-
-  public static final Map<String, Class<?>> clzCached = new ConcurrentHashMap<>();
-  /** */
-  private static final transient Map<String, Collection<FieldWrap>> fieldsCached = new HashMap<>();
-
-  /////////////////
+  public static final Map<String, Class<?>> CLZ_CACHE = new ConcurrentHashMap<>();
+  private static final Map<String, Collection<FieldWrap>> FIELDS_CACHE = new HashMap<>();
 
   @SneakyThrows
   public static Class<?> loadClass(String clzName) {
-    Class<?> clz = clzCached.get(clzName);
+    Class<?> clz = CLZ_CACHE.get(clzName);
     if (clz == null) {
       clz = Class.forName(clzName);
-      clzCached.put(clzName, clz);
+      CLZ_CACHE.put(clzName, clz);
     }
 
     return clz;
@@ -36,13 +32,13 @@ public class BeanUtil {
   public static Collection<FieldWrap> getAllFields(Class<?> clz) {
     String key = clz.getName();
 
-    Collection<FieldWrap> list = fieldsCached.get(key);
+    Collection<FieldWrap> list = FIELDS_CACHE.get(key);
     if (list != null) {
       return list;
     }
 
-    synchronized (fieldsCached) {
-      list = fieldsCached.get(key);
+    synchronized (FIELDS_CACHE) {
+      list = FIELDS_CACHE.get(key);
       if (list != null) {
         return list;
       }
@@ -52,7 +48,7 @@ public class BeanUtil {
 
       list = map.values();
 
-      fieldsCached.put(key, list);
+      FIELDS_CACHE.put(key, list);
       return list;
     }
   }
@@ -83,7 +79,6 @@ public class BeanUtil {
 
   /** 将 Clob 转为 String */
   public static String clobToString(Clob clob) {
-
     Reader reader;
     StringBuilder buf = new StringBuilder();
 

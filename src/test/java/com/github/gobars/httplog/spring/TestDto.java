@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TestDto {
-
-  /** Id. */
   private Integer id;
+  private String data;
 }

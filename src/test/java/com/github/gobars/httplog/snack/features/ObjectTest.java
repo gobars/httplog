@@ -1,9 +1,9 @@
 package com.github.gobars.httplog.snack.features;
 
-import com.github.gobars.httplog.snack.ONode;
+import com.github.gobars.httplog.snack.Onode;
 import com.github.gobars.httplog.snack._models.*;
-import com.github.gobars.httplog.snack.core.Constants;
-import com.github.gobars.httplog.snack.core.Context;
+import com.github.gobars.httplog.snack.core.Cnf;
+import com.github.gobars.httplog.snack.core.Ctx;
 import com.github.gobars.httplog.snack.from.ObjectFromer;
 import com.github.gobars.httplog.snack.to.ObjectToer;
 import java.lang.reflect.TypeVariable;
@@ -28,13 +28,13 @@ public class ObjectTest {
     a.b = b;
     b.a = a;
 
-    Context c = new Context(Constants.def(), a);
+    Ctx c = new Ctx(Cnf.def(), a);
 
     new ObjectFromer().handle(c);
 
     //    System.out.println(((ONode) c.target).toJson());
 
-    assert "{\"b\":{}}".equals(((ONode) c.target).toJson());
+    assert "{\"b\":{}}".equals(((Onode) c.target).toJson());
   }
 
   @Test
@@ -49,13 +49,13 @@ public class ObjectTest {
     order.order_id = 2222;
     order.order_num = "ddddd";
 
-    Context c = new Context(Constants.def(), order);
+    Ctx c = new Ctx(Cnf.def(), order);
 
     new ObjectFromer().handle(c);
 
     //    System.out.println(((ONode) c.target).toJson());
 
-    c = new Context(Constants.def(), ((ONode) c.target), OrderModel.class);
+    c = new Ctx(Cnf.def(), ((Onode) c.target), OrderModel.class);
     new ObjectToer().handle(c);
 
     OrderModel order2 = (OrderModel) c.target;
@@ -84,15 +84,15 @@ public class ObjectTest {
       group.iids[i] = (int) i;
     }
 
-    Context c = new Context(Constants.serialize(), group);
+    Ctx c = new Ctx(Cnf.serialize(), group);
 
     new ObjectFromer().handle(c);
 
     //    System.out.println(((ONode) c.target).toJson());
 
-    assert 1 == ((ONode) c.target).get("users").get(1).get("id").getInt();
+    assert 1 == ((Onode) c.target).get("users").get(1).get("id").getInt();
 
-    UserGroupModel g = ((ONode) c.target).toObject(UserGroupModel.class);
+    UserGroupModel g = ((Onode) c.target).toObject(UserGroupModel.class);
 
     assert g.id == 9999;
   }

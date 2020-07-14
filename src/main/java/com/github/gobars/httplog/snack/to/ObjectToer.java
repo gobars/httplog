@@ -1,14 +1,14 @@
 package com.github.gobars.httplog.snack.to;
 
-import com.github.gobars.httplog.snack.ONode;
-import com.github.gobars.httplog.snack.ONodeData;
-import com.github.gobars.httplog.snack.OValue;
-import com.github.gobars.httplog.snack.OValueType;
-import com.github.gobars.httplog.snack.core.Context;
+import com.github.gobars.httplog.snack.Odata;
+import com.github.gobars.httplog.snack.Onode;
+import com.github.gobars.httplog.snack.Otype;
+import com.github.gobars.httplog.snack.Ovalue;
+import com.github.gobars.httplog.snack.core.Ctx;
 import com.github.gobars.httplog.snack.core.exts.EnumWrap;
 import com.github.gobars.httplog.snack.core.exts.FieldWrap;
 import com.github.gobars.httplog.snack.core.utils.BeanUtil;
-import com.github.gobars.httplog.snack.core.utils.StringUtil;
+import com.github.gobars.httplog.snack.core.utils.StrUtil;
 import com.github.gobars.httplog.snack.core.utils.TypeUtil;
 import java.lang.reflect.Array;
 import java.lang.reflect.ParameterizedType;
@@ -27,15 +27,15 @@ import java.util.*;
 @SuppressWarnings("unchecked")
 public class ObjectToer implements Toer {
   @Override
-  public void handle(Context ctx) throws Exception {
-    ONode o = (ONode) ctx.source;
+  public void handle(Ctx ctx) throws Exception {
+    Onode o = (Onode) ctx.source;
 
     if (null != o) {
       ctx.target = analyse(ctx, o, ctx.targetClz, ctx.targetType);
     }
   }
 
-  private Class<?> getTypeByNode(Context ctx, ONode o, Class<?> def) {
+  private Class<?> getTypeByNode(Ctx ctx, Onode o, Class<?> def) {
     //
     // 下面使用 .ary(), .oby(), .val() 可以减少检查；从而提高性能
     //
@@ -51,24 +51,24 @@ public class ObjectToer implements Toer {
 
     String typeStr = null;
     if (o.isArray() && o.ary().size() == 2) {
-      ONode o1 = o.ary().get(0);
+      Onode o1 = o.ary().get(0);
       if (o1.isObject() && o1.obj().size() == 1) { // 如果只有一个成员，则可能为list的类型节点
         //
         // 这段，不能与下面的 o.isObject() 复用
         //
-        ONode n1 = o1.obj().get(ctx.config.typeKey);
+        Onode n1 = o1.obj().get(ctx.config.typeKey);
         if (n1 != null) {
           typeStr = n1.val().getString();
         }
       }
     } else if (o.isObject()) {
-      ONode n1 = o.obj().get(ctx.config.typeKey);
+      Onode n1 = o.obj().get(ctx.config.typeKey);
       if (n1 != null) {
         typeStr = n1.val().getString();
       }
     }
 
-    if (!StringUtil.isEmpty(typeStr)) {
+    if (!StrUtil.isEmpty(typeStr)) {
       return BeanUtil.loadClass(typeStr);
     }
 
@@ -85,8 +85,8 @@ public class ObjectToer implements Toer {
     return def;
   }
 
-  private Object analyse(Context ctx, ONode o, Class<?> clz, Type type) throws Exception {
-    if (o == null || clz != null && ONode.class.isAssignableFrom(clz)) {
+  private Object analyse(Ctx ctx, Onode o, Class<?> clz, Type type) throws Exception {
+    if (o == null || clz != null && Onode.class.isAssignableFrom(clz)) {
       return o;
     }
 
@@ -125,11 +125,11 @@ public class ObjectToer implements Toer {
     return s.isAssignableFrom(t);
   }
 
-  public Object analyseVal(Context ctx, ONodeData d, Class<?> clz) {
+  public Object analyseVal(Ctx ctx, Odata d, Class<?> clz) {
 
-    OValue v = d.value;
+    Ovalue v = d.value;
 
-    if (v.type() == OValueType.Null) {
+    if (v.type() == Otype.Null) {
       return null;
     }
 
@@ -164,13 +164,13 @@ public class ObjectToer implements Toer {
     } else if (is(Date.class, clz)) {
       return v.getDate();
     } else if (is(BigDecimal.class, clz)) {
-      if (v.type() == OValueType.BigNumber) {
+      if (v.type() == Otype.BigNumber) {
         return v.getRawBignumber();
       } else {
         return new BigDecimal(v.getString());
       }
     } else if (is(BigInteger.class, clz)) {
-      if (v.type() == OValueType.BigNumber) {
+      if (v.type() == Otype.BigNumber) {
         return v.getRawBignumber();
       } else {
         return new BigInteger(v.getString());
@@ -186,16 +186,16 @@ public class ObjectToer implements Toer {
     }
   }
 
-  public Object analyseEnum(Context ctx, ONodeData d, Class<?> target) {
+  public Object analyseEnum(Ctx ctx, Odata d, Class<?> target) {
     EnumWrap ew = TypeUtil.createEnum(target);
-    if (d.value.type() == OValueType.String) {
+    if (d.value.type() == Otype.String) {
       return ew.get(d.value.getString());
     } else {
       return ew.get(d.value.getInt());
     }
   }
 
-  public Object analyseArray(Context ctx, ONodeData d, Class<?> target) throws Exception {
+  public Object analyseArray(Ctx ctx, Odata d, Class<?> target) throws Exception {
     int len = d.array.size();
 
     if (is(byte[].class, target)) {
@@ -265,7 +265,7 @@ public class ObjectToer implements Toer {
   }
 
   @SuppressWarnings("unchecked")
-  public Object analyseCollection(Context ctx, ONode o, Class<?> clz, Type type) throws Exception {
+  public Object analyseCollection(Ctx ctx, Onode o, Class<?> clz, Type type) throws Exception {
     Collection list = TypeUtil.createCollection(clz, false);
 
     if (list == null) {
@@ -273,7 +273,7 @@ public class ObjectToer implements Toer {
     }
 
     if (o.count() == 2) {
-      ONode o1 = o.get(0);
+      Onode o1 = o.get(0);
       // 说明，是有类型的集合
       if (o1.count() == 1 && o1.contains(ctx.config.typeKey)) {
         // 取第二个节点，做为数据节点（第1个为类型节点）
@@ -286,14 +286,14 @@ public class ObjectToer implements Toer {
       itemType = TypeUtil.getCollectionItemType(type);
     }
 
-    for (ONode o1 : o.nodeData().array) {
+    for (Onode o1 : o.nodeData().array) {
       list.add(analyse(ctx, o1, (Class<?>) itemType, itemType));
     }
 
     return list;
   }
 
-  public Object analyseMap(Context ctx, ONode o, Class<?> clz, Type type) throws Exception {
+  public Object analyseMap(Ctx ctx, Onode o, Class<?> clz, Type type) throws Exception {
     Map<Object, Object> map = TypeUtil.createMap(clz);
 
     if (type instanceof ParameterizedType) { // 这里还要再研究下
@@ -310,18 +310,18 @@ public class ObjectToer implements Toer {
       }
 
       if (kType == String.class) {
-        for (Map.Entry<String, ONode> kv : o.nodeData().object.entrySet()) {
+        for (Map.Entry<String, Onode> kv : o.nodeData().object.entrySet()) {
           map.put(kv.getKey(), analyse(ctx, kv.getValue(), (Class<?>) vType, vType));
         }
       } else {
-        for (Map.Entry<String, ONode> kv : o.nodeData().object.entrySet()) {
+        for (Map.Entry<String, Onode> kv : o.nodeData().object.entrySet()) {
           map.put(
               TypeUtil.strTo(kv.getKey(), (Class<?>) kType),
               analyse(ctx, kv.getValue(), (Class<?>) vType, vType));
         }
       }
     } else {
-      for (Map.Entry<String, ONode> kv : o.nodeData().object.entrySet()) {
+      for (Map.Entry<String, Onode> kv : o.nodeData().object.entrySet()) {
         map.put(kv.getKey(), analyse(ctx, kv.getValue(), null, null));
       }
     }
@@ -329,7 +329,7 @@ public class ObjectToer implements Toer {
     return map;
   }
 
-  public Object analyseBean(Context ctx, ONode o, Class<?> target) throws Exception {
+  public Object analyseBean(Ctx ctx, Onode o, Class<?> target) throws Exception {
     if (is(SimpleDateFormat.class, target)) {
       return new SimpleDateFormat(o.get("val").getString());
     }

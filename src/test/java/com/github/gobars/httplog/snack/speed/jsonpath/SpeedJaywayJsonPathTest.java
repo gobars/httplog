@@ -172,7 +172,6 @@ public class SpeedJaywayJsonPathTest {
     ReadContext context = JsonPath.parse(text);
 
     Object tmp = context.read("data.ary2[1].b.c");
-    ;
     assert "ddd".equals(tmp);
 
     long start = System.currentTimeMillis();

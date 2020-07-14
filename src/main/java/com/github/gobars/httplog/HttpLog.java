@@ -96,4 +96,11 @@ public @interface HttpLog {
    * @return true 同步写.
    */
   boolean sync() default false;
+
+  /**
+   * 采取缩写的最大长度.
+   *
+   * @return 缩写最大长度.
+   */
+  int abbrevMaxSize() default 64;
 }

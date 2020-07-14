@@ -2,6 +2,7 @@ package com.github.gobars.httplog.snack.core.exts;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
+import lombok.SneakyThrows;
 
 /** 字段包装 */
 public class FieldWrap {
@@ -19,19 +20,13 @@ public class FieldWrap {
     return field.getName();
   }
 
+  @SneakyThrows
   public void set(Object obj, Object val) {
-    try {
-      field.set(obj, val);
-    } catch (Exception ex) {
-      throw new RuntimeException(ex);
-    }
+    field.set(obj, val);
   }
 
+  @SneakyThrows
   public Object get(Object obj) {
-    try {
-      return field.get(obj);
-    } catch (Exception ex) {
-      throw new RuntimeException(ex);
-    }
+    return field.get(obj);
   }
 }

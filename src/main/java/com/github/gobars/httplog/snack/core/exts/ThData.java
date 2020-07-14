@@ -2,9 +2,9 @@ package com.github.gobars.httplog.snack.core.exts;
 
 /** 线程数据（用于复用） */
 public class ThData<T> extends ThreadLocal<T> {
-  private final Fun0<T> _def;
+  private final Call0<T> _def;
 
-  public ThData(Fun0<T> def) {
+  public ThData(Call0<T> def) {
     _def = def;
   }
 

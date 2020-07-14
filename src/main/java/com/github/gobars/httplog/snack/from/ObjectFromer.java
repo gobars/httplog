@@ -1,8 +1,8 @@
 package com.github.gobars.httplog.snack.from;
 
-import com.github.gobars.httplog.snack.ONode;
-import com.github.gobars.httplog.snack.core.Constants;
-import com.github.gobars.httplog.snack.core.Context;
+import com.github.gobars.httplog.snack.Onode;
+import com.github.gobars.httplog.snack.core.Cnf;
+import com.github.gobars.httplog.snack.core.Ctx;
 import com.github.gobars.httplog.snack.core.Feature;
 import com.github.gobars.httplog.snack.core.exts.FieldWrap;
 import com.github.gobars.httplog.snack.core.utils.BeanUtil;
@@ -16,14 +16,14 @@ import java.util.*;
 /** 对象转换器（将 java Object 转为 ONode） */
 public class ObjectFromer implements Fromer {
   @Override
-  public void handle(Context ctx) {
+  public void handle(Ctx ctx) {
     ctx.target = analyse(ctx.config, ctx.source); // 如果是null,会返回 ONode.Null
   }
 
   @SuppressWarnings("unchecked")
-  private ONode analyse(Constants cfg, Object source) {
+  private Onode analyse(Cnf cnf, Object source) {
 
-    ONode rst = new ONode(cfg);
+    Onode rst = new Onode(cnf);
 
     if (source == null) {
       return rst;
@@ -31,7 +31,7 @@ public class ObjectFromer implements Fromer {
 
     Class<?> clz = source.getClass();
 
-    if (source instanceof ONode) {
+    if (source instanceof Onode) {
       rst.val(source);
     } else if (source instanceof String) {
       rst.val().setString((String) source);
@@ -56,47 +56,47 @@ public class ObjectFromer implements Fromer {
     } else if (source instanceof Number) {
       rst.val().setBigNumber((Number) source);
     } else if (source instanceof Throwable) { // 新补充的类型
-      analyseBean(cfg, rst, clz, source);
-    } else if (analyseArray(cfg, rst, clz, source)) { // 新补充的类型::可适用任何数组
+      analyseBean(cnf, rst, clz, source);
+    } else if (analyseArray(cnf, rst, clz, source)) { // 新补充的类型::可适用任何数组
 
     } else if (clz.isEnum()) { // 新补充的类型
       Enum em = (Enum) source;
 
-      if (cfg.hasFeature(Feature.EnumUsingName)) {
+      if (cnf.hasFeature(Feature.EnumUsingName)) {
         rst.val().setString(em.name());
       } else {
         rst.val().setInteger(em.ordinal());
       }
     } else if (source instanceof Map) {
       // 为序列化添加特性支持
-      if (cfg.hasFeature(Feature.WriteClassName)) {
-        typeSet(cfg, rst, clz);
+      if (cnf.hasFeature(Feature.WriteClassName)) {
+        typeSet(cnf, rst, clz);
       }
 
       rst.asObject();
       Map map = ((Map) source);
       for (Object k : map.keySet()) {
         if (k != null) {
-          rst.setNode(k.toString(), analyse(cfg, map.get(k)));
+          rst.setNode(k.toString(), analyse(cnf, map.get(k)));
         }
       }
     } else if (source instanceof Iterable) {
       rst.asArray();
-      ONode ary = rst;
+      Onode ary = rst;
       // 为序列化添加特性支持
-      if (cfg.hasFeature(Feature.WriteArrayClassName)) {
-        rst.add(typeSet(cfg, new ONode(cfg), clz));
+      if (cnf.hasFeature(Feature.WriteArrayClassName)) {
+        rst.add(typeSet(cnf, new Onode(cnf), clz));
         ary = rst.addNew().asArray();
       }
 
       for (Object o : ((Iterable) source)) {
-        ary.addNode(analyse(cfg, o));
+        ary.addNode(analyse(cnf, o));
       }
     } else if (source instanceof Enumeration) { // 新补充的类型
       rst.asArray();
       Enumeration o = (Enumeration) source;
       while (o.hasMoreElements()) {
-        rst.addNode(analyse(cfg, o.nextElement()));
+        rst.addNode(analyse(cnf, o.nextElement()));
       }
     } else {
       String clzName = clz.getName();
@@ -104,9 +104,9 @@ public class ObjectFromer implements Fromer {
       if (clzName.endsWith(".Undefined")) {
         rst.val().setNull();
       } else {
-        if (analyseOther(cfg, rst, clz, source) == false) {
+        if (analyseOther(cnf, rst, clz, source) == false) {
           if (clzName.startsWith("jdk.") == false) {
-            analyseBean(cfg, rst, clz, source);
+            analyseBean(cnf, rst, clz, source);
           }
         }
       }
@@ -115,55 +115,55 @@ public class ObjectFromer implements Fromer {
     return rst;
   }
 
-  private ONode typeSet(Constants cfg, ONode o, Class<?> clz) {
-    return o.set(cfg.typeKey, clz.getName());
+  private Onode typeSet(Cnf cnf, Onode o, Class<?> clz) {
+    return o.set(cnf.typeKey, clz.getName());
   }
 
-  private boolean analyseArray(Constants cfg, ONode rst, Class<?> clz, Object obj) {
+  private boolean analyseArray(Cnf cnf, Onode rst, Class<?> clz, Object obj) {
     if (obj instanceof Object[]) {
       rst.asArray();
       for (Object o : ((Object[]) obj)) {
-        rst.addNode(analyse(cfg, o));
+        rst.addNode(analyse(cnf, o));
       }
     } else if (obj instanceof byte[]) {
       rst.asArray();
       for (byte o : ((byte[]) obj)) {
-        rst.addNode(analyse(cfg, o));
+        rst.addNode(analyse(cnf, o));
       }
     } else if (obj instanceof short[]) {
       rst.asArray();
       for (short o : ((short[]) obj)) {
-        rst.addNode(analyse(cfg, o));
+        rst.addNode(analyse(cnf, o));
       }
     } else if (obj instanceof int[]) {
       rst.asArray();
       for (int o : ((int[]) obj)) {
-        rst.addNode(analyse(cfg, o));
+        rst.addNode(analyse(cnf, o));
       }
     } else if (obj instanceof long[]) {
       rst.asArray();
       for (long o : ((long[]) obj)) {
-        rst.addNode(analyse(cfg, o));
+        rst.addNode(analyse(cnf, o));
       }
     } else if (obj instanceof float[]) {
       rst.asArray();
       for (float o : ((float[]) obj)) {
-        rst.addNode(analyse(cfg, o));
+        rst.addNode(analyse(cnf, o));
       }
     } else if (obj instanceof double[]) {
       rst.asArray();
       for (double o : ((double[]) obj)) {
-        rst.addNode(analyse(cfg, o));
+        rst.addNode(analyse(cnf, o));
       }
     } else if (obj instanceof boolean[]) {
       rst.asArray();
       for (boolean o : ((boolean[]) obj)) {
-        rst.addNode(analyse(cfg, o));
+        rst.addNode(analyse(cnf, o));
       }
     } else if (obj instanceof char[]) {
       rst.asArray();
       for (char o : ((char[]) obj)) {
-        rst.addNode(analyse(cfg, o));
+        rst.addNode(analyse(cnf, o));
       }
     } else {
       return false;
@@ -172,12 +172,12 @@ public class ObjectFromer implements Fromer {
     return true;
   }
 
-  private boolean analyseBean(Constants cfg, ONode rst, Class<?> clz, Object obj) {
+  private boolean analyseBean(Cnf cnf, Onode rst, Class<?> clz, Object obj) {
     rst.asObject();
 
     // 为序列化添加特性支持
-    if (cfg.hasFeature(Feature.WriteClassName)) {
-      rst.set(cfg.typeKey, clz.getName());
+    if (cnf.hasFeature(Feature.WriteClassName)) {
+      rst.set(cnf.typeKey, clz.getName());
     }
 
     Collection<FieldWrap> list = BeanUtil.getAllFields(clz);
@@ -186,20 +186,20 @@ public class ObjectFromer implements Fromer {
 
       if (val == null) {
         // null string 是否以 空字符处理
-        if (cfg.hasFeature(Feature.StringFieldInitEmpty) && f.type == String.class) {
-          rst.setNode(f.name(), analyse(cfg, ""));
+        if (cnf.hasFeature(Feature.StringFieldInitEmpty) && f.type == String.class) {
+          rst.setNode(f.name(), analyse(cnf, ""));
           continue;
         }
 
         // null是否输出
-        if (cfg.hasFeature(Feature.SerializeNulls)) {
-          rst.setNode(f.name(), analyse(cfg, null));
+        if (cnf.hasFeature(Feature.SerializeNulls)) {
+          rst.setNode(f.name(), analyse(cnf, null));
         }
         continue;
       }
 
       if (!val.equals(obj)) { // null 和 自引用 不需要处理
-        rst.setNode(f.name(), analyse(cfg, val));
+        rst.setNode(f.name(), analyse(cnf, val));
       }
     }
 
@@ -207,9 +207,9 @@ public class ObjectFromer implements Fromer {
   }
 
   @SuppressWarnings("unchecked")
-  private boolean analyseOther(Constants cfg, ONode rst, Class<?> clz, Object obj) {
+  private boolean analyseOther(Cnf cnf, Onode rst, Class<?> clz, Object obj) {
     if (obj instanceof SimpleDateFormat) {
-      rst.set(cfg.typeKey, clz.getName());
+      rst.set(cnf.typeKey, clz.getName());
       rst.set("val", ((SimpleDateFormat) obj).toPattern());
     } else if (clz == Class.class) {
       rst.val().setString(clz.getName());
@@ -231,7 +231,7 @@ public class ObjectFromer implements Fromer {
       ((Iterator) obj)
           .forEachRemaining(
               v -> {
-                rst.add(analyse(cfg, v));
+                rst.add(analyse(cnf, v));
               });
     } else if (obj instanceof Map.Entry) {
       Map.Entry kv = (Map.Entry) obj;
@@ -239,7 +239,7 @@ public class ObjectFromer implements Fromer {
       Object v = kv.getValue();
       rst.asObject();
       if (k != null) {
-        rst.set(k.toString(), analyse(cfg, v));
+        rst.set(k.toString(), analyse(cnf, v));
       }
     } else if (obj instanceof Calendar) {
       rst.val().setDate(((Calendar) obj).getTime());

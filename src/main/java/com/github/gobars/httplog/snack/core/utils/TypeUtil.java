@@ -1,7 +1,7 @@
 package com.github.gobars.httplog.snack.core.utils;
 
 import com.github.gobars.httplog.snack.core.exts.EnumWrap;
-import com.github.gobars.httplog.snack.core.exts.ParameterizedTypeImpl;
+import com.github.gobars.httplog.snack.core.exts.PtypeImpl;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
@@ -115,7 +115,7 @@ public class TypeUtil {
         actualTypeArguments[i] = typeParameterMap.get(actualTypeArgument);
       }
     }
-    return new ParameterizedTypeImpl(actualTypeArguments, null, rawClass);
+    return new PtypeImpl(actualTypeArguments, null, rawClass);
   }
 
   private static Type getWildcardTypeUpperBounds(Type type) {
@@ -138,38 +138,47 @@ public class TypeUtil {
     }
 
     Class<?> rawClass = getRawClass(type);
-    Collection list;
     if (rawClass == AbstractCollection.class //
         || rawClass == Collection.class) {
-      list = new ArrayList();
-    } else if (rawClass.isAssignableFrom(HashSet.class)) {
-      list = new HashSet();
-    } else if (rawClass.isAssignableFrom(LinkedHashSet.class)) {
-      list = new LinkedHashSet();
-    } else if (rawClass.isAssignableFrom(TreeSet.class)) {
-      list = new TreeSet();
-    } else if (rawClass.isAssignableFrom(ArrayList.class)) {
-      list = new ArrayList();
-    } else if (rawClass.isAssignableFrom(EnumSet.class)) {
+      return new ArrayList();
+    }
+
+    if (rawClass.isAssignableFrom(HashSet.class)) {
+      return new HashSet();
+    }
+
+    if (rawClass.isAssignableFrom(LinkedHashSet.class)) {
+      return new LinkedHashSet();
+    }
+
+    if (rawClass.isAssignableFrom(TreeSet.class)) {
+      return new TreeSet();
+    }
+
+    if (rawClass.isAssignableFrom(ArrayList.class)) {
+      return new ArrayList();
+    }
+
+    if (rawClass.isAssignableFrom(EnumSet.class)) {
       Type itemType;
       if (type instanceof ParameterizedType) {
         itemType = ((ParameterizedType) type).getActualTypeArguments()[0];
       } else {
         itemType = Object.class;
       }
-      list = EnumSet.noneOf((Class<Enum>) itemType);
-    } else {
-      try {
-        list = (Collection) rawClass.newInstance();
-      } catch (Exception e) {
-        if (isThrow) {
-          throw new RuntimeException("create instance error, class " + rawClass.getName());
-        } else {
-          return null;
-        }
+
+      return EnumSet.noneOf((Class<Enum>) itemType);
+    }
+
+    try {
+      return (Collection) rawClass.newInstance();
+    } catch (Exception e) {
+      if (isThrow) {
+        throw new RuntimeException("create instance error, class " + rawClass.getName());
       }
     }
-    return list;
+
+    return null;
   }
 
   public static Map createMap(Type type) {

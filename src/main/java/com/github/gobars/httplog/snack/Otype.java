@@ -1,7 +1,7 @@
 package com.github.gobars.httplog.snack;
 
 /** 节点值类型（7个） */
-public enum OValueType {
+public enum Otype {
   /** null 类型 */
   Null,
   /** string 类型 */

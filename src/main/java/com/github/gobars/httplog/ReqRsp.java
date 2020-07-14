@@ -1,13 +1,12 @@
 package com.github.gobars.httplog;
 
-import com.github.gobars.httplog.snack.ONode;
+import com.github.gobars.httplog.snack.Onode;
+import com.github.gobars.httplog.snack.core.Cnf;
 import java.sql.Timestamp;
 import java.util.Map;
 import lombok.Data;
-import lombok.ToString;
 
 @Data
-@ToString(exclude = {"bodyONode", "bodyONodeInitialized"})
 public class ReqRsp {
   private long id;
   private Timestamp startTime = new Timestamp(System.currentTimeMillis());
@@ -18,6 +17,40 @@ public class ReqRsp {
   private int bodyBytes;
   private String body;
   private String error;
-  private ONode bodyONode;
+  private Onode bodyOnode;
   private boolean bodyONodeInitialized;
+
+  @Override
+  public String toString() {
+    return "ReqRsp{"
+        + "id="
+        + id
+        + ", startTime="
+        + startTime
+        + ", endTime="
+        + endTime
+        + ", headers="
+        + headers
+        + ", startNs="
+        + startNs
+        + ", tookMs="
+        + tookMs
+        + ", bodyBytes="
+        + bodyBytes
+        + ", body="
+        + tryAbbreviate(body)
+        + ", error="
+        + error
+        + '}';
+  }
+
+  private int abbrevMaxSize;
+
+  private String tryAbbreviate(String s) {
+    try {
+      return Onode.load(s, Cnf.def().abbrevMaxSize(abbrevMaxSize)).toJson();
+    } catch (Exception e) {
+      return Str.abbreviate(s, abbrevMaxSize);
+    }
+  }
 }

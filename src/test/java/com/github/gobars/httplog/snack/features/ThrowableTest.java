@@ -1,6 +1,6 @@
 package com.github.gobars.httplog.snack.features;
 
-import com.github.gobars.httplog.snack.ONode;
+import com.github.gobars.httplog.snack.Onode;
 import org.junit.Test;
 
 public class ThrowableTest {
@@ -17,10 +17,10 @@ public class ThrowableTest {
     Throwable err = (Throwable) test01_exc();
     //    err.printStackTrace();
 
-    String tmp_json = ONode.serialize(err);
+    String tmp_json = Onode.serialize(err);
     //    System.out.println(tmp_json);
 
-    Throwable err2 = ONode.deserialize(tmp_json);
+    Throwable err2 = Onode.deserialize(tmp_json);
     //    err2.printStackTrace();
   }
 
@@ -30,10 +30,10 @@ public class ThrowableTest {
     Throwable err = new RuntimeException(tmp);
     //    err.printStackTrace();
 
-    String tmp_json = ONode.serialize(err);
+    String tmp_json = Onode.serialize(err);
     //    System.out.println(tmp_json);
 
-    Throwable err2 = ONode.deserialize(tmp_json);
+    Throwable err2 = Onode.deserialize(tmp_json);
     //    err2.printStackTrace();
   }
 
@@ -44,10 +44,10 @@ public class ThrowableTest {
     Throwable err = new RuntimeException(tmp2);
     //    err.printStackTrace();
 
-    String tmp_json = ONode.serialize(err);
+    String tmp_json = Onode.serialize(err);
     //    System.out.println(tmp_json);
 
-    Throwable err2 = ONode.deserialize(tmp_json);
+    Throwable err2 = Onode.deserialize(tmp_json);
     //    err2.printStackTrace();
   }
 }

@@ -1,6 +1,6 @@
 package com.github.gobars.httplog.snack.features;
 
-import com.github.gobars.httplog.snack.ONode;
+import com.github.gobars.httplog.snack.Onode;
 import com.github.gobars.httplog.snack._models.UserGroupModel;
 import com.github.gobars.httplog.snack._models.UserModel;
 import com.github.gobars.httplog.snack.core.TypeRef;
@@ -35,7 +35,7 @@ public class SerializationsTest2 {
       group.ids[i] = i;
     }
 
-    return ONode.loadObj(group).toJson();
+    return Onode.loadObj(group).toJson();
   }
 
   @Test
@@ -44,7 +44,7 @@ public class SerializationsTest2 {
 
     System.out.println(json0);
     UserGroupModel group0 =
-        ONode.loadStr(json0).toObject((new TypeRef<UserGroupModel>() {}).getClass());
+        Onode.loadStr(json0).toObject((new TypeRef<UserGroupModel>() {}).getClass());
 
     assert group0.id == 9999;
   }
@@ -54,7 +54,7 @@ public class SerializationsTest2 {
     String json0 = buildJson();
 
     System.out.println(json0);
-    UserGroupModel group0 = ONode.loadStr(json0).toObject(UserGroupModel.class);
+    UserGroupModel group0 = Onode.loadStr(json0).toObject(UserGroupModel.class);
 
     assert group0.id == 9999;
   }
@@ -65,7 +65,7 @@ public class SerializationsTest2 {
 
     System.out.println(json0);
     List<UserModel> group0 =
-        ONode.loadStr(json0).get("users").toObject((new ArrayList<UserModel>() {}).getClass());
+        Onode.loadStr(json0).get("users").toObject((new ArrayList<UserModel>() {}).getClass());
 
     assert group0.size() == 5;
   }
@@ -76,7 +76,7 @@ public class SerializationsTest2 {
 
     System.out.println(json0);
     List<UserModel> group0 =
-        ONode.loadStr(json0).get("users").toObject((new TypeRef<List<UserModel>>() {}).getClass());
+        Onode.loadStr(json0).get("users").toObject((new TypeRef<List<UserModel>>() {}).getClass());
 
     assert group0.size() == 5;
   }

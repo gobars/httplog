@@ -3,7 +3,7 @@ package com.github.gobars.httplog;
 import static com.github.gobars.httplog.TableCol.Equals.eq;
 import static com.github.gobars.httplog.TableCol.Starts.starts;
 
-import com.github.gobars.httplog.snack.ONode;
+import com.github.gobars.httplog.snack.Onode;
 import com.github.gobars.id.util.Pid;
 import com.github.gobars.id.worker.WorkerIdHostname;
 import com.github.gobars.id.worker.WorkerIdIp;
@@ -167,7 +167,7 @@ public class TableCol {
   }
 
   private static String jsonpath(String jsonpath, ReqRsp req) {
-    ONode node = req.getBodyONode();
+    Onode node = req.getBodyOnode();
     if (node == null) {
       if (req.isBodyONodeInitialized()) {
         return null;
@@ -175,8 +175,8 @@ public class TableCol {
 
       req.setBodyONodeInitialized(true);
       try {
-        node = ONode.loadStr(req.getBody());
-        req.setBodyONode(node);
+        node = Onode.loadStr(req.getBody());
+        req.setBodyOnode(node);
       } catch (Exception ex) {
         log.error("failed to load json {}", req.getBody(), ex);
       }
@@ -265,7 +265,7 @@ public class TableCol {
         path = "$." + path;
       }
 
-      return ONode.load(r.getAttribute(tag)).select(path).toString();
+      return Onode.load(r.getAttribute(tag)).select(path).toString();
     };
   }
 

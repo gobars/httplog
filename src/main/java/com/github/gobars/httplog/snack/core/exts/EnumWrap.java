@@ -13,9 +13,8 @@ public class EnumWrap {
 
     for (int i = 0; i < enumOrdinal.length; ++i) {
       Enum e = enumOrdinal[i];
-      String name = e.name();
 
-      enumMap.put(name, e);
+      enumMap.put(e.name(), e);
     }
   }
 

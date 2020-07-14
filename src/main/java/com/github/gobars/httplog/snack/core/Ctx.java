@@ -1,13 +1,13 @@
 package com.github.gobars.httplog.snack.core;
 
-import com.github.gobars.httplog.snack.ONode;
+import com.github.gobars.httplog.snack.Onode;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
 /** 处理上下文对象 */
-public class Context {
+public class Ctx {
   /** 常量配置 */
-  public final Constants config;
+  public final Cnf config;
 
   /** 来源 */
   public Object source;
@@ -19,13 +19,13 @@ public class Context {
   public Type targetType;
 
   /** 用于来源处理的构造 */
-  public Context(Constants config, Object from) {
+  public Ctx(Cnf config, Object from) {
     this.config = config;
     this.source = from;
   }
 
   /** 用于去处的构造 */
-  public Context(Constants config, ONode node, Class<?> clz) {
+  public Ctx(Cnf config, Onode node, Class<?> clz) {
     this.config = config;
     this.source = node;
 
@@ -64,7 +64,7 @@ public class Context {
   }
 
   /** 使用代理对当前上下文进行处理 */
-  public Context handle(Handler handler) {
+  public Ctx handle(Handler handler) {
     try {
       handler.handle(this);
       return this;

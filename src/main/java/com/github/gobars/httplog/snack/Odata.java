@@ -4,44 +4,44 @@ import com.github.gobars.httplog.snack.core.Feature;
 import java.util.*;
 
 /** 节点数据 */
-public class ONodeData {
+public class Odata {
   /** 节点数据的 value */
-  public OValue value = null;
+  public Ovalue value = null;
   /** 节点数据的 object */
-  public Map<String, ONode> object = null;
+  public Map<String, Onode> object = null;
   /** 节点数据的 array */
-  public List<ONode> array = null;
+  public List<Onode> array = null;
 
   /** 节点类型 */
-  public ONodeType nodeType = ONodeType.Null;
+  public OnodeType nodeType = OnodeType.Null;
   /** 节点的 特性 */
   public Map<String, String> attrs = null;
 
-  protected ONode _n;
+  protected Onode n;
 
-  public ONodeData(ONode n) {
-    _n = n;
+  public Odata(Onode n) {
+    this.n = n;
   }
 
-  public Map<String, ONode> object() {
+  public Map<String, Onode> object() {
     tryInitObject();
     return object;
   }
 
-  public List<ONode> array() {
+  public List<Onode> array() {
     tryInitArray();
     return array;
   }
 
-  public OValue value() {
+  public Ovalue value() {
     tryInitValue();
     return value;
   }
 
   /** 尝试初始化为 null */
   protected void tryInitNull() {
-    if (nodeType != ONodeType.Null) {
-      nodeType = ONodeType.Null;
+    if (nodeType != OnodeType.Null) {
+      nodeType = OnodeType.Null;
 
       if (object != null) {
         object.clear();
@@ -59,25 +59,25 @@ public class ONodeData {
 
   /** 尝试初始化为 value */
   protected void tryInitValue() {
-    if (nodeType != ONodeType.Value) {
-      nodeType = ONodeType.Value;
+    if (nodeType != OnodeType.Value) {
+      nodeType = OnodeType.Value;
 
       if (value == null) {
-        value = new OValue(_n);
+        value = new Ovalue(n);
       }
     }
   }
 
   /** 尝试初始化为 object */
   protected void tryInitObject() {
-    if (nodeType != ONodeType.Object) {
-      nodeType = ONodeType.Object;
+    if (nodeType != OnodeType.Object) {
+      nodeType = OnodeType.Object;
 
       if (object == null) {
-        if (_n.co.hasFeature(Feature.OrderedField)) {
-          object = new ONodeLinkedObject();
+        if (n.co.hasFeature(Feature.OrderedField)) {
+          object = new OnodeLinkedObject();
         } else {
-          object = new ONodeObject();
+          object = new OnodeObject();
         }
       }
     }
@@ -85,26 +85,21 @@ public class ONodeData {
 
   /** 尝试初始化为 array */
   protected void tryInitArray() {
-    if (nodeType != ONodeType.Array) {
-      nodeType = ONodeType.Array;
+    if (nodeType != OnodeType.Array) {
+      nodeType = OnodeType.Array;
 
       if (array == null) {
-        array = new ONodeArray();
+        array = new OnodeArray();
       }
     }
   }
-
-  //////////////////////////////
 
   /** 尝试将 object 换为 array（一般用不到） */
   protected void shiftToArray() {
     tryInitArray();
 
     if (object != null) {
-      for (ONode n1 : object.values()) {
-        array.add(n1);
-      }
-
+      array.addAll(object.values());
       object.clear();
       object = null;
     }
@@ -113,9 +108,9 @@ public class ONodeData {
   public String attrGet(String key) {
     if (attrs != null) {
       return attrs.get(key);
-    } else {
-      return null;
     }
+
+    return null;
   }
 
   public void attrSet(String key, String val) {
@@ -141,34 +136,38 @@ public class ONodeData {
 
   @Override
   public int hashCode() {
-    if (nodeType == ONodeType.Object) {
+    if (nodeType == OnodeType.Object) {
       return object.hashCode();
     }
 
-    if (nodeType == ONodeType.Array) {
+    if (nodeType == OnodeType.Array) {
       return array.hashCode();
     }
 
-    if (nodeType == ONodeType.Value) {
+    if (nodeType == OnodeType.Value) {
       return value.hashCode();
     }
 
     return 0;
   }
 
-  class ONodeArray extends ArrayList<ONode> {
+  static class OnodeArray extends ArrayList<Onode> {
     @Override
     public int indexOf(Object o) {
-      for (int i = 0; i < size(); i++) if (get(i).equals(o)) return i;
+      for (int i = 0; i < size(); i++) {
+        if (get(i).equals(o)) {
+          return i;
+        }
+      }
 
       return -1;
     }
   }
 
-  class ONodeObject extends HashMap<String, ONode> {
+  static class OnodeObject extends HashMap<String, Onode> {
     @Override
     public boolean containsValue(Object value) {
-      for (ONode n : values()) {
+      for (Onode n : values()) {
         if (n.equals(value)) {
           return true;
         }
@@ -177,10 +176,10 @@ public class ONodeData {
     }
   }
 
-  class ONodeLinkedObject extends LinkedHashMap<String, ONode> {
+  static class OnodeLinkedObject extends LinkedHashMap<String, Onode> {
     @Override
     public boolean containsValue(Object value) {
-      for (ONode n : values()) {
+      for (Onode n : values()) {
         if (n.equals(value)) {
           return true;
         }

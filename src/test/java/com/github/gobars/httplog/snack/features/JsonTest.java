@@ -1,8 +1,8 @@
 package com.github.gobars.httplog.snack.features;
 
-import com.github.gobars.httplog.snack.ONode;
-import com.github.gobars.httplog.snack.core.Constants;
-import com.github.gobars.httplog.snack.core.Context;
+import com.github.gobars.httplog.snack.Onode;
+import com.github.gobars.httplog.snack.core.Cnf;
+import com.github.gobars.httplog.snack.core.Ctx;
 import com.github.gobars.httplog.snack.core.Defaults;
 import com.github.gobars.httplog.snack.core.Feature;
 import com.github.gobars.httplog.snack.from.JsonFromer;
@@ -21,54 +21,53 @@ public class JsonTest {
   /** 测试非对象，非数组数据 */
   @Test
   public void test11() throws IOException {
-    Context c = new Context(Constants.def(), "\"xxx\"");
+    Ctx c = new Ctx(Cnf.def(), "\"xxx\"");
     new JsonFromer().handle(c);
-    assert "xxx".equals(((ONode) c.target).getString());
+    assert "xxx".equals(((Onode) c.target).getString());
 
-    c = new Context(Constants.def(), "'xxx'");
+    c = new Ctx(Cnf.def(), "'xxx'");
     new JsonFromer().handle(c);
-    assert "xxx".equals(((ONode) c.target).getString());
+    assert "xxx".equals(((Onode) c.target).getString());
 
-    c = new Context(Constants.def(), "true");
+    c = new Ctx(Cnf.def(), "true");
     new JsonFromer().handle(c);
-    assert ((ONode) c.target).getBoolean();
+    assert ((Onode) c.target).getBoolean();
 
-    c = new Context(Constants.def(), "false");
+    c = new Ctx(Cnf.def(), "false");
     new JsonFromer().handle(c);
-    assert ((ONode) c.target).getBoolean() == false;
+    assert ((Onode) c.target).getBoolean() == false;
 
-    c = new Context(Constants.def(), "123");
+    c = new Ctx(Cnf.def(), "123");
     new JsonFromer().handle(c);
-    assert 123 == ((ONode) c.target).getInt();
+    assert 123 == ((Onode) c.target).getInt();
 
-    c = new Context(Constants.def(), "null");
+    c = new Ctx(Cnf.def(), "null");
     new JsonFromer().handle(c);
-    assert ((ONode) c.target).isNull();
+    assert ((Onode) c.target).isNull();
 
-    c = new Context(Constants.def(), "NaN");
+    c = new Ctx(Cnf.def(), "NaN");
     new JsonFromer().handle(c);
-    assert ((ONode) c.target).isNull();
+    assert ((Onode) c.target).isNull();
 
-    c = new Context(Constants.def(), "undefined");
+    c = new Ctx(Cnf.def(), "undefined");
     new JsonFromer().handle(c);
-    assert ((ONode) c.target).isNull();
+    assert ((Onode) c.target).isNull();
 
     long times = System.currentTimeMillis();
-    c = new Context(Constants.def(), "new Date(" + times + ") ");
+    c = new Ctx(Cnf.def(), "new Date(" + times + ") ");
     new JsonFromer().handle(c);
-    assert ((ONode) c.target).getDate().getTime() == times;
+    assert ((Onode) c.target).getDate().getTime() == times;
   }
 
   @Test
   public void test21() throws IOException {
-    Context c =
-        new Context(
-            Constants.def(), "{'a':'b','c':{'d':'e'},'f':{'g':\"h\"},'i':[{'j':'k','l':'m'},'n']}");
+    Ctx c =
+        new Ctx(Cnf.def(), "{'a':'b','c':{'d':'e'},'f':{'g':\"h\"},'i':[{'j':'k','l':'m'},'n']}");
 
     new JsonFromer().handle(c);
 
-    assert "m".equals(((ONode) c.target).get("i").get(0).get("l").getString());
-    assert "n".equals(((ONode) c.target).get("i").get(1).getString());
+    assert "m".equals(((Onode) c.target).get("i").get(0).get("l").getString());
+    assert "n".equals(((Onode) c.target).get("i").get(1).getString());
 
     c.source = c.target;
     new JsonToer().handle(c);
@@ -79,11 +78,11 @@ public class JsonTest {
 
   @Test
   public void test22() throws IOException {
-    Context c = new Context(Constants.def(), "{a:\"b\"}");
+    Ctx c = new Ctx(Cnf.def(), "{a:\"b\"}");
 
     new JsonFromer().handle(c);
 
-    assert "b".equals(((ONode) c.target).get("a").getString());
+    assert "b".equals(((Onode) c.target).get("a").getString());
 
     c.source = c.target;
     new JsonToer().handle(c);
@@ -93,11 +92,11 @@ public class JsonTest {
 
   @Test
   public void test23() throws IOException {
-    Context c = new Context(Constants.def(), "{a:{b:{c:{d:{e:'f'}}}}}");
+    Ctx c = new Ctx(Cnf.def(), "{a:{b:{c:{d:{e:'f'}}}}}");
 
     new JsonFromer().handle(c);
 
-    assert "f".equals(((ONode) c.target).get("a").get("b").get("c").get("d").get("e").getString());
+    assert "f".equals(((Onode) c.target).get("a").get("b").get("c").get("d").get("e").getString());
 
     c.source = c.target;
     new JsonToer().handle(c);
@@ -109,7 +108,7 @@ public class JsonTest {
   public void test24() throws IOException {
     String json = "[[[],[]],[[]],[],[{},{},null]]";
 
-    Context c = new Context(Constants.def(), json);
+    Ctx c = new Ctx(Cnf.def(), json);
 
     new JsonFromer().handle(c);
 
@@ -121,11 +120,11 @@ public class JsonTest {
 
   @Test
   public void test25() throws IOException {
-    Context c = new Context(Constants.def(), "[{a:'b'},{c:'d'},[{e:'f'}]]");
+    Ctx c = new Ctx(Cnf.def(), "[{a:'b'},{c:'d'},[{e:'f'}]]");
 
     new JsonFromer().handle(c);
 
-    assert "f".equals(((ONode) c.target).get(2).get(0).get("e").getString());
+    assert "f".equals(((Onode) c.target).get(2).get(0).get("e").getString());
 
     c.source = c.target;
     new JsonToer().handle(c);
@@ -135,20 +134,19 @@ public class JsonTest {
 
   @Test
   public void test26() throws IOException {
-    Context c =
-        new Context(Constants.def(), "[123,123.45,'123.45','2019-01-02T03:04:05',true,false]");
+    Ctx c = new Ctx(Cnf.def(), "[123,123.45,'123.45','2019-01-02T03:04:05',true,false]");
 
     new JsonFromer().handle(c);
 
-    assert 123 == ((ONode) c.target).get(0).getInt();
-    assert 123.45 == ((ONode) c.target).get(1).getDouble();
-    assert "123.45".equals(((ONode) c.target).get(2).getString());
+    assert 123 == ((Onode) c.target).get(0).getInt();
+    assert 123.45 == ((Onode) c.target).get(1).getDouble();
+    assert "123.45".equals(((Onode) c.target).get(2).getString());
     assert "2019-01-02T03:04:05"
         .equals(
             new SimpleDateFormat(Defaults.DEF_DATE_FORMAT_STRING)
-                .format(((ONode) c.target).get(3).getDate()));
-    assert ((ONode) c.target).get(4).getBoolean();
-    assert !((ONode) c.target).get(5).getBoolean();
+                .format(((Onode) c.target).get(3).getDate()));
+    assert ((Onode) c.target).get(4).getBoolean();
+    assert !((Onode) c.target).get(5).getBoolean();
 
     c.source = c.target;
     new JsonToer().handle(c);
@@ -160,11 +158,11 @@ public class JsonTest {
   @Test
   public void test27() throws IOException {
 
-    Context c = new Context(Constants.def(), "{\"a\":\"\\t\"}");
+    Ctx c = new Ctx(Cnf.def(), "{\"a\":\"\\t\"}");
 
     new JsonFromer().handle(c);
 
-    assert "\t".equals(((ONode) c.target).get("a").getString());
+    assert "\t".equals(((Onode) c.target).get("a").getString());
 
     c.source = c.target;
     new JsonToer().handle(c);
@@ -176,11 +174,11 @@ public class JsonTest {
   @Test
   public void test28() throws IOException {
 
-    Context c = new Context(Constants.def(), "{\"a\":\"'\\u7684\\t\\n\"}");
+    Ctx c = new Ctx(Cnf.def(), "{\"a\":\"'\\u7684\\t\\n\"}");
 
     new JsonFromer().handle(c);
 
-    assert "'的\t\n".equals(((ONode) c.target).get("a").getString());
+    assert "'的\t\n".equals(((Onode) c.target).get("a").getString());
 
     c.source = c.target;
     new JsonToer().handle(c);
@@ -192,12 +190,11 @@ public class JsonTest {
   @Test
   public void test29() throws IOException {
 
-    Context c =
-        new Context(Constants.of(Feature.BrowserCompatible), "{\"a\":\"'\\ud83d\\udc4c\\t\\n\"}");
+    Ctx c = new Ctx(Cnf.of(Feature.BrowserCompatible), "{\"a\":\"'\\ud83d\\udc4c\\t\\n\"}");
 
     new JsonFromer().handle(c);
 
-    assert "'👌\t\n".equals(((ONode) c.target).get("a").getString());
+    assert "'👌\t\n".equals(((Onode) c.target).get("a").getString());
 
     c.source = c.target;
     new JsonToer().handle(c);
@@ -208,11 +205,11 @@ public class JsonTest {
   @Test
   public void test30() throws IOException {
 
-    Context c = new Context(Constants.def(), "{\"a\":\" \\0\\1\\2\\3\\4\\5\\6\\7\"}");
+    Ctx c = new Ctx(Cnf.def(), "{\"a\":\" \\0\\1\\2\\3\\4\\5\\6\\7\"}");
 
     new JsonFromer().handle(c);
 
-    assert " \0\1\2\3\4\5\6\7".equals(((ONode) c.target).get("a").getString());
+    assert " \0\1\2\3\4\5\6\7".equals(((Onode) c.target).get("a").getString());
 
     c.source = c.target;
     new JsonToer().handle(c);
@@ -223,11 +220,11 @@ public class JsonTest {
   @Test
   public void test31() throws IOException {
 
-    Context c = new Context(Constants.of(Feature.BrowserCompatible), "{\"a\":\" \\u000f\\u0012\"}");
+    Ctx c = new Ctx(Cnf.of(Feature.BrowserCompatible), "{\"a\":\" \\u000f\\u0012\"}");
 
     new JsonFromer().handle(c);
 
-    assert " \u000f\u0012".equals(((ONode) c.target).get("a").getString());
+    assert " \u000f\u0012".equals(((Onode) c.target).get("a").getString());
 
     c.source = c.target;
     new JsonToer().handle(c);

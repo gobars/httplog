@@ -3,17 +3,15 @@ package com.github.gobars.httplog.snack.core.exts;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Arrays;
+import java.util.Objects;
 
-/*
- * 泛式类型（引用自：Fastjson）
- * */
-public class ParameterizedTypeImpl implements ParameterizedType {
-
+/** 泛式类型（引用自：Fastjson） */
+public class PtypeImpl implements ParameterizedType {
   private final Type[] actualTypeArguments;
   private final Type ownerType;
   private final Type rawType;
 
-  public ParameterizedTypeImpl(Type[] actualTypeArguments, Type ownerType, Type rawType) {
+  public PtypeImpl(Type[] actualTypeArguments, Type ownerType, Type rawType) {
     this.actualTypeArguments = actualTypeArguments;
     this.ownerType = ownerType;
     this.rawType = rawType;
@@ -44,24 +42,23 @@ public class ParameterizedTypeImpl implements ParameterizedType {
       return false;
     }
 
-    ParameterizedTypeImpl that = (ParameterizedTypeImpl) o;
+    PtypeImpl that = (PtypeImpl) o;
 
     if (!Arrays.equals(actualTypeArguments, that.actualTypeArguments)) {
       return false;
     }
 
-    if (ownerType != null ? !ownerType.equals(that.ownerType) : that.ownerType != null) {
+    if (!Objects.equals(ownerType, that.ownerType)) {
       return false;
     }
 
-    return rawType != null ? rawType.equals(that.rawType) : that.rawType == null;
+    return Objects.equals(rawType, that.rawType);
   }
 
   @Override
   public int hashCode() {
     int result = actualTypeArguments != null ? Arrays.hashCode(actualTypeArguments) : 0;
     result = 31 * result + (ownerType != null ? ownerType.hashCode() : 0);
-    result = 31 * result + (rawType != null ? rawType.hashCode() : 0);
-    return result;
+    return 31 * result + (rawType != null ? rawType.hashCode() : 0);
   }
 }

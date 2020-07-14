@@ -67,10 +67,6 @@ public enum Feature {
 
   /** 特性合并生成 */
   public static int of(Feature... features) {
-    if (features == null) {
-      return 0;
-    }
-
     int value = 0;
 
     for (Feature feature : features) {

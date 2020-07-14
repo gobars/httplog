@@ -179,6 +179,9 @@ public class HttpLogProcessor {
   }
 
   public void run(HttpServletRequest r, HttpServletResponse p, Req req, Rsp rsp) {
+    req.setAbbrevMaxSize(httpLog.abbrevMaxSize());
+    rsp.setAbbrevMaxSize(httpLog.abbrevMaxSize());
+
     log.info("req: {}", req);
     log.info("rsp: {}", rsp);
     log.info("custom: {}", HttpLogCustom.get());

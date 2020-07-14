@@ -13,6 +13,7 @@ public class HttpLogAttr {
   private Class<? extends HttpLogPre>[] pre;
   private Class<? extends HttpLogPost>[] post;
   private boolean sync;
+  private int abbrevMaxSize;
 
   @SuppressWarnings("unchecked")
   public static HttpLogAttr create(AnnotationAttributes attrs) {
@@ -22,6 +23,7 @@ public class HttpLogAttr {
         .fix(attrs.getString("fix"))
         .pre((Class<? extends HttpLogPre>[]) attrs.get("pre"))
         .post((Class<? extends HttpLogPost>[]) attrs.get("post"))
-        .sync(attrs.getBoolean("sync"));
+        .sync(attrs.getBoolean("sync"))
+        .abbrevMaxSize(attrs.getNumber("abbrevMaxSize"));
   }
 }

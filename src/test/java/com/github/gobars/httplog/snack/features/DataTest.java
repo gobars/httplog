@@ -1,9 +1,9 @@
 package com.github.gobars.httplog.snack.features;
 
-import com.github.gobars.httplog.snack.ONode;
+import com.github.gobars.httplog.snack.Onode;
 import com.github.gobars.httplog.snack._models.*;
-import com.github.gobars.httplog.snack.core.Constants;
-import com.github.gobars.httplog.snack.core.Context;
+import com.github.gobars.httplog.snack.core.Cnf;
+import com.github.gobars.httplog.snack.core.Ctx;
 import com.github.gobars.httplog.snack.from.ObjectFromer;
 import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
@@ -28,13 +28,13 @@ public class DataTest {
     a.b = b;
     b.a = a;
 
-    Context c = new Context(Constants.def(), a);
+    Ctx c = new Ctx(Cnf.def(), a);
 
     new ObjectFromer().handle(c);
 
     //    System.out.println(((ONode) c.target).toJson());
 
-    Object data = ((ONode) c.target).toObject(null);
+    Object data = ((Onode) c.target).toObject(null);
 
     assert (data instanceof Map);
   }
@@ -51,13 +51,13 @@ public class DataTest {
     order.order_id = 2222;
     order.order_num = "ddddd";
 
-    Context c = new Context(Constants.def(), order);
+    Ctx c = new Ctx(Cnf.def(), order);
 
     new ObjectFromer().handle(c);
 
     //    System.out.println(((ONode) c.target).toJson());
 
-    Object data = ((ONode) c.target).toObject(null);
+    Object data = ((Onode) c.target).toObject(null);
 
     assert (data instanceof Map);
   }
@@ -87,13 +87,13 @@ public class DataTest {
     //
     //        new ObjectFromer().handle(context);
 
-    String json = ONode.serialize(group);
+    String json = Onode.serialize(group);
 
     //    System.out.println(json); // context.node.toJson());
 
-    Object g2 = ONode.deserialize(json);
+    Object g2 = Onode.deserialize(json);
 
-    ONode node = ONode.load(json); // context.node.toData();
+    Onode node = Onode.load(json); // context.node.toData();
 
     Object tmp = node.toObject(null);
 

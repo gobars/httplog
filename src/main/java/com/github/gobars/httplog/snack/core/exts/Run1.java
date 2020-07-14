@@ -1,6 +1,6 @@
 package com.github.gobars.httplog.snack.core.exts;
 
 /** 1参动作接口（用于lambda表达式） */
-public interface Act1<T> {
+public interface Run1<T> {
   void run(T t);
 }

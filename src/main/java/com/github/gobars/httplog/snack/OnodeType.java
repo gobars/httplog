@@ -1,7 +1,7 @@
 package com.github.gobars.httplog.snack;
 
 /** 节点类型 */
-public enum ONodeType {
+public enum OnodeType {
   /** null 类型 */
   Null,
   /** value（值） 类型 */
