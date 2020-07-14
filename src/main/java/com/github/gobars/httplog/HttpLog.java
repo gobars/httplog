@@ -100,6 +100,8 @@ public @interface HttpLog {
   /**
    * 采取缩写的最大长度.
    *
+   * <p>设置成<=0时，使用原始长度
+   *
    * @return 缩写最大长度.
    */
   int abbrevMaxSize() default 64;
