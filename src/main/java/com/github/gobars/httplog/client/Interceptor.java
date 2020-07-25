@@ -41,6 +41,11 @@ public class Interceptor {
     public void process(HttpResponse r, HttpContext ctx) {
       long end = System.currentTimeMillis();
       Log log = (Log) ctx.getAttribute(HTTPLOG_KEY);
+      if (log == null) {
+        // there is no need to record the response.
+        return;
+      }
+
       log.end(end);
       log.cost(end - log.start());
 

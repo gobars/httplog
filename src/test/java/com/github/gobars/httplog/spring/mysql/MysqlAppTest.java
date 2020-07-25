@@ -1,9 +1,16 @@
 package com.github.gobars.httplog.spring.mysql;
 
 import com.github.gobars.httplog.spring.TestDto;
+import com.github.gobars.id.Id;
+import com.github.gobars.id.db.SqlRunner;
+import java.sql.SQLException;
+import javax.sql.DataSource;
+import lombok.SneakyThrows;
 import org.assertj.core.api.Assertions;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.web.server.LocalServerPort;
@@ -29,6 +36,24 @@ public class MysqlAppTest {
   }
 
   @LocalServerPort private int port;
+  @Autowired DataSource dataSource;
+
+  @SneakyThrows
+  @Test
+  public void Duplicate() {
+    SqlRunner runner = new SqlRunner(dataSource.getConnection());
+    long id = Id.next();
+    runner.insert("insert into biz_log(id) values(?)", id);
+
+    try {
+      runner.insert("insert into biz_log(id) values(?)", id);
+      Assert.fail();
+    } catch (SQLException se) {
+      System.out.println(se.getSQLState().equals("23000"));
+      System.out.println(se.getSQLState());
+      System.out.println(se);
+    }
+  }
 
   @Test
   public void getTest() {

@@ -70,7 +70,11 @@ public class Cnf {
     return Feature.isEnabled(features, feature);
   }
 
-  /** null string 默认值 */
+  /**
+   * null string 默认值
+   *
+   * @return null string的默认值
+   */
   public final String nullString() {
     return hasFeature(Feature.StringNullAsEmpty) ? "" : null;
   }
