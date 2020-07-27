@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.web.servlet.HandlerMapping;
 
 /**
@@ -96,6 +97,9 @@ public class TableCol {
    * <p>eg. auto_increment in MySQL.
    */
   private String extra;
+
+  /** 是否可以为空. */
+  private boolean nullable;
 
   /**
    * 字符最大长度
@@ -239,7 +243,7 @@ public class TableCol {
     }
 
     if (this.valueGetter != null) {
-      this.valueGetter = wrapMaxLength(this.valueGetter);
+      this.valueGetter = wrap(this.valueGetter);
     }
   }
 
@@ -251,19 +255,30 @@ public class TableCol {
     return (req, rsp, r, p, hl) -> req.getPres().get(tag);
   }
 
-  private ColValueGetter wrapMaxLength(final ColValueGetter vg) {
+  private ColValueGetter wrap(final ColValueGetter vg) {
     return (req, rsp, r, p, hl) -> {
       Object o = vg.get(req, rsp, r, p, hl);
-      if (maxLen <= 0) {
-        return o;
+      o = truncateToMaxLength(o);
+
+      if (o == null && !nullable) {
+        o = 0;
       }
 
-      if (o == null || o instanceof Timestamp || o instanceof Integer || o instanceof Long) {
-        return o;
-      }
-
-      return Str.abbreviate(o.toString(), maxLen);
+      return o;
     };
+  }
+
+  @Nullable
+  private Object truncateToMaxLength(Object o) {
+    if (maxLen <= 0) {
+      return o;
+    }
+
+    if (o == null || o instanceof Timestamp || o instanceof Integer || o instanceof Long) {
+      return o;
+    }
+
+    return Str.abbreviate(o.toString(), maxLen);
   }
 
   private ColValueGetter createFixValueGetter(final String tag, final Map<String, String> fixes) {

@@ -52,8 +52,10 @@ public class HttpLogProcessor {
   @SneakyThrows
   public static HttpLogProcessor create(
       HttpLogAttr httpLog, ConnGetter connGetter, ApplicationContext appContext) {
+    // MYSQL: IS_NULLABLE YES NO
+    // ORACLE: NULLABLE Y N
     val ms =
-        "select column_name, column_comment, data_type, extra, "
+        "select column_name, column_comment, data_type, extra, is_nullable nullable, "
             + " character_maximum_length max_length, ordinal_position column_id"
             + " from information_schema.columns"
             + " where table_schema = database()"
@@ -63,6 +65,7 @@ public class HttpLogProcessor {
             + "       tc.COLUMN_NAME column_name,"
             + "       tc.DATA_TYPE   data_type,"
             + "       tc.DATA_LENGTH max_length,"
+            + "       tc.NULLABLE     nullable,"
             + "       cc.COMMENTS    column_comment"
             + " from user_col_comments cc"
             + "   inner join user_tab_cols tc"
@@ -91,6 +94,7 @@ public class HttpLogProcessor {
         setStr(m, "extra", tableCol::setExtra);
         setInt(m, "max_length", tableCol::setMaxLen);
         setInt(m, "column_id", tableCol::setSeq);
+        setBool(m, "nullable", tableCol::setNullable, true);
 
         tableCol.parseComment(fixes);
       }
@@ -111,6 +115,20 @@ public class HttpLogProcessor {
 
     if (v != null) {
       consumer.accept(v);
+    }
+  }
+
+  private static void setBool(
+      Map<String, String> m, String key, Consumer<Boolean> consumer, boolean defaultValue) {
+    String v = m.get(key);
+    if (v == null) {
+      v = m.get(key.toUpperCase());
+    }
+
+    if (v != null) {
+      consumer.accept(v.toLowerCase().startsWith("y"));
+    } else {
+      consumer.accept(defaultValue);
     }
   }
 

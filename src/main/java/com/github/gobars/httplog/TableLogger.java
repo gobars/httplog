@@ -103,13 +103,13 @@ public class TableLogger {
     }
   }
 
-  private static final int MAX_RETRY = 10;
+  private static final int MAX_RETRY = 3;
 
   private static boolean rspInternal(SqlRunner run, LogPrepared logPrepared) {
     try {
       run.insert(logPrepared.getSql(), logPrepared.getParams().toArray(new Object[0]));
     } catch (Exception ex) {
-      if (isConstraintViolation(ex)) {
+      if (isDuplicateKeyException(ex)) {
         log.warn("logPrepared {} got duplicate key, retry", logPrepared, ex);
         long newID = Id.next();
 
@@ -162,7 +162,7 @@ public class TableLogger {
    *
    * <p>"PRIMARY KEY ON PUBLIC.TT(A)"; SQL statement:
    */
-  public static boolean isConstraintViolation(Exception e) {
-    return e instanceof SQLException && ((SQLException) e).getSQLState().startsWith("23");
+  public static boolean isDuplicateKeyException(Exception e) {
+    return e instanceof SQLException && ((SQLException) e).getSQLState().equals("23000");
   }
 }
