@@ -12,13 +12,12 @@ public class ReqRsp {
   private Timestamp startTime = new Timestamp(System.currentTimeMillis());
   private Timestamp endTime;
   private Map<String, String> headers;
-  private long startNs;
   private long tookMs;
   private int bodyBytes;
   private String body;
   private String error;
   private Onode bodyOnode;
-  private boolean bodyONodeInitialized;
+  private boolean bodyOnodeInitialized;
 
   @Override
   public String toString() {
@@ -31,8 +30,6 @@ public class ReqRsp {
         + endTime
         + ", headers="
         + headers
-        + ", startNs="
-        + startNs
         + ", tookMs="
         + tookMs
         + ", bodyBytes="
@@ -45,6 +42,14 @@ public class ReqRsp {
   }
 
   private int abbrevMaxSize;
+
+  public String getAbbreviateBody() {
+    try {
+      return Onode.load(this.body, Cnf.def().abbrevMaxSize(abbrevMaxSize)).toJson();
+    } catch (Exception e) {
+      return this.body;
+    }
+  }
 
   private String tryAbbreviate(String s) {
     try {

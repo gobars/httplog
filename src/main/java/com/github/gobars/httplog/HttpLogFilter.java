@@ -48,8 +48,6 @@ public class HttpLogFilter extends OncePerRequestFilter {
 
     // Launch of the timing of the request
     long startNs = System.nanoTime();
-    req.setStartNs(startNs);
-    rsp.setStartNs(startNs);
 
     // Registration of request status and headers
     logReqStatusAndHeaders(rq, req);

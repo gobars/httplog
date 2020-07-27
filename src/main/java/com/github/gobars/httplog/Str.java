@@ -2,6 +2,7 @@ package com.github.gobars.httplog;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -19,16 +20,23 @@ public class Str {
     return s != null && a != null && s.toLowerCase().contains(a.toLowerCase());
   }
 
-  public String abbreviate(String s, int maxLen) {
-    if (s.length() <= maxLen || maxLen <= 0) {
+  /**
+   * 按字节数进行缩略.
+   *
+   * @param s 字符串
+   * @param maxBytesLen 最大字节数
+   * @return 缩略字符串
+   */
+  public String abbreviate(String s, int maxBytesLen) {
+    if (s.length() <= maxBytesLen || maxBytesLen <= 0) {
       return s;
     }
 
-    if (maxLen > 3) {
-      return s.substring(0, maxLen - 3) + "...";
+    if (maxBytesLen > 3) {
+      return truncate(s, maxBytesLen - 3) + "...";
     }
 
-    return s.substring(0, maxLen);
+    return truncate(s, maxBytesLen);
   }
 
   public Map<String, String> parseQuery(String s) {
@@ -88,5 +96,45 @@ public class Str {
     }
 
     return String.join(sep, values);
+  }
+
+  /**
+   * Truncating Strings by Bytes.
+   *
+   * <p>https://stackoverflow.com/a/17893381
+   *
+   * @param s string
+   * @param maxBytes max bytes
+   * @return truncated string
+   */
+  public String truncate(String s, int maxBytes) {
+    if (s == null) {
+      return null;
+    }
+
+    byte[] utf8 = s.getBytes(StandardCharsets.UTF_8);
+    if (utf8.length <= maxBytes) {
+      return s;
+    }
+
+    int n16 = 0;
+    boolean extraLong;
+    int i = 0;
+    while (i < maxBytes) {
+      // Unicode characters above U+FFFF need 2 words in utf16
+      extraLong = ((utf8[i] & 0xF0) == 0xF0);
+      if ((utf8[i] & 0x80) == 0) {
+        ++i;
+      } else {
+        for (int b = utf8[i]; (b & 0x80) > 0; b <<= 1) {
+          ++i;
+        }
+      }
+      if (i <= maxBytes) {
+        n16 += (extraLong) ? 2 : 1;
+      }
+    }
+
+    return s.substring(0, n16);
   }
 }

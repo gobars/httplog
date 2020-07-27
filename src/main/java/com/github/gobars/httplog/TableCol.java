@@ -49,7 +49,7 @@ public class TableCol {
   static {
     rsps.put(starts("head_"), (req, rsp, r, p, hl, v) -> rsp.getHeaders().get(v.substring(5)));
     rsps.put(eq("heads"), (req, rsp, r, p, hl, v) -> rsp.getHeaders());
-    rsps.put(eq("body"), (req, rsp, r, p, hl, v) -> rsp.getBody());
+    rsps.put(eq("body"), (req, rsp, r, p, hl, v) -> rsp.getAbbreviateBody());
     rsps.put(eq("json"), (req, rsp, r, p, hl, v) -> getJsonBody(rsp));
     rsps.put(starts("json_"), (req, rsp, r, hl, p, v) -> jsonpath(v.substring(5), rsp));
     rsps.put(eq("status"), (req, rsp, r, p, hl, v) -> p.getStatus());
@@ -58,7 +58,7 @@ public class TableCol {
   static {
     reqs.put(starts("head_"), (req, rsp, r, p, hl, v) -> req.getHeaders().get(v.substring(5)));
     reqs.put(eq("heads"), (req, rsp, r, p, hl, v) -> req.getHeaders());
-    reqs.put(eq("body"), (req, rsp, r, p, hl, v) -> req.getBody());
+    reqs.put(eq("body"), (req, rsp, r, p, hl, v) -> req.getAbbreviateBody());
     reqs.put(eq("json"), (req, rsp, r, p, hl, v) -> getJsonBody(req));
     reqs.put(starts("json_"), (req, rsp, r, p, hl, v) -> jsonpath(v.substring(5), req));
     reqs.put(eq("method"), (req, rsp, r, p, hl, v) -> r.getMethod());
@@ -178,11 +178,11 @@ public class TableCol {
   private static String jsonpath(String jsonpath, ReqRsp req) {
     Onode node = req.getBodyOnode();
     if (node == null) {
-      if (req.isBodyONodeInitialized()) {
+      if (req.isBodyOnodeInitialized()) {
         return null;
       }
 
-      req.setBodyONodeInitialized(true);
+      req.setBodyOnodeInitialized(true);
       try {
         node = Onode.loadStr(req.getBody());
         req.setBodyOnode(node);
