@@ -89,6 +89,14 @@ public class TableCol {
    * <p>eg. bigint
    */
   private String dataType;
+
+  /**
+   * 额外信息
+   *
+   * <p>eg. auto_increment in MySQL.
+   */
+  private String extra;
+
   /**
    * 字符最大长度
    *
@@ -130,7 +138,8 @@ public class TableCol {
 
   @SuppressWarnings("unchecked")
   private static Object getPathVar(HttpServletRequest r, String v) {
-    return ((Map<String, String>) r.getAttribute(PATH_ATTR)).get(v);
+    Map<String, String> attr = (Map<String, String>) r.getAttribute(PATH_ATTR);
+    return attr == null ? null : attr.get(v);
   }
 
   private static Map<String, String> convert(Map<String, String[]> src) {
@@ -218,8 +227,15 @@ public class TableCol {
     } else if (tag.startsWith("post_")) {
       this.valueGetter = createPostValueGetter(tag.substring(5));
     } else if ("-".equals(tag)) {
+      // ignore, 此字段，由db自动处理(eg. auto increment / insert trigger)
+      this.valueGetter = null;
     } else {
-      this.valueGetter = createBuiltinValueGetter(tag);
+      if (Str.containsIgnoreCase(extra, "auto_increment")) {
+        // auto increment
+        this.valueGetter = null;
+      } else {
+        this.valueGetter = createBuiltinValueGetter(tag);
+      }
     }
 
     if (this.valueGetter != null) {

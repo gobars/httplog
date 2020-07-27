@@ -4,6 +4,7 @@ import com.github.gobars.httplog.spring.TestDto;
 import com.github.gobars.id.Id;
 import com.github.gobars.id.db.SqlRunner;
 import java.sql.SQLException;
+import java.util.concurrent.TimeUnit;
 import javax.sql.DataSource;
 import lombok.SneakyThrows;
 import org.assertj.core.api.Assertions;
@@ -56,6 +57,7 @@ public class MysqlAppTest {
   }
 
   @Test
+  @SneakyThrows
   public void getTest() {
     TestRestTemplate restTemplate = new TestRestTemplate();
     HttpEntity<String> entity = new HttpEntity<>(null, EMPTY_HEADER);
@@ -65,6 +67,14 @@ public class MysqlAppTest {
 
     Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     Assertions.assertThat(response.getBody()).isEqualTo("test id : 10");
+
+    response =
+        restTemplate.exchange(createURLWithPort("/test/10"), HttpMethod.GET, entity, String.class);
+
+    Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    Assertions.assertThat(response.getBody()).isEqualTo("test id : 10");
+
+    TimeUnit.SECONDS.sleep(3);
   }
 
   @Test

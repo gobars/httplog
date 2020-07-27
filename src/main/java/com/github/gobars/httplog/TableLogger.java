@@ -48,26 +48,56 @@ public class TableLogger {
     return new TableLogger(insertSql.toString(), insertValueGetters);
   }
 
+  @Value
+  public static class LogPrepared {
+    String sql;
+    ArrayList<Object> params;
+    List<Integer> idPositions;
+  }
+
   /**
-   * 记录响应日志
+   * 准备记录响应日志
    *
-   * @param run SqlRunner
    * @param r HttpServletRequest
    * @param p HttpServletResponse
    * @param req Req
    * @param rsp Rsp
    * @param httpLog HttpLogAttr
    */
-  public void rsp(
-      SqlRunner run,
-      HttpServletRequest r,
-      HttpServletResponse p,
-      Req req,
-      Rsp rsp,
-      HttpLogAttr httpLog) {
+  public LogPrepared prepareLog(
+      HttpServletRequest r, HttpServletResponse p, Req req, Rsp rsp, HttpLogAttr httpLog) {
+    ArrayList<Object> params = new ArrayList<>(valueGetters.size());
+    List<Integer> idPositions = new ArrayList<>();
+    for (val colValueGetter : valueGetters) {
+      Object obj;
+      try {
+        obj = colValueGetter.get(req, rsp, r, p, httpLog);
+      } catch (Exception ex) {
+        obj = null;
+        log.warn("colValueGetter get error", ex);
+      }
 
+      Long id = req.getId();
+      if (id.equals(obj)) {
+        idPositions.add(params.size());
+      }
+
+      params.add(obj);
+    }
+
+    log.debug("SQL {} with args {}", sql, params);
+    return new LogPrepared(sql, params, idPositions);
+  }
+
+  /**
+   * 记录响应日志
+   *
+   * @param run SqlRunner
+   * @param logPrepared LogPrepared
+   */
+  public static void rsp(SqlRunner run, LogPrepared logPrepared) {
     for (int i = 0; i < MAX_RETRY; i++) {
-      if (rspInternal(run, r, p, req, rsp, httpLog)) {
+      if (rspInternal(run, logPrepared)) {
         return;
       }
     }
@@ -75,34 +105,21 @@ public class TableLogger {
 
   private static final int MAX_RETRY = 10;
 
-  private boolean rspInternal(
-      SqlRunner run,
-      HttpServletRequest r,
-      HttpServletResponse p,
-      Req req,
-      Rsp rsp,
-      HttpLogAttr httpLog) {
-    val params = new ArrayList<>(valueGetters.size());
-    for (val colValueGetter : valueGetters) {
-      try {
-        Object obj = colValueGetter.get(req, rsp, r, p, httpLog);
-        params.add(obj);
-      } catch (Exception ex) {
-        params.add(null);
-        log.warn("colValueGetter get error", ex);
-      }
-    }
-
+  private static boolean rspInternal(SqlRunner run, LogPrepared logPrepared) {
     try {
-      run.insert(sql, params.toArray(new Object[0]));
+      run.insert(logPrepared.getSql(), logPrepared.getParams().toArray(new Object[0]));
     } catch (Exception ex) {
       if (isConstraintViolation(ex)) {
-        log.warn("sql:{} with params:{} got duplicate key, retry", sql, params, ex);
-        req.setId(Id.next());
-        rsp.setId(req.getId());
+        log.warn("logPrepared {} got duplicate key, retry", logPrepared, ex);
+        long newID = Id.next();
+
+        for (int idPosition : logPrepared.getIdPositions()) {
+          logPrepared.getParams().set(idPosition, newID);
+        }
+
         return false;
       }
-      log.warn("sql:{} with params:{} get error", sql, params, ex);
+      log.warn("logPrepared {} get error", logPrepared, ex);
     }
 
     return true;

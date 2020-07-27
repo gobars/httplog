@@ -1,5 +1,6 @@
 package com.github.gobars.httplog;
 
+import com.github.gobars.httplog.TableLogger.LogPrepared;
 import com.github.gobars.id.conf.ConnGetter;
 import com.github.gobars.id.db.SqlRunner;
 import com.github.gobars.id.util.DbType;
@@ -52,7 +53,7 @@ public class HttpLogProcessor {
   public static HttpLogProcessor create(
       HttpLogAttr httpLog, ConnGetter connGetter, ApplicationContext appContext) {
     val ms =
-        "select column_name, column_comment, data_type,"
+        "select column_name, column_comment, data_type, extra, "
             + " character_maximum_length max_length, ordinal_position column_id"
             + " from information_schema.columns"
             + " where table_schema = database()"
@@ -87,13 +88,14 @@ public class HttpLogProcessor {
         setStr(m, "column_name", tableCol::setName);
         setStr(m, "column_comment", tableCol::setComment);
         setStr(m, "data_type", tableCol::setDataType);
+        setStr(m, "extra", tableCol::setExtra);
         setInt(m, "max_length", tableCol::setMaxLen);
         setInt(m, "column_id", tableCol::setSeq);
 
         tableCol.parseComment(fixes);
       }
 
-      log.info("tableCols: {}", tableCols);
+      log.debug("tableCols: {}", tableCols);
 
       sqlGenerators.put(table, TableLogger.create(table, tableCols));
     }
@@ -175,10 +177,23 @@ public class HttpLogProcessor {
 
   @SneakyThrows
   public void complete(HttpServletRequest r, HttpServletResponse p, Req req, Rsp rsp) {
-    taskExecutor.execute(() -> run(r, p, req, rsp));
+    List<LogPrepared> prepareds = prepareLogs(r, p, req, rsp);
+
+    taskExecutor.execute(() -> run(prepareds));
   }
 
-  public void run(HttpServletRequest r, HttpServletResponse p, Req req, Rsp rsp) {
+  @SneakyThrows
+  public void run(List<LogPrepared> prepareds) {
+    @Cleanup val conn = connGetter.getConn();
+
+    val run = new SqlRunner(conn, false);
+    for (LogPrepared prepared : prepareds) {
+      TableLogger.rsp(run, prepared);
+    }
+  }
+
+  public List<LogPrepared> prepareLogs(
+      HttpServletRequest r, HttpServletResponse p, Req req, Rsp rsp) {
     req.setAbbrevMaxSize(httpLog.abbrevMaxSize());
     rsp.setAbbrevMaxSize(httpLog.abbrevMaxSize());
 
@@ -186,18 +201,19 @@ public class HttpLogProcessor {
     log.info("rsp: {}", rsp);
     log.info("custom: {}", HttpLogCustom.get());
 
+    List<LogPrepared> prepareds = new ArrayList<>();
+
     try {
       rsp.setPosts(createPost(req, rsp, r, p, httpLog));
 
-      @Cleanup val conn = connGetter.getConn();
       for (val table : httpLog.tables()) {
-        val runner = new SqlRunner(conn, false);
-
-        sqlGenerators.get(table).rsp(runner, r, p, req, rsp, httpLog);
+        prepareds.add(sqlGenerators.get(table).prepareLog(r, p, req, rsp, httpLog));
       }
     } catch (Exception ex) {
       log.warn("failed to log req:{} rsp:{} for httpLog:{}", req, rsp, httpLog, ex);
     }
+
+    return prepareds;
   }
 
   private Map<String, String> createPre(HttpServletRequest r, Req req, HttpLogAttr hl) {

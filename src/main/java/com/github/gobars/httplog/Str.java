@@ -15,6 +15,10 @@ import lombok.val;
  */
 @UtilityClass
 public class Str {
+  public boolean containsIgnoreCase(String s, String a) {
+    return s != null && a != null && s.toLowerCase().contains(a.toLowerCase());
+  }
+
   public String abbreviate(String s, int maxLen) {
     if (s.length() <= maxLen || maxLen <= 0) {
       return s;
