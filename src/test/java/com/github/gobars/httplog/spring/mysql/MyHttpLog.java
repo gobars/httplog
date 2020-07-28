@@ -6,7 +6,7 @@ import com.github.gobars.httplog.HttpLogPre;
 import java.lang.annotation.*;
 
 @Documented
-@HttpLog(tables = "biz_log", fix = "desc:ID查找")
+@HttpLog(tables = "biz_log", fix = "desc:ID查找", sync = true)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.TYPE})
 public @interface MyHttpLog {

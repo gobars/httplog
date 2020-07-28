@@ -6,6 +6,8 @@ import com.github.gobars.httplog.HttpLog;
 import com.github.gobars.httplog.HttpLogCustom;
 import com.github.gobars.httplog.spring.TestDto;
 import com.github.gobars.httplog.spring.TestException;
+import java.util.HashMap;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,6 +26,24 @@ public class TestController {
   @GetMapping(value = "/{id}")
   public String get(@PathVariable Integer id) {
     return "test id : " + id;
+  }
+
+  /**
+   * test get.
+   *
+   * @param id id
+   * @return id
+   */
+  @MyHttpLog(fix = "desc:ID查找返回JSON", biz = "JSON测试查询")
+  @GetMapping(value = "/json/{id}")
+  public Map<String, String> json(@PathVariable String id) {
+    Map<String, String> m = new HashMap<>();
+    m.put("a1", id);
+    m.put("b1", "毛主席在天安门城楼上宣布中华人民共和国中央人民政府今天成立了");
+    m.put(
+        "c1",
+        "123456789012567890123458901256789012346789012345890123467890123456789012567890123458901256789012346789012345890123467890");
+    return m;
   }
 
   /**

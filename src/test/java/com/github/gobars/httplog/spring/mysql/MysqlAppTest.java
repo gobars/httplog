@@ -78,6 +78,25 @@ public class MysqlAppTest {
   }
 
   @Test
+  @SneakyThrows
+  public void json() {
+    TestRestTemplate rt = new TestRestTemplate();
+    HttpEntity<String> entity = new HttpEntity<>(null, EMPTY_HEADER);
+
+    String addr = createURLWithPort("/test/json/10");
+    ResponseEntity<String> r = rt.exchange(addr, HttpMethod.GET, entity, String.class);
+    Assertions.assertThat(r.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+    r = rt.exchange(addr, HttpMethod.GET, entity, String.class);
+    Assertions.assertThat(r.getStatusCode()).isEqualTo(HttpStatus.OK);
+    Assertions.assertThat(r.getBody())
+        .isEqualTo(
+            "{\"a1\":\"10\",\"c1\":\"123456789012567890123458901256789012346789012345890123467890123456789012567890123458901256789012346789012345890123467890\",\"b1\":\"毛主席在天安门城楼上宣布中华人民共和国中央人民政府今天成立了\"}");
+
+    TimeUnit.SECONDS.sleep(3);
+  }
+
+  @Test
   public void postTest() {
     TestRestTemplate restTemplate = new TestRestTemplate();
     HttpEntity<TestDto> entity = new HttpEntity<>(TEST_DTO, JSON_HEADER);

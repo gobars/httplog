@@ -6,7 +6,7 @@ import com.github.gobars.id.Id;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -84,7 +84,7 @@ public class HttpLogFilter extends OncePerRequestFilter {
 
   private void logRsp(ContentCachingResponseWrapper rp, Req req, Rsp rsp) {
     // Recovery of the body of the response
-    logBody(rp.getContentAsByteArray(), rp.getCharacterEncoding(), rsp);
+    logBody(rp.getContentAsByteArray(), rsp);
 
     // Duplication of the response
     try {
@@ -108,7 +108,7 @@ public class HttpLogFilter extends OncePerRequestFilter {
     // Calculates the execution time of the request
     long tookMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNs);
     // Registration of the body of the request
-    logBody(rq.getContentAsByteArray(), rq.getCharacterEncoding(), req);
+    logBody(rq.getContentAsByteArray(), req);
     // Retrieving the status of the response
     logRsp(status, tookMs, rsp);
   }
@@ -157,12 +157,8 @@ public class HttpLogFilter extends OncePerRequestFilter {
     rsp.setReasonPhrase(HttpStatus.valueOf(status).getReasonPhrase());
   }
 
-  private void logBody(byte[] content, String contentEncoding, ReqRsp rr) {
-    try {
-      rr.setBodyBytes(content.length);
-      rr.setBody(new String(content, contentEncoding));
-    } catch (UnsupportedEncodingException e) {
-      rr.setError(String.format("%s unsupported encoding content", contentEncoding));
-    }
+  private void logBody(byte[] content, ReqRsp rr) {
+    rr.setBodyBytes(content.length);
+    rr.setBody(new String(content, StandardCharsets.UTF_8));
   }
 }
