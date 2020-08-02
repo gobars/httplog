@@ -225,7 +225,8 @@ public class HttpLogProcessor {
       rsp.setPosts(createPost(req, rsp, r, p, httpLog));
 
       for (val table : httpLog.tables()) {
-        prepareds.add(sqlGenerators.get(table).prepareLog(r, p, req, rsp, httpLog));
+        val ctx = new ColValueGetterContext().r(r).p(p).req(req).rsp(rsp).hl(httpLog);
+        prepareds.add(sqlGenerators.get(table).prepareLog(ctx));
       }
     } catch (Exception ex) {
       log.warn("failed to log req:{} rsp:{} for httpLog:{}", req, rsp, httpLog, ex);

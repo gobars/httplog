@@ -43,7 +43,11 @@ public class ReqRsp {
 
   private int abbrevMaxSize;
 
-  public String getAbbreviateBody() {
+  public String getAbbreviateBody(int maxLen) {
+    if (maxLen > 0 && this.body.length() <= maxLen) {
+      return this.body;
+    }
+
     try {
       return Onode.load(this.body, Cnf.def().abbrevMaxSize(abbrevMaxSize)).toJson();
     } catch (Exception e) {

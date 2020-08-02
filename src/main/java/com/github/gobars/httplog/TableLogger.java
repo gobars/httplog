@@ -5,11 +5,10 @@ import com.github.gobars.id.db.SqlRunner;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * 在数据库表中记录日志
@@ -58,27 +57,16 @@ public class TableLogger {
   /**
    * 准备记录响应日志
    *
-   * @param r HttpServletRequest
-   * @param p HttpServletResponse
-   * @param req Req
-   * @param rsp Rsp
-   * @param httpLog HttpLogAttr
+   * @param ctx ColValueGetterContext
    */
-  public LogPrepared prepareLog(
-      HttpServletRequest r, HttpServletResponse p, Req req, Rsp rsp, HttpLogAttr httpLog) {
+  public LogPrepared prepareLog(ColValueGetterContext ctx) {
     ArrayList<Object> params = new ArrayList<>(valueGetters.size());
+    // for id update when duplicate error detected.
     List<Integer> idPositions = new ArrayList<>();
     for (val colValueGetter : valueGetters) {
-      Object obj;
-      try {
-        obj = colValueGetter.get(req, rsp, r, p, httpLog);
-      } catch (Exception ex) {
-        obj = null;
-        log.warn("colValueGetter get error", ex);
-      }
+      Object obj = getVal(ctx, colValueGetter);
 
-      Long id = req.getId();
-      if (id.equals(obj)) {
+      if (((Long) ctx.req().getId()).equals(obj)) {
         idPositions.add(params.size());
       }
 
@@ -87,6 +75,17 @@ public class TableLogger {
 
     log.debug("SQL {} with args {}", sql, params);
     return new LogPrepared(sql, params, idPositions);
+  }
+
+  @Nullable
+  public Object getVal(ColValueGetterContext ctx, ColValueGetter colValueGetter) {
+    try {
+      return colValueGetter.get(ctx);
+    } catch (Exception ex) {
+      log.warn("colValueGetter get error", ex);
+    }
+
+    return null;
   }
 
   /**
@@ -111,10 +110,10 @@ public class TableLogger {
     } catch (Exception ex) {
       if (isDuplicateKeyException(ex)) {
         log.warn("logPrepared {} got duplicate key, retry", logPrepared, ex);
-        long newID = Id.next();
+        long newid = Id.next();
 
         for (int idPosition : logPrepared.getIdPositions()) {
-          logPrepared.getParams().set(idPosition, newID);
+          logPrepared.getParams().set(idPosition, newid);
         }
 
         return false;
