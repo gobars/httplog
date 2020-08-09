@@ -10,10 +10,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
-import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
@@ -55,13 +53,11 @@ public class HttpLogInterceptor extends HandlerInterceptorAdapter
       return false;
     }
 
-    val hm = (HandlerMethod) h;
-
-    if (!AnnotatedElementUtils.isAnnotated(hm.getMethod(), HttpLog.class)) {
+    val attrs = getMergedAnnotationAttributes(((HandlerMethod) h).getMethod(), HttpLog.class);
+    if (attrs == null) {
       return true;
     }
 
-    val attrs = getMergedAnnotationAttributes(hm.getMethod(), HttpLog.class);
     val hl = HttpLogAttr.create(attrs);
     log.info("HttpLog: {}", attrs);
 
@@ -118,7 +114,7 @@ public class HttpLogInterceptor extends HandlerInterceptorAdapter
   }
 
   @Override
-  public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-    this.appContext = applicationContext;
+  public void setApplicationContext(ApplicationContext appContext) {
+    this.appContext = appContext;
   }
 }
