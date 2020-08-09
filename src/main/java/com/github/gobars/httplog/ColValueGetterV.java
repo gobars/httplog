@@ -1,5 +1,5 @@
 package com.github.gobars.httplog;
 
 public interface ColValueGetterV {
-  Object get(ColValueGetterContext ctx, String v, TableCol col);
+  Object get(ColValueGetterCtx ctx, HttpLogTag tag, TableCol col);
 }

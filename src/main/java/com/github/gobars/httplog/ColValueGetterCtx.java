@@ -12,11 +12,13 @@ import lombok.experimental.Accessors;
  */
 @Data
 @Accessors(fluent = true)
-public class ColValueGetterContext {
+public class ColValueGetterCtx {
   Req req;
   Rsp rsp;
   HttpServletRequest r;
   HttpServletResponse p;
   HttpLogAttr hl;
   TableCol col;
+
+  HttpLogFork fork;
 }

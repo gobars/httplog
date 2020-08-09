@@ -1,14 +1,16 @@
 package com.github.gobars.httplog;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import lombok.Getter;
 import lombok.ToString;
+import lombok.val;
 
 @ToString
 public class HttpLogCustom {
   private static final ThreadLocal<HttpLogCustom> LOCAL = new InheritableThreadLocal<>();
-  @Getter private final Map<String, String> map = new HashMap<>(10);
+  @Getter private final HashMap<String, String> map = new HashMap<>(10);
+  @Getter private final ArrayList<HttpLogFork> forks = new ArrayList<>(10);
 
   public static void set(HttpLogCustom custom) {
     LOCAL.set(custom);
@@ -25,5 +27,12 @@ public class HttpLogCustom {
   public HttpLogCustom put(String name, String value) {
     map.put(name, value);
     return this;
+  }
+
+  public static HttpLogFork fork(HttpLogAttr attr, Object request) {
+    val f = new HttpLogFork(attr, request);
+    get().forks.add(f);
+
+    return f;
   }
 }

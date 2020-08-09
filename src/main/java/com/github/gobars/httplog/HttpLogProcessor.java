@@ -159,12 +159,14 @@ public class HttpLogProcessor {
   }
 
   private <T> List<T> createExt(Class<? extends T>[] exts, ApplicationContext appContext) {
-    val composite = new ArrayList<T>(exts.length);
+    val composite = new ArrayList<T>();
 
-    for (val ext : exts) {
-      val p = create(appContext, ext);
-      if (p != null) {
-        composite.add(p);
+    if (exts != null) {
+      for (val ext : exts) {
+        val p = create(appContext, ext);
+        if (p != null) {
+          composite.add(p);
+        }
       }
     }
 
@@ -217,7 +219,8 @@ public class HttpLogProcessor {
 
     log.info("req: {}", req);
     log.info("rsp: {}", rsp);
-    log.info("custom: {}", HttpLogCustom.get());
+    HttpLogCustom custom = (HttpLogCustom) r.getAttribute(Const.CUSTOM);
+    log.info("custom: {}", custom.getMap());
 
     List<LogPrepared> prepareds = new ArrayList<>();
 
@@ -225,11 +228,27 @@ public class HttpLogProcessor {
       rsp.setPosts(createPost(req, rsp, r, p, httpLog));
 
       for (val table : httpLog.tables()) {
-        val ctx = new ColValueGetterContext().r(r).p(p).req(req).rsp(rsp).hl(httpLog);
+        val ctx = new ColValueGetterCtx().r(r).p(p).req(req).rsp(rsp).hl(httpLog);
         prepareds.add(sqlGenerators.get(table).prepareLog(ctx));
       }
     } catch (Exception ex) {
       log.warn("failed to log req:{} rsp:{} for httpLog:{}", req, rsp, httpLog, ex);
+    }
+
+    ArrayList<HttpLogFork> forks = custom.getForks();
+
+    if (forks.isEmpty()) {
+      return prepareds;
+    }
+
+    HttpLogInterceptor hli = (HttpLogInterceptor) r.getAttribute(Const.INTERCEPTOR);
+
+    for (HttpLogFork f : forks) {
+      HttpLogProcessor ps = hli.cacheGet(f.getAttr());
+      for (val table : f.getAttr().tables()) {
+        val ctx = new ColValueGetterCtx().r(r).p(p).req(req).rsp(rsp).hl(httpLog).fork(f);
+        prepareds.add(ps.sqlGenerators.get(table).prepareLog(ctx));
+      }
     }
 
     return prepareds;

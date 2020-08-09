@@ -10,7 +10,7 @@ import com.github.gobars.id.worker.WorkerIdIp;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Pattern;
+import java.util.function.Supplier;
 import javax.servlet.http.HttpServletRequest;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -27,47 +27,84 @@ import org.springframework.web.servlet.HandlerMapping;
 @Slf4j
 public class TableCol {
   public static final String PATH_ATTR = HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE;
-  static final Pattern TAG_PATTERN = Pattern.compile("httplog:\"(.*?)\"");
 
-  static Map<Matcher, ColValueGetter> blts = new HashMap<>(10);
+  static Map<Matcher, ColValueGetterV> blts = new HashMap<>(10);
   static Map<Matcher, ColValueGetterV> rsps = new HashMap<>(5);
   static Map<Matcher, ColValueGetterV> reqs = new HashMap<>(13);
 
-  static {
-    blts.put(eq("id"), ctx -> ctx.req().getId());
-    blts.put(eq("created"), ctx -> ctx.req().getStartTime());
-    blts.put(eq("ip"), ctx -> WorkerIdIp.LOCAL_IP);
-    blts.put(eq("hostname"), ctx -> WorkerIdHostname.HOSTNAME);
-    blts.put(eq("pid"), ctx -> Pid.PROCESS_ID);
-    blts.put(eq("started"), ctx -> ctx.req().getStartTime());
-    blts.put(eq("end"), ctx -> ctx.rsp() == null ? null : ctx.rsp().getEndTime());
-    blts.put(eq("cost"), ctx -> ctx.rsp() == null ? null : ctx.rsp().getTookMs());
-    blts.put(eq("biz"), ctx -> ctx.hl().biz());
-    blts.put(eq("exception"), ctx -> ctx.rsp() == null ? null : ctx.rsp().getError());
+  public static <T> T wfork(ColValueGetterCtx c, HttpLogTag v, Supplier<T> fs, Supplier<T> os) {
+    switch (v.forkMode()) {
+      case Only:
+        return c.fork() != null ? fs.get() : null;
+      case Try:
+        return c.fork() != null ? fs.get() : os.get();
+      default:
+        return os.get();
+    }
   }
 
   static {
-    rsps.put(starts("head_"), (ctx, v, col) -> ctx.rsp().getHeaders().get(v.substring(5)));
+    blts.put(eq("id"), (c, v, col) -> wfork(c, v, () -> c.fork.getId(), c.req::getId));
+    blts.put(eq("created"), (ctx, v, col) -> ctx.req().getStart());
+    blts.put(eq("ip"), (ctx, v, col) -> WorkerIdIp.LOCAL_IP);
+    blts.put(eq("hostname"), (ctx, v, col) -> WorkerIdHostname.HOSTNAME);
+    blts.put(eq("pid"), (ctx, v, col) -> Pid.PROCESS_ID);
+    blts.put(eq("started"), (c, v, col) -> wfork(c, v, () -> c.fork.getStart(), c.req::getStart));
+    blts.put(eq("end"), (c, v, col) -> wfork(c, v, () -> c.fork.getEnd(), c.rsp::getEnd));
+    blts.put(eq("cost"), (c, v, col) -> wfork(c, v, () -> c.fork.getTookMs(), c.rsp::getTookMs));
+    blts.put(eq("biz"), (ctx, v, col) -> ctx.hl().biz());
+    blts.put(
+        eq("exception", "error"),
+        (c, v, col) -> wfork(c, v, () -> c.fork.getError(), () -> c.rsp.getError()));
+
+    rsps.put(starts("head_"), (ctx, v, col) -> ctx.rsp().getHeaders().get(v.subTagName(5)));
     rsps.put(eq("heads"), (ctx, v, col) -> ctx.rsp().getHeaders());
-    rsps.put(eq("body"), (ctx, v, col) -> ctx.rsp().getAbbreviateBody(col.maxLen));
-    rsps.put(eq("json"), (ctx, v, col) -> getJsonBody(ctx.rsp()));
-    rsps.put(starts("json_"), (ctx, v, col) -> jsonpath(v.substring(5), ctx.rsp()));
-    rsps.put(eq("status"), (ctx, v, col) -> ctx.rsp().getStatus());
-  }
 
-  static {
-    reqs.put(starts("head_"), (ctx, v, col) -> ctx.req().getHeaders().get(v.substring(5)));
+    rsps.put(
+        eq("body"),
+        (c, v, col) ->
+            wfork(c, v, () -> c.fork.abbrRsp(col.maxLen), () -> c.rsp().abbrBody(col.maxLen)));
+    rsps.put(
+        eq("json"),
+        (c, v, col) ->
+            wfork(c, v, () -> c.fork.abbrRsp(col.maxLen), () -> getJsonBody(c, v, col, c.rsp())));
+    rsps.put(
+        starts("json_"),
+        (c, v, col) ->
+            wfork(
+                c,
+                v,
+                () -> jp(v.subTagName(5), c.fork.getResponse()),
+                () -> jsonpath(v.subTagName(5), c.rsp())));
+    rsps.put(eq("status"), (ctx, v, col) -> ctx.rsp().getStatus());
+
+    reqs.put(starts("head_"), (ctx, v, col) -> ctx.req().getHeaders().get(v.subTagName(5)));
     reqs.put(eq("heads"), (ctx, v, col) -> ctx.req().getHeaders());
-    reqs.put(eq("body"), (ctx, v, col) -> ctx.req().getAbbreviateBody(col.maxLen));
-    reqs.put(eq("json"), (ctx, v, col) -> getJsonBody(ctx.req()));
-    reqs.put(starts("json_"), (ctx, v, col) -> jsonpath(v.substring(5), ctx.req()));
+    reqs.put(
+        eq("body"),
+        (c, v, col) ->
+            wfork(c, v, () -> c.fork.getAbbrReq(col.maxLen), () -> c.req().abbrBody(col.maxLen)));
+
+    reqs.put(
+        eq("json"),
+        (c, v, col) ->
+            wfork(c, v, () -> c.fork.abbrReq(col.maxLen), () -> getJsonBody(c, v, col, c.req())));
+    reqs.put(
+        starts("json_"),
+        (c, v, col) ->
+            wfork(
+                c,
+                v,
+                () -> jp(v.subTagName(5), c.fork.getRequest()),
+                () -> jsonpath(v.subTagName(5), c.req())));
+
     reqs.put(eq("method"), (ctx, v, col) -> ctx.req().getMethod());
     reqs.put(eq("url"), (ctx, v, col) -> ctx.req().getRequestUri());
-    reqs.put(starts("path_"), (ctx, v, col) -> getPathVar(ctx.r(), v.substring(5)));
+    reqs.put(starts("path_"), (ctx, v, col) -> getPathVar(ctx.r(), v.subTagName(5)));
     reqs.put(eq("paths"), (ctx, v, col) -> ctx.r().getAttribute(PATH_ATTR));
-    reqs.put(starts("query_"), (ctx, v, col) -> ctx.req().getQueries().get(v.substring(6)));
+    reqs.put(starts("query_"), (ctx, v, col) -> ctx.req().getQueries().get(v.subTagName(6)));
     reqs.put(eq("queries"), (ctx, v, col) -> ctx.req().getQueries());
-    reqs.put(starts("param_"), (ctx, v, col) -> getParams(ctx.r(), v.substring(6)));
+    reqs.put(starts("param_"), (ctx, v, col) -> getParams(ctx.r(), v.subTagName(6)));
     reqs.put(eq("params"), (ctx, v, col) -> convert(ctx.r().getParameterMap()));
   }
 
@@ -116,18 +153,8 @@ public class TableCol {
   /** 字段取值器 */
   private ColValueGetter valueGetter;
 
-  private static ColValueGetter findGetter(String tag, Map<Matcher, ColValueGetter> m) {
-    for (val entry : m.entrySet()) {
-      if (entry.getKey().matches(tag)) {
-        return entry.getValue();
-      }
-    }
-
-    return null;
-  }
-
-  private ColValueGetter createValueGetter(String tag, Map<Matcher, ColValueGetterV> m) {
-    ColValueGetterV getter = findGetterV(tag, m);
+  private ColValueGetter createValueGetter(HttpLogTag tag, Map<Matcher, ColValueGetterV> m) {
+    ColValueGetterV getter = findGetterV(tag.tag(), m);
     if (getter == null) {
       return null;
     }
@@ -168,14 +195,28 @@ public class TableCol {
     return null;
   }
 
-  private static Object getJsonBody(ReqRsp req) {
+  private static String getJsonBody(ColValueGetterCtx ctx, HttpLogTag v, TableCol col, ReqRsp req) {
     val contentType = req.getHeaders().get("Content-Type");
     if (contentType == null || !contentType.contains("json")) {
       return null;
     }
 
-    String b = req.getBody();
+    String b = req.abbrBody(col.maxLen);
     return b != null && (b.startsWith("{") || b.startsWith("[")) ? b : null;
+  }
+
+  private static String jp(String jsonpath, Object req) {
+    Onode node = Onode.load(req);
+    if (node == null) {
+      return null;
+    }
+
+    String path = jsonpath;
+    if (!path.startsWith("$.")) {
+      path = "$." + path;
+    }
+
+    return node.select(path).getString();
   }
 
   private static String jsonpath(String jsonpath, ReqRsp req) {
@@ -207,7 +248,7 @@ public class TableCol {
   }
 
   public void parseComment(Map<String, String> fixes) {
-    String tag = parseTag();
+    HttpLogTag tag = HttpLogTag.parse(name, comment);
 
     this.valueGetter = parseValueGetter(fixes, tag);
     if (this.valueGetter != null) {
@@ -215,36 +256,36 @@ public class TableCol {
     }
   }
 
-  public ColValueGetter parseValueGetter(Map<String, String> fixes, String tag) {
+  public ColValueGetter parseValueGetter(Map<String, String> fixes, HttpLogTag tag) {
     if (tag.startsWith("req_")) {
-      return createValueGetter(tag.substring(4), reqs);
+      return createValueGetter(tag.subTag(4), reqs);
     }
 
     if (tag.startsWith("rsp_")) {
-      return createValueGetter(tag.substring(4), rsps);
+      return createValueGetter(tag.subTag(4), rsps);
     }
 
     if (tag.startsWith("ctx_")) {
-      return createCtxValueGetter(tag.substring(4));
+      return createCtxValueGetter(tag.subTagName(4));
     }
 
     if (tag.startsWith("custom_")) {
-      return createCustomValueGetter(tag.substring(7));
+      return createCustomValueGetter(tag.subTagName(7));
     }
 
     if (tag.startsWith("fix_")) {
-      return ctx -> fixes.get(tag.substring(4));
+      return ctx -> fixes.get(tag.subTagName(4));
     }
 
     if (tag.startsWith("pre_")) {
-      return ctx -> ctx.req().getPres().get(tag.substring(4));
+      return ctx -> ctx.req().getPres().get(tag.subTagName(4));
     }
 
     if (tag.startsWith("post_")) {
-      return ctx -> ctx.rsp().getPosts().get(tag.substring(5));
+      return ctx -> ctx.rsp().getPosts().get(tag.subTagName(5));
     }
 
-    if ("-".equals(tag)) {
+    if (tag.equalsTo("-")) {
       // ignore, 此字段，由db自动处理(eg. auto increment / insert trigger)
       return null;
     }
@@ -253,17 +294,7 @@ public class TableCol {
       return null;
     }
 
-    return createBuiltinValueGetter(tag);
-  }
-
-  public String parseTag() {
-    String tag = name.toLowerCase();
-    if (comment == null) {
-      return tag;
-    }
-
-    val m = TAG_PATTERN.matcher(comment);
-    return m.find() ? m.group(1) : tag;
+    return createValueGetter(tag, TableCol.blts);
   }
 
   private ColValueGetter wrap(final ColValueGetter vg) {
@@ -292,10 +323,6 @@ public class TableCol {
     return Str.abbreviate(o.toString(), maxLen);
   }
 
-  private ColValueGetter createBuiltinValueGetter(String tag) {
-    return findGetter(tag, TableCol.blts);
-  }
-
   private ColValueGetter createCtxValueGetter(String tag) {
     return ctx -> {
       String path = tag;
@@ -309,9 +336,9 @@ public class TableCol {
 
   private ColValueGetter createCustomValueGetter(String tag) {
     return ctx -> {
-      val custom = (HttpLogCustom) ctx.r().getAttribute(Const.CUSTOM);
+      val custom = ctx.r().getAttribute(Const.CUSTOM);
       if (custom != null) {
-        return custom.getMap().get(tag);
+        return ((HttpLogCustom) custom).getMap().get(tag);
       }
 
       return null;

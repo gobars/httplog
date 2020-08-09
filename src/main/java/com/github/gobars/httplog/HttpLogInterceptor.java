@@ -74,12 +74,13 @@ public class HttpLogInterceptor extends HandlerInterceptorAdapter
     }
 
     r.setAttribute(Const.PROCESSOR, ps);
+    r.setAttribute(Const.INTERCEPTOR, this);
     log.debug("preHandle method:{} URI:{} httpLog:{}", r.getMethod(), r.getRequestURI(), hl);
 
     return true;
   }
 
-  private HttpLogProcessor cacheGet(HttpLogAttr httpLog) {
+  HttpLogProcessor cacheGet(HttpLogAttr httpLog) {
     val ps = cache.get(httpLog);
     if (ps != null) {
       return ps;

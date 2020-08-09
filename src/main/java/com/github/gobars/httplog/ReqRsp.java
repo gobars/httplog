@@ -9,8 +9,8 @@ import lombok.Data;
 @Data
 public class ReqRsp {
   private long id;
-  private Timestamp startTime = new Timestamp(System.currentTimeMillis());
-  private Timestamp endTime;
+  private Timestamp start = new Timestamp(System.currentTimeMillis());
+  private Timestamp end;
   private Map<String, String> headers;
   private long tookMs;
   private int bodyBytes;
@@ -24,10 +24,10 @@ public class ReqRsp {
     return "ReqRsp{"
         + "id="
         + id
-        + ", startTime="
-        + startTime
-        + ", endTime="
-        + endTime
+        + ", start="
+        + start
+        + ", end="
+        + end
         + ", headers="
         + headers
         + ", tookMs="
@@ -43,7 +43,7 @@ public class ReqRsp {
 
   private int abbrevMaxSize;
 
-  public String getAbbreviateBody(int maxLen) {
+  public String abbrBody(int maxLen) {
     if (maxLen > 0 && this.body.length() <= maxLen) {
       return this.body;
     }

@@ -146,6 +146,19 @@ public class MysqlAppTest {
     Assertions.assertThat(response.getBody()).isEqualTo("custom OK");
   }
 
+  @Test
+  public void fork() {
+    TestRestTemplate restTemplate = new TestRestTemplate();
+    HttpEntity<String> entity = new HttpEntity<>(null, EMPTY_HEADER);
+
+    ResponseEntity<String> response =
+        restTemplate.exchange(
+            createURLWithPort("/test/fork"), HttpMethod.GET, entity, String.class);
+
+    Assertions.assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    Assertions.assertThat(response.getBody()).isEqualTo("custom OK");
+  }
+
   private String createURLWithPort(String uri) {
     return String.format("http://localhost:%s%s", port, uri);
   }

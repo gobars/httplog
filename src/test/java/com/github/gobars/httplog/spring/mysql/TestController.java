@@ -3,11 +3,14 @@ package com.github.gobars.httplog.spring.mysql;
 import static com.google.common.truth.Truth.assertThat;
 
 import com.github.gobars.httplog.HttpLog;
+import com.github.gobars.httplog.HttpLogAttr;
 import com.github.gobars.httplog.HttpLogCustom;
+import com.github.gobars.httplog.HttpLogFork;
 import com.github.gobars.httplog.spring.TestDto;
 import com.github.gobars.httplog.spring.TestException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
@@ -84,5 +87,47 @@ public class TestController {
   String listContributors() {
     HttpLogCustom.get().put("name", "customLocal");
     return "custom OK";
+  }
+
+  @GetMapping("/fork")
+  @HttpLog
+  String fork() {
+    HttpLogCustom.get().put("name", "customLocal");
+
+    Random random = new Random();
+    random.setSeed(System.currentTimeMillis());
+    {
+      HttpLogAttr attr = new HttpLogAttr().tables("biz_log_fork").fix("channel:一所");
+      MyRequest req = new MyRequest("rpc1");
+      HttpLogFork f = HttpLogCustom.fork(attr, req);
+      f.custom("name", "yyy");
+      // rpc1 ...
+      sleepRandom(random);
+
+      MyResponse response = new MyResponse("MyResponse1");
+      response.setTran(random.nextInt(1000));
+      f.submit(response);
+    }
+
+    {
+      HttpLogAttr attr = new HttpLogAttr().tables("biz_log_fork").fix("channel:二所");
+      MyRequest req = new MyRequest("rpc2");
+      req.setForkName("fork2");
+      HttpLogFork f = HttpLogCustom.fork(attr, req);
+      f.custom("name", "rpc2");
+      // rpc2 ...
+      sleepRandom(random);
+      f.submitError("timeout error");
+    }
+
+    return "custom OK";
+  }
+
+  private void sleepRandom(Random random) {
+    try {
+      Thread.sleep(1000 + random.nextInt(100));
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
   }
 }

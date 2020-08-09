@@ -59,3 +59,27 @@ create table biz_log_custom
     name    varchar(60) comment '响应体 httplog:"custom_name"'
 ) engine = innodb
   default charset = utf8mb4 comment 'biz_log_custom';
+
+
+drop table if exists biz_log_fork;
+create table biz_log_fork
+(
+    id      bigint comment '日志记录ID',
+    fork_id      bigint comment '日志记录ID httplog:"id,fork"',
+    req_url varchar(60) comment '请求url',
+    fork varchar(60) comment '请求参数 httplog:"req_json_forkName,fork"',
+    tran varchar(60) comment '渠道流水 httplog:"rsp_json_tran,fork"',
+    channel varchar(60) comment '请求url, httplog:"fix_channel,fork"',
+    created datetime default current_timestamp comment '创建时间 httplog:"-"',
+    started datetime comment '请求时间 httplog:"started,fork"',
+    end     datetime comment '结束时间 httplog:",fork"',
+    cost    int comment '费时毫秒 httplog:",fork"',
+    name    varchar(60) comment '响应体 httplog:"custom_name,fork"',
+    req    varchar(300) not null default '0' comment '响应体 httplog:"req_body,fork"',
+    rsp    varchar(300) not null default '0' comment '响应体 httplog:"rsp_body,fork"',
+    error   varchar(300) not null default '0' comment '响应体 httplog:",fork"'
+) engine = innodb
+  default charset = utf8mb4 comment 'biz_log_custom';
+
+create index idx_biz_log_fork on biz_log_fork (id, fork_id);
+

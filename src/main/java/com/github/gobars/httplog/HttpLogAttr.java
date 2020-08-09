@@ -1,11 +1,9 @@
 package com.github.gobars.httplog;
 
 import lombok.Data;
-import lombok.experimental.Accessors;
 import org.springframework.core.annotation.AnnotationAttributes;
 
 @Data
-@Accessors(fluent = true)
 public class HttpLogAttr {
   private String biz;
   private String[] tables;
@@ -14,6 +12,69 @@ public class HttpLogAttr {
   private Class<? extends HttpLogPost>[] post;
   private boolean sync;
   private int abbrevMaxSize;
+
+  public HttpLogAttr tables(String... tables) {
+    this.tables = tables;
+    return this;
+  }
+
+  public HttpLogAttr biz(String biz) {
+    this.biz = biz;
+    return this;
+  }
+
+  public HttpLogAttr fix(String fix) {
+    this.fix = fix;
+    return this;
+  }
+
+  public HttpLogAttr pre(Class<? extends HttpLogPre>[] pre) {
+    this.pre = pre;
+    return this;
+  }
+
+  public HttpLogAttr post(Class<? extends HttpLogPost>[] post) {
+    this.post = post;
+    return this;
+  }
+
+  public HttpLogAttr sync(boolean sync) {
+    this.sync = sync;
+    return this;
+  }
+
+  public HttpLogAttr abbrevMaxSize(int abbrevMaxSize) {
+    this.abbrevMaxSize = abbrevMaxSize;
+    return this;
+  }
+
+  public String biz() {
+    return biz;
+  }
+
+  public String[] tables() {
+    return tables;
+  }
+
+  public String fix() {
+    return fix;
+  }
+
+  public Class<? extends HttpLogPre>[] pre() {
+    return pre;
+  }
+
+  public Class<? extends HttpLogPost>[] post() {
+    return post;
+  }
+
+  public boolean sync() {
+    return sync;
+  }
+
+  public int abbrevMaxSize() {
+    return abbrevMaxSize;
+  }
 
   @SuppressWarnings("unchecked")
   public static HttpLogAttr create(AnnotationAttributes attrs) {

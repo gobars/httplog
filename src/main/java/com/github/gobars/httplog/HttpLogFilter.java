@@ -62,20 +62,20 @@ public class HttpLogFilter extends OncePerRequestFilter {
     try {
       c.doFilter(rq, rp);
       logStart(rq, req, rsp, startNs, rp.getStatus());
-      rsp.setEndTime(new Timestamp(System.currentTimeMillis()));
+      rsp.setEnd(new Timestamp(System.currentTimeMillis()));
       logRsp(rp, req, rsp);
     } catch (Exception e) {
       // Calculates the execution time of the request
-      rsp.setEndTime(new Timestamp(System.currentTimeMillis()));
+      rsp.setEnd(new Timestamp(System.currentTimeMillis()));
       logStart(rq, req, rsp, startNs, 500);
       logEx(rsp, e);
 
       // Throw the exception to not continue the treatment
       throw e;
     } finally {
-      val p = rq.getAttribute(Const.PROCESSOR);
+      val p = (HttpLogProcessor) rq.getAttribute(Const.PROCESSOR);
       if (p != null) {
-        ((HttpLogProcessor) p).complete(rq, rp, req, rsp);
+        p.complete(rq, rp, req, rsp);
       }
 
       HttpLogCustom.clear();

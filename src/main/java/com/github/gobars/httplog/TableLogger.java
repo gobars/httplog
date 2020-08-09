@@ -59,7 +59,7 @@ public class TableLogger {
    *
    * @param ctx ColValueGetterContext
    */
-  public LogPrepared prepareLog(ColValueGetterContext ctx) {
+  public LogPrepared prepareLog(ColValueGetterCtx ctx) {
     ArrayList<Object> params = new ArrayList<>(valueGetters.size());
     // for id update when duplicate error detected.
     List<Integer> idPositions = new ArrayList<>();
@@ -78,7 +78,7 @@ public class TableLogger {
   }
 
   @Nullable
-  public Object getVal(ColValueGetterContext ctx, ColValueGetter colValueGetter) {
+  public Object getVal(ColValueGetterCtx ctx, ColValueGetter colValueGetter) {
     try {
       return colValueGetter.get(ctx);
     } catch (Exception ex) {

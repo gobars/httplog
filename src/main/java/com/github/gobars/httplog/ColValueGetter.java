@@ -6,5 +6,5 @@ package com.github.gobars.httplog;
  * @author bingoobjca
  */
 public interface ColValueGetter {
-  Object get(ColValueGetterContext ctx);
+  Object get(ColValueGetterCtx ctx);
 }
