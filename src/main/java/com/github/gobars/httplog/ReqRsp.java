@@ -15,7 +15,7 @@ public class ReqRsp {
   private long tookMs;
   private int bodyBytes;
   private String body;
-  private String error;
+  private Throwable error;
   private Onode bodyOnode;
   private boolean bodyOnodeInitialized;
 

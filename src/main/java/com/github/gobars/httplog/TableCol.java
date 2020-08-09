@@ -7,6 +7,8 @@ import com.github.gobars.httplog.snack.Onode;
 import com.github.gobars.id.util.Pid;
 import com.github.gobars.id.worker.WorkerIdHostname;
 import com.github.gobars.id.worker.WorkerIdIp;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,6 +45,16 @@ public class TableCol {
     }
   }
 
+  public static String stackTrace(Throwable t) {
+    if (t == null) {
+      return null;
+    }
+
+    val sw = new StringWriter();
+    t.printStackTrace(new PrintWriter(sw));
+    return sw.toString();
+  }
+
   static {
     blts.put(eq("id"), (c, v, col) -> wfork(c, v, () -> c.fork.getId(), c.req::getId));
     blts.put(eq("created"), (ctx, v, col) -> ctx.req().getStart());
@@ -55,7 +67,8 @@ public class TableCol {
     blts.put(eq("biz"), (ctx, v, col) -> ctx.hl().biz());
     blts.put(
         eq("exception", "error"),
-        (c, v, col) -> wfork(c, v, () -> c.fork.getError(), () -> c.rsp.getError()));
+        (c, v, col) ->
+            wfork(c, v, () -> stackTrace(c.fork.getError()), () -> stackTrace(c.rsp.getError())));
 
     rsps.put(starts("head_"), (ctx, v, col) -> ctx.rsp().getHeaders().get(v.subTagName(5)));
     rsps.put(eq("heads"), (ctx, v, col) -> ctx.rsp().getHeaders());
@@ -98,7 +111,9 @@ public class TableCol {
                 () -> jp(v.subTagName(5), c.fork.getRequest()),
                 () -> jsonpath(v.subTagName(5), c.req())));
 
-    reqs.put(eq("method"), (ctx, v, col) -> ctx.req().getMethod());
+    reqs.put(
+        eq("method"),
+        (c, v, col) -> wfork(c, v, () -> c.fork.getMethod(), () -> c.req().getMethod()));
     reqs.put(eq("url"), (ctx, v, col) -> ctx.req().getRequestUri());
     reqs.put(starts("path_"), (ctx, v, col) -> getPathVar(ctx.r(), v.subTagName(5)));
     reqs.put(eq("paths"), (ctx, v, col) -> ctx.r().getAttribute(PATH_ATTR));

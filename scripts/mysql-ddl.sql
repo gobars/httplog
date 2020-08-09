@@ -76,6 +76,7 @@ create table biz_log_fork
     cost    int comment '费时毫秒 httplog:",fork"',
     name    varchar(60) comment '响应体 httplog:"custom_name,fork"',
     req    varchar(300) not null default '0' comment '响应体 httplog:"req_body,fork"',
+    method  varchar(300) not null default '0' comment 'service方法名称 httplog:"req_method,fork"',
     rsp    varchar(300) not null default '0' comment '响应体 httplog:"rsp_body,fork"',
     error   varchar(300) not null default '0' comment '响应体 httplog:",fork"'
 ) engine = innodb

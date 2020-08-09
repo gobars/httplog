@@ -4,8 +4,6 @@ import static java.util.Collections.list;
 
 import com.github.gobars.id.Id;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.*;
@@ -64,11 +62,11 @@ public class HttpLogFilter extends OncePerRequestFilter {
       logStart(rq, req, rsp, startNs, rp.getStatus());
       rsp.setEnd(new Timestamp(System.currentTimeMillis()));
       logRsp(rp, req, rsp);
-    } catch (Exception e) {
+    } catch (Throwable e) {
       // Calculates the execution time of the request
       rsp.setEnd(new Timestamp(System.currentTimeMillis()));
       logStart(rq, req, rsp, startNs, 500);
-      logEx(rsp, e);
+      rsp.setError(e);
 
       // Throw the exception to not continue the treatment
       throw e;
@@ -95,12 +93,6 @@ public class HttpLogFilter extends OncePerRequestFilter {
 
     // Retrieving response headers
     logRspHeaders(rp, rsp);
-  }
-
-  private void logEx(Rsp rsp, Exception e) {
-    val sw = new StringWriter();
-    e.printStackTrace(new PrintWriter(sw));
-    rsp.setError(sw.toString());
   }
 
   private void logStart(

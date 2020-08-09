@@ -5,7 +5,9 @@ import com.github.gobars.httplog.snack.core.Cnf;
 import com.github.gobars.id.Id;
 import java.sql.Timestamp;
 import java.util.HashMap;
+import java.util.Map;
 import lombok.Getter;
+import lombok.Setter;
 
 public class HttpLogFork {
   @Getter private final long id = Id.next();
@@ -18,7 +20,9 @@ public class HttpLogFork {
   @Getter private Timestamp start = new Timestamp(System.currentTimeMillis());
   @Getter private Timestamp end;
   @Getter private long tookMs;
-  @Getter private String error;
+  @Getter private Throwable error;
+
+  @Getter @Setter private String method;
 
   public HttpLogFork(HttpLogAttr attr, Object request) {
     this.attr = attr;
@@ -33,7 +37,15 @@ public class HttpLogFork {
     return this;
   }
 
-  public void submitError(String error) {
+  public void customAll(Map<String, String> map) {
+    checkSealed();
+
+    for (Map.Entry<String, String> entry : map.entrySet()) {
+      customized.put(entry.getKey(), entry.getValue());
+    }
+  }
+
+  public void submitError(Throwable error) {
     checkSealed();
 
     this.sealed = true;
