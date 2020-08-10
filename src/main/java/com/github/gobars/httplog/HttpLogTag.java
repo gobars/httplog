@@ -47,6 +47,7 @@ public class HttpLogTag {
     String tagValue = m.group(1);
     int optionStart = tagValue.indexOf(",");
     if (optionStart < 0) {
+      httpLogTag.tag(tagValue);
       return httpLogTag;
     }
 
