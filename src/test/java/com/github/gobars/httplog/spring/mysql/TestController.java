@@ -136,4 +136,9 @@ public class TestController {
       return forkService.rpc2(req);
     }
   }
+
+  @GetMapping("/noHttpLog")
+  public MyResponse noHttpLog() {
+    return forkService.rpc1(new MyRequest("rpc1"));
+  }
 }

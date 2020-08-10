@@ -14,7 +14,7 @@ public class ForkService {
     random.setSeed(System.currentTimeMillis());
 
     MyResponse response = new MyResponse("MyResponse1");
-    response.setTran(random.nextInt(1000));
+    response.setTran(808);
 
     TestUtil.sleep(1000 + random.nextInt(100));
 

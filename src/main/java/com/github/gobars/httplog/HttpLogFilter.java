@@ -59,14 +59,21 @@ public class HttpLogFilter extends OncePerRequestFilter {
 
     try {
       c.doFilter(rq, rp);
-      logStart(rq, req, rsp, startNs, rp.getStatus());
-      rsp.setEnd(new Timestamp(System.currentTimeMillis()));
-      logRsp(rp, req, rsp);
+
+      val p = (HttpLogProcessor) rq.getAttribute(Const.PROCESSOR);
+      if (p != null) {
+        logStart(rq, req, rsp, startNs, rp.getStatus());
+        rsp.setEnd(new Timestamp(System.currentTimeMillis()));
+      }
+      logRsp(p, rp, req, rsp);
     } catch (Throwable e) {
-      // Calculates the execution time of the request
-      rsp.setEnd(new Timestamp(System.currentTimeMillis()));
-      logStart(rq, req, rsp, startNs, 500);
-      rsp.setError(e);
+      val p = (HttpLogProcessor) rq.getAttribute(Const.PROCESSOR);
+      if (p != null) {
+        // Calculates the execution time of the request
+        rsp.setEnd(new Timestamp(System.currentTimeMillis()));
+        logStart(rq, req, rsp, startNs, 500);
+        rsp.setError(e);
+      }
 
       // Throw the exception to not continue the treatment
       throw e;
@@ -80,9 +87,11 @@ public class HttpLogFilter extends OncePerRequestFilter {
     }
   }
 
-  private void logRsp(ContentCachingResponseWrapper rp, Req req, Rsp rsp) {
+  private void logRsp(HttpLogProcessor p, ContentCachingResponseWrapper rp, Req req, Rsp rsp) {
     // Recovery of the body of the response
-    logBody(rp.getContentAsByteArray(), rsp);
+    if (p != null) {
+      logBody(rp.getContentAsByteArray(), rsp);
+    }
 
     // Duplication of the response
     try {
@@ -91,8 +100,10 @@ public class HttpLogFilter extends OncePerRequestFilter {
       log.warn("copyBodyToResponse for req {} failed", req, e);
     }
 
-    // Retrieving response headers
-    logRspHeaders(rp, rsp);
+    if (p != null) {
+      // Retrieving response headers
+      logRspHeaders(rp, rsp);
+    }
   }
 
   private void logStart(
