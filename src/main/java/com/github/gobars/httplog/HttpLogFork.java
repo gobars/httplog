@@ -15,7 +15,7 @@ public class HttpLogFork {
   @Getter private final Object request;
   @Getter private Object response;
   @Getter private boolean sealed;
-  @Getter private HashMap<String, Object> customized = new HashMap<>();
+  @Getter private HashMap<String, String> customized = new HashMap<>();
 
   @Getter private Timestamp start = new Timestamp(System.currentTimeMillis());
   @Getter private Timestamp end;
@@ -29,7 +29,7 @@ public class HttpLogFork {
     this.request = request;
   }
 
-  public HttpLogFork custom(String key, Object value) {
+  public HttpLogFork custom(String key, String value) {
     checkSealed();
 
     customized.put(key, value);

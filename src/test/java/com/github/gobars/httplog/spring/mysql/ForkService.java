@@ -1,6 +1,7 @@
 package com.github.gobars.httplog.spring.mysql;
 
 import com.github.gobars.httplog.HttpLog;
+import com.github.gobars.httplog.HttpLogCustom;
 import com.github.gobars.httplog.TestUtil;
 import java.util.Random;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,8 @@ public class ForkService {
 
     TestUtil.sleep(1000 + random.nextInt(100));
 
+    HttpLogCustom.get().put("name", "一所流水123");
+
     return response;
   }
 
@@ -27,6 +30,8 @@ public class ForkService {
 
     // rpc2 ...
     TestUtil.sleep(1000 + random.nextInt(100));
+    HttpLogCustom.get().put("name", "二所流水123");
+
     throw new RuntimeException("timeout error");
   }
 }

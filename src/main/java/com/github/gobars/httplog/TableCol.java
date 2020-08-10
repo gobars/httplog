@@ -285,7 +285,7 @@ public class TableCol {
     }
 
     if (tag.startsWith("custom_")) {
-      return createCustomValueGetter(tag.subTagName(7));
+      return createCustomValueGetter(tag, tag.subTagName(7));
     }
 
     if (tag.startsWith("fix_")) {
@@ -349,14 +349,24 @@ public class TableCol {
     };
   }
 
-  private ColValueGetter createCustomValueGetter(String tag) {
-    return ctx -> {
-      val custom = ctx.r().getAttribute(Const.CUSTOM);
-      if (custom != null) {
-        return ((HttpLogCustom) custom).getMap().get(tag);
-      }
-
-      return null;
+  private ColValueGetter createCustomValueGetter(HttpLogTag tag, String tagName) {
+    return c -> {
+      val map = getCustom(tag, c);
+      return map != null ? map.get(tagName) : null;
     };
+  }
+
+  @Nullable
+  private HashMap<String, String> getCustom(HttpLogTag tag, ColValueGetterCtx c) {
+    switch (tag.forkMode()) {
+      case Only:
+        return c.fork() != null ? c.fork().getCustomized() : null;
+      case Try:
+        return c.fork() != null
+            ? c.fork().getCustomized()
+            : ((HttpLogCustom) c.r().getAttribute(Const.CUSTOM)).getMap();
+      default:
+        return ((HttpLogCustom) c.r().getAttribute(Const.CUSTOM)).getMap();
+    }
   }
 }

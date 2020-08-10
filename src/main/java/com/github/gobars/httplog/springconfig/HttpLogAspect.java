@@ -48,14 +48,18 @@ public class HttpLogAspect {
 
     try {
       Object result = jp.proceed();
+
+      f.customAll(thisMap);
+      HttpLogCustom.get().setMap(last);
+
       f.submit(result);
       return result;
     } catch (Throwable t) {
-      f.submitError(t);
-      throw t;
-    } finally {
       f.customAll(thisMap);
       HttpLogCustom.get().setMap(last);
+
+      f.submitError(t);
+      throw t;
     }
   }
 
