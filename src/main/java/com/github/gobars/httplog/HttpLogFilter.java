@@ -3,15 +3,14 @@ package com.github.gobars.httplog;
 import static java.util.Collections.list;
 
 import com.github.gobars.id.Id;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.http.HttpStatus;
@@ -32,20 +31,78 @@ import org.springframework.web.util.ContentCachingResponseWrapper;
  */
 @Slf4j
 public class HttpLogFilter extends OncePerRequestFilter {
+  @SneakyThrows
   @Override
-  protected void doFilterInternal(HttpServletRequest r, HttpServletResponse s, FilterChain c)
-      throws ServletException, IOException {
-
+  protected void doFilterInternal(HttpServletRequest r, HttpServletResponse s, FilterChain c) {
     val rq = new ContentCachingRequestWrapper(r);
     val rp = new ContentCachingResponseWrapper(s);
 
-    Req req = new Req();
-    req.setId(Id.next());
-    Rsp rsp = new Rsp();
-    rsp.setId(req.getId());
-
     // Launch of the timing of the request
     long startNs = System.nanoTime();
+
+    Req req = new Req();
+    Rsp rsp = new Rsp();
+
+    setup(rq, req, rsp);
+
+    Exception e = null;
+    try {
+      c.doFilter(rq, rp);
+    } catch (Exception ex) {
+      e = ex;
+    }
+
+    val p = (HttpLogProcessor) rq.getAttribute(Const.PROCESSOR);
+    if (p != null) {
+      tearDown(rq, rp, startNs, req, rsp, e, p);
+    }
+
+    if (e != null) {
+      throw e;
+    }
+
+    // Duplication of the response
+    try {
+      rp.copyBodyToResponse();
+    } catch (Exception ex) {
+      log.warn("copyBodyToResponse for req {} failed", req, ex);
+    }
+  }
+
+  private void tearDown(
+      ContentCachingRequestWrapper rq,
+      ContentCachingResponseWrapper rp,
+      long startNs,
+      Req req,
+      Rsp rsp,
+      Exception filterException,
+      HttpLogProcessor p) {
+    // Calculates the execution time of the request
+    long tookMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNs);
+    rsp.setEnd(new Timestamp(System.currentTimeMillis()));
+
+    // Registration of the body of the request
+    logBody(rq.getContentAsByteArray(), req);
+    // Retrieving the status of the response
+    rsp.setTookMs(tookMs);
+
+    rsp.setStatus(rp.getStatus());
+    rsp.setReasonPhrase(HttpStatus.valueOf(rsp.getStatus()).getReasonPhrase());
+    rsp.setError(filterException);
+
+    // Recovery of the body of the response
+    logBody(rp.getContentAsByteArray(), rsp);
+
+    // Retrieving response headers
+    logRspHeaders(rp, rsp);
+
+    p.complete(rq, rp, req, rsp);
+    HttpLogCustom.clear();
+  }
+
+  private void setup(ContentCachingRequestWrapper rq, Req req, Rsp rsp) {
+    req.setId(Id.next());
+    rsp.setId(req.getId());
 
     // Registration of request status and headers
     logReqStatusAndHeaders(rq, req);
@@ -56,64 +113,6 @@ public class HttpLogFilter extends OncePerRequestFilter {
     HttpLogCustom custom = new HttpLogCustom();
     rq.setAttribute(Const.CUSTOM, custom);
     HttpLogCustom.set(custom);
-
-    try {
-      c.doFilter(rq, rp);
-
-      val p = (HttpLogProcessor) rq.getAttribute(Const.PROCESSOR);
-      if (p != null) {
-        logStart(rq, req, rsp, startNs, rp.getStatus());
-        rsp.setEnd(new Timestamp(System.currentTimeMillis()));
-      }
-      logRsp(p, rp, req, rsp);
-    } catch (Throwable e) {
-      val p = (HttpLogProcessor) rq.getAttribute(Const.PROCESSOR);
-      if (p != null) {
-        // Calculates the execution time of the request
-        rsp.setEnd(new Timestamp(System.currentTimeMillis()));
-        logStart(rq, req, rsp, startNs, 500);
-        rsp.setError(e);
-      }
-
-      // Throw the exception to not continue the treatment
-      throw e;
-    } finally {
-      val p = (HttpLogProcessor) rq.getAttribute(Const.PROCESSOR);
-      if (p != null) {
-        p.complete(rq, rp, req, rsp);
-      }
-
-      HttpLogCustom.clear();
-    }
-  }
-
-  private void logRsp(HttpLogProcessor p, ContentCachingResponseWrapper rp, Req req, Rsp rsp) {
-    // Recovery of the body of the response
-    if (p != null) {
-      logBody(rp.getContentAsByteArray(), rsp);
-    }
-
-    // Duplication of the response
-    try {
-      rp.copyBodyToResponse();
-    } catch (Exception e) {
-      log.warn("copyBodyToResponse for req {} failed", req, e);
-    }
-
-    if (p != null) {
-      // Retrieving response headers
-      logRspHeaders(rp, rsp);
-    }
-  }
-
-  private void logStart(
-      ContentCachingRequestWrapper rq, Req req, Rsp rsp, long startNs, int status) {
-    // Calculates the execution time of the request
-    long tookMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNs);
-    // Registration of the body of the request
-    logBody(rq.getContentAsByteArray(), req);
-    // Retrieving the status of the response
-    logRsp(status, tookMs, rsp);
   }
 
   private void logReqStatusAndHeaders(ContentCachingRequestWrapper r, Req req) {
@@ -152,12 +151,6 @@ public class HttpLogFilter extends OncePerRequestFilter {
     }
 
     return strs.toString();
-  }
-
-  private void logRsp(int status, long tookMs, Rsp rsp) {
-    rsp.setTookMs(tookMs);
-    rsp.setStatus(status);
-    rsp.setReasonPhrase(HttpStatus.valueOf(status).getReasonPhrase());
   }
 
   private void logBody(byte[] content, ReqRsp rr) {

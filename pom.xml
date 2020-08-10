@@ -5,7 +5,7 @@
 
     <groupId>com.github.gobars</groupId>
     <artifactId>httplog</artifactId>
-    <version>0.0.17-SNAPSHOT</version>
+    <version>0.0.17</version>
     <packaging>jar</packaging>
 
     <name>httplog</name>
