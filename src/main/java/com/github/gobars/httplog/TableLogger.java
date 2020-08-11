@@ -2,6 +2,8 @@ package com.github.gobars.httplog;
 
 import com.github.gobars.id.Id;
 import com.github.gobars.id.db.SqlRunner;
+import com.github.gobars.id.util.DbType;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -91,12 +93,13 @@ public class TableLogger {
   /**
    * 记录响应日志
    *
+   * @param conn
    * @param run SqlRunner
    * @param logPrepared LogPrepared
    */
-  public static void rsp(SqlRunner run, LogPrepared logPrepared) {
+  public static void rsp(Connection conn, SqlRunner run, LogPrepared logPrepared) {
     for (int i = 0; i < MAX_RETRY; i++) {
-      if (rspInternal(run, logPrepared)) {
+      if (rspInternal(conn, run, logPrepared)) {
         return;
       }
     }
@@ -104,11 +107,11 @@ public class TableLogger {
 
   private static final int MAX_RETRY = 3;
 
-  private static boolean rspInternal(SqlRunner run, LogPrepared logPrepared) {
+  private static boolean rspInternal(Connection conn, SqlRunner run, LogPrepared logPrepared) {
     try {
       run.insert(logPrepared.getSql(), logPrepared.getParams().toArray(new Object[0]));
     } catch (Exception ex) {
-      if (isDuplicateKeyException(ex)) {
+      if (isDuplicateKeyException(conn, ex)) {
         log.warn("logPrepared {} got duplicate key, retry", logPrepared, ex);
         long newid = Id.next();
 
@@ -127,7 +130,7 @@ public class TableLogger {
   /**
    * This is exactly what SQLException.getSQLState() is for.
    *
-   * <p>Acoording to Google, "23000" indicates a Junique constraint violation in at least MySQL,
+   * <p>Acoording to Google, "23000" indicates a unique constraint violation in at least MySQL,
    * PostgreSQL, and Oracle.
    *
    * <p>https://stackoverflow.com/a/727589
@@ -161,7 +164,20 @@ public class TableLogger {
    *
    * <p>"PRIMARY KEY ON PUBLIC.TT(A)"; SQL statement:
    */
-  public static boolean isDuplicateKeyException(Exception e) {
-    return e instanceof SQLException && ((SQLException) e).getSQLState().equals("23000");
+  public static boolean isDuplicateKeyException(Connection conn, Exception e) {
+    if (!(e instanceof SQLException)) {
+      return false;
+    }
+
+    SQLException se = (SQLException) e;
+
+    switch (DbType.getDbType(conn)) {
+      case MYSQL:
+        return se.getErrorCode() == 1062;
+      case ORACLE:
+        return se.getErrorCode() == 1;
+      default:
+        return se.getSQLState().equals("23000");
+    }
   }
 }

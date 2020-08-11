@@ -50,9 +50,18 @@ public class MysqlAppTest {
       runner.insert("insert into biz_log(id) values(?)", id);
       Assert.fail();
     } catch (SQLException se) {
-      System.out.println(se.getSQLState().equals("23000"));
       System.out.println(se.getSQLState());
+      System.out.println(se.getErrorCode());
       System.out.println(se);
+    }
+
+    try {
+      runner.insert("insert into biz_log(rsp_body) values(null)");
+      Assert.fail();
+    } catch (SQLException se) {
+      System.out.println(se.getSQLState()); // HY000
+      System.out.println(se.getErrorCode()); // 1364
+      System.out.println(se); // java.sql.SQLException: Field 'id' doesn't have a default value
     }
   }
 

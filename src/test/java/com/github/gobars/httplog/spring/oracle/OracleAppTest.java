@@ -48,8 +48,17 @@ public class OracleAppTest {
       runner.insert("insert into biz_log(id) values(?)", id);
       Assert.fail();
     } catch (SQLException se) {
-      System.out.println(se.getSQLState().equals("23000"));
       System.out.println(se.getSQLState());
+      System.out.println(se.getErrorCode());
+      System.out.println(se);
+    }
+
+    try {
+      runner.insert("insert into biz_log(id) values(null)");
+      Assert.fail();
+    } catch (SQLException se) {
+      System.out.println(se.getSQLState());
+      System.out.println(se.getErrorCode());
       System.out.println(se);
     }
   }

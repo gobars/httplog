@@ -46,7 +46,6 @@ public class HttpLogInterceptor extends HandlerInterceptorAdapter
    * <p>false表示流程中断（如登录检查失败），不会继续调用其他的拦截器或处理器，此时我们需要通过response来产生响应
    */
   @Override
-  @SuppressWarnings("unchecked")
   public boolean preHandle(HttpServletRequest r, HttpServletResponse p, Object h) {
     if (!(h instanceof HandlerMethod)) {
       // 李标：这里需要默认 true, 有些静态资源(eg swagger)会被拦截到

@@ -1,7 +1,5 @@
 package com.github.gobars.httplog.springconfig;
 
-import static org.springframework.core.annotation.AnnotationUtils.getAnnotationAttributes;
-
 import com.github.gobars.httplog.HttpLog;
 import com.github.gobars.httplog.HttpLogAttr;
 import com.github.gobars.httplog.HttpLogCustom;
@@ -14,7 +12,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.springframework.core.annotation.AnnotationAttributes;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -33,7 +31,7 @@ public class HttpLogAspect {
       return jp.proceed();
     }
 
-    val attr = HttpLogAttr.create(new AnnotationAttributes(getAnnotationAttributes(httpLog)));
+    val attr = HttpLogAttr.create(AnnotationUtils.getAnnotationAttributes(httpLog));
     Object req = null;
     if (jp.getArgs().length > 0) {
       req = jp.getArgs()[0];
@@ -46,21 +44,25 @@ public class HttpLogAspect {
     HashMap<String, String> thisMap = new HashMap<>();
     HttpLogCustom.get().setMap(thisMap);
 
+    Object result = null;
+    Throwable throwable = null;
+
     try {
-      Object result = jp.proceed();
+      result = jp.proceed();
+    } catch (Throwable t) {
+      throwable = t;
+    }
 
-      f.customAll(thisMap);
-      HttpLogCustom.get().setMap(last);
+    f.customAll(thisMap);
+    HttpLogCustom.get().setMap(last);
 
+    if (throwable == null) {
       f.submit(result);
       return result;
-    } catch (Throwable t) {
-      f.customAll(thisMap);
-      HttpLogCustom.get().setMap(last);
-
-      f.submitError(t);
-      throw t;
     }
+
+    f.submitError(throwable);
+    throw throwable;
   }
 
   private boolean shouldBypass(ProceedingJoinPoint jp, HttpLog httpLog) {

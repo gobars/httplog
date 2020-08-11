@@ -1,5 +1,6 @@
 package com.github.gobars.httplog;
 
+import java.util.Map;
 import lombok.Data;
 import org.springframework.core.annotation.AnnotationAttributes;
 
@@ -74,6 +75,10 @@ public class HttpLogAttr {
 
   public int abbrevMaxSize() {
     return abbrevMaxSize;
+  }
+
+  public static HttpLogAttr create(Map<String, Object> annotationAttributes) {
+    return create(new AnnotationAttributes(annotationAttributes));
   }
 
   @SuppressWarnings("unchecked")

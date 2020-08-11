@@ -208,7 +208,7 @@ public class HttpLogProcessor {
 
     val run = new SqlRunner(conn, false);
     for (LogPrepared prepared : prepareds) {
-      TableLogger.rsp(run, prepared);
+      TableLogger.rsp(conn, run, prepared);
     }
   }
 
