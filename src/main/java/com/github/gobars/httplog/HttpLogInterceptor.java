@@ -49,7 +49,6 @@ public class HttpLogInterceptor extends HandlerInterceptorAdapter
   @SuppressWarnings("unchecked")
   public boolean preHandle(HttpServletRequest r, HttpServletResponse p, Object h) {
     if (!(h instanceof HandlerMethod)) {
-      log.warn("no permission....");
       // 李标：这里需要默认 true, 有些静态资源(eg swagger)会被拦截到
       return true;
     }
