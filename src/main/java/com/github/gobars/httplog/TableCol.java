@@ -4,6 +4,9 @@ import static com.github.gobars.httplog.Equals.eq;
 import static com.github.gobars.httplog.Starts.starts;
 
 import com.github.gobars.httplog.snack.Onode;
+import com.github.gobars.httplog.springconfig.HttpLogTagField;
+import com.github.gobars.httplog.springconfig.HttpLogTagTable;
+import com.github.gobars.httplog.springconfig.HttpLogTags;
 import com.github.gobars.id.util.Pid;
 import com.github.gobars.id.worker.WorkerIdHostname;
 import com.github.gobars.id.worker.WorkerIdIp;
@@ -18,6 +21,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.jetbrains.annotations.Nullable;
+import org.springframework.context.ApplicationContext;
 import org.springframework.web.servlet.HandlerMapping;
 
 /**
@@ -262,13 +266,44 @@ public class TableCol {
     return node.select(path).getString();
   }
 
-  public void parseComment(Map<String, String> fixes) {
-    HttpLogTag tag = HttpLogTag.parse(name, comment);
+  public void parseComment(String table, ApplicationContext appContext, Map<String, String> fixes) {
+    String colComment = createComment(table, appContext);
+    HttpLogTag tag = HttpLogTag.parse(name, colComment);
 
     this.valueGetter = parseValueGetter(fixes, tag);
     if (this.valueGetter != null) {
       this.valueGetter = wrap(this.valueGetter);
     }
+  }
+
+  public String createComment(String table, ApplicationContext appContext) {
+    val httpLogTagsMap = appContext.getBeansOfType(HttpLogTags.class);
+    if (httpLogTagsMap.isEmpty()) {
+      return comment;
+    }
+
+    HttpLogTags tags = httpLogTagsMap.entrySet().iterator().next().getValue();
+    HttpLogTagTable tagTable = tags.get(table);
+    if (tagTable == null) {
+      return comment;
+    }
+
+    HttpLogTagField tagField = tagTable.get(this.name);
+    if (tagField == null) {
+      return comment;
+    }
+
+    String tagFieldComment = tagField.getComment();
+    if (tagFieldComment == null) {
+      return comment;
+    }
+
+    tagFieldComment = tagFieldComment.trim();
+    if (tagFieldComment.isEmpty()) {
+      return comment;
+    }
+
+    return tagFieldComment;
   }
 
   public ColValueGetter parseValueGetter(Map<String, String> fixes, HttpLogTag tag) {

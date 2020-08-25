@@ -12,7 +12,7 @@ log request and response for http
 
 HttpLog会根据`@HttpLog`中定义的日志表的注解及字段名，自动记录相关HTTP信息.
 
-### Prepare log tables
+### 方式一：Prepare log tables
 
 业务日志表定义，根据具体业务需要，必须字段为主键`id`（名字固定）, 示例: [mysql](scripts/mysql-ddl.sql), [oracle](scripts/oracle-ddl.sql)
 
@@ -66,6 +66,32 @@ HttpLog会根据`@HttpLog`中定义的日志表的注解及字段名，自动记
 `httplog:"custom_xxx"`|custom_xxx| 由HttpLogCustom提供的自定义xxx值, eg: `HttpLogCustom.get().put("xxx", "bingoo");`
 
 </details>
+
+### 方式二：配置指定
+
+如果存在数据库多版本，可以直接在代码工程中配置yaml，此优先级高于数据库表的字段注释元信息:
+
+```yaml
+biz_log: # 表名
+  created: # 字段名
+    comment: 创建时间 httplog:"-" # 字段注释
+  body2:
+    comment: 响应体 httplog:"rsp_body"
+  bizdesc:
+    comment: 业务名称 httplog:"fix_desc"
+```
+
+然后定义Spring的Bean:
+
+```java
+@Bean @SneakyThrows
+public HttpLogTags httpLogTags() {
+@Cleanup val is = new ClassPathResource("httplog.yml").getInputStream();
+
+return HttpLogTags.parseYml(is);
+}
+```
+
 
 ### Setup interceptors and filters
 

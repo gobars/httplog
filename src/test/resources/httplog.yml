@@ -1,0 +1,7 @@
+biz_log:
+  created:
+    comment: 创建时间 httplog:"-"
+  body2:
+    comment: 响应体 httplog:"rsp_body"
+  bizdesc:
+    comment: 业务名称 httplog:"fix_desc"

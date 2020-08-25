@@ -2,12 +2,16 @@ package com.github.gobars.httplog.spring.mysql;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import com.github.gobars.httplog.springconfig.HttpLogEnabled;
+import com.github.gobars.httplog.springconfig.HttpLogTags;
 import javax.sql.DataSource;
+import lombok.Cleanup;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.io.ClassPathResource;
 
 @Slf4j
 @HttpLogEnabled
@@ -27,5 +31,13 @@ public class App {
     dataSource.setPassword("root");
 
     return dataSource;
+  }
+
+  @Bean
+  @SneakyThrows
+  public HttpLogTags httpLogTags() {
+    @Cleanup val is = new ClassPathResource("httplog.yml").getInputStream();
+
+    return HttpLogTags.parseYml(is);
   }
 }

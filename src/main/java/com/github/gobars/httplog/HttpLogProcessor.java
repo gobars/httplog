@@ -96,7 +96,7 @@ public class HttpLogProcessor {
         setInt(m, "column_id", tableCol::setSeq);
         setBool(m, "nullable", tableCol::setNullable, true);
 
-        tableCol.parseComment(fixes);
+        tableCol.parseComment(table, appContext, fixes);
       }
 
       log.debug("tableCols: {}", tableCols);

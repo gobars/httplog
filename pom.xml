@@ -5,13 +5,14 @@
 
     <groupId>com.github.gobars</groupId>
     <artifactId>httplog</artifactId>
-    <version>0.0.19-SNAPSHOT</version>
+    <version>0.0.20-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>httplog</name>
     <description>a http logger</description>
     <url>http://github.com/gobars/httplog</url>
 
+    <!-- export GPG_TTY=$(tty)  &&  mvn clean install -Prelease-->
     <repositories>
         <repository>
             <id>otn-maven-repo</id>
