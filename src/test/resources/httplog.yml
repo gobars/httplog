@@ -2,6 +2,6 @@ biz_log:
   created:
     comment: 创建时间 httplog:"-"
   body2:
-    comment: 响应体 httplog:"rsp_body,maskKeys=bb"
+    comment: 响应体 httplog:"rsp_body,maskKeys=bb-/cc/dd"
   bizdesc:
     comment: 业务名称 httplog:"fix_desc"

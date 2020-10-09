@@ -21,6 +21,10 @@ public class HttpLogTag {
   private ForkMode forkMode = ForkMode.None;
   private Set<String> maskKeys = new HashSet<>();
 
+  {
+    maskKeys.add("password");
+  }
+
   public boolean startsWith(String s) {
     return tag.startsWith(s);
   }

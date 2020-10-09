@@ -320,5 +320,4 @@ Caused by: com.github.gobars.httplog.spring.TestException: TestDto(id=10)
 
 ## Release 
 
-1. `export GPG_TTY=$(tty)`
-1. `mvn clean install -Prelease -Dgpg.passphrase=thephrase`
+1. `GPG_TTY=$(tty) LANGUAGE=en mvn clean install -Prelease -Dgpg.passphrase=thephrase`
