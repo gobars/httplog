@@ -1,5 +1,6 @@
 package com.github.gobars.httplog;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -15,15 +16,17 @@ import lombok.val;
 @Data
 @Accessors(fluent = true)
 public class HttpLogTag {
+  public static final String MASK_KEYS = "maskKeys=";
   private String tag;
   private ForkMode forkMode = ForkMode.None;
+  private Set<String> maskKeys = new HashSet<>();
 
   public boolean startsWith(String s) {
     return tag.startsWith(s);
   }
 
   public HttpLogTag subTag(int index) {
-    return new HttpLogTag().tag(tag.substring(index)).forkMode(forkMode);
+    return new HttpLogTag().tag(tag.substring(index)).forkMode(forkMode).maskKeys(maskKeys);
   }
 
   public String subTagName(int index) {
@@ -56,9 +59,26 @@ public class HttpLogTag {
       httpLogTag.tag(tagName);
     }
 
-    httpLogTag.forkMode(ForkMode.parse(parseTagOptions(tagValue.substring(optionStart + 1))));
+    Set<String> options = parseTagOptions(tagValue.substring(optionStart + 1));
+    httpLogTag.forkMode(ForkMode.parse(options));
+
+    String[] maskKeys = parseMaskKeys(options);
+    if (maskKeys.length > 0) {
+      Collections.addAll(httpLogTag.maskKeys, maskKeys);
+    }
 
     return httpLogTag;
+  }
+
+  private static String[] parseMaskKeys(Set<String> options) {
+    for (String key : options) {
+      if (key.startsWith(MASK_KEYS)) {
+        String keys = key.substring(MASK_KEYS.length());
+        return keys.split("/");
+      }
+    }
+
+    return new String[0];
   }
 
   public static Set<String> parseTagOptions(String option) {

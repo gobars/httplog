@@ -80,11 +80,13 @@ public class TableCol {
     rsps.put(
         eq("body"),
         (c, v, col) ->
-            wfork(c, v, () -> c.fork.abbrRsp(col.maxLen), () -> c.rsp().abbrBody(col.maxLen)));
+            wfork(
+                c, v, () -> c.fork.abbrRsp(col.maxLen, v), () -> c.rsp().abbrBody(col.maxLen, v)));
     rsps.put(
         eq("json"),
         (c, v, col) ->
-            wfork(c, v, () -> c.fork.abbrRsp(col.maxLen), () -> getJsonBody(c, v, col, c.rsp())));
+            wfork(
+                c, v, () -> c.fork.abbrRsp(col.maxLen, v), () -> getJsonBody(c, v, col, c.rsp())));
     rsps.put(
         starts("json_"),
         (c, v, col) ->
@@ -100,12 +102,17 @@ public class TableCol {
     reqs.put(
         eq("body"),
         (c, v, col) ->
-            wfork(c, v, () -> c.fork.getAbbrReq(col.maxLen), () -> c.req().abbrBody(col.maxLen)));
+            wfork(
+                c,
+                v,
+                () -> c.fork.getAbbrReq(col.maxLen, v),
+                () -> c.req().abbrBody(col.maxLen, v)));
 
     reqs.put(
         eq("json"),
         (c, v, col) ->
-            wfork(c, v, () -> c.fork.abbrReq(col.maxLen), () -> getJsonBody(c, v, col, c.req())));
+            wfork(
+                c, v, () -> c.fork.abbrReq(col.maxLen, v), () -> getJsonBody(c, v, col, c.req())));
     reqs.put(
         starts("json_"),
         (c, v, col) ->
@@ -220,7 +227,7 @@ public class TableCol {
       return null;
     }
 
-    String b = req.abbrBody(col.maxLen);
+    String b = req.abbrBody(col.maxLen, v);
     return b != null && (b.startsWith("{") || b.startsWith("[")) ? b : null;
   }
 

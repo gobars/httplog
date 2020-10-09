@@ -77,15 +77,30 @@ public class JsonToer implements Toer {
   private void writeObject(Cnf cnf, StringBuilder sBuf, Odata d) {
     sBuf.append("{");
     Iterator<String> itr = d.object.keySet().iterator();
+    boolean started = false;
+
     while (itr.hasNext()) {
       String k = itr.next();
-      writeName(cnf, sBuf, k);
-      sBuf.append(":");
-      analyse(cnf, d.object.get(k), sBuf);
-      if (itr.hasNext()) {
+      if (cnf.maskKeys.contains(k + "-")) {
+        // 不显示掩码的key-value对
+        continue;
+      }
+
+      if (started) {
         sBuf.append(",");
       }
+
+      writeName(cnf, sBuf, k);
+      sBuf.append(":");
+      if (cnf.maskKeys.contains(k)) {
+        sBuf.append("\"...\"");
+      } else {
+        analyse(cnf, d.object.get(k), sBuf);
+      }
+
+      started = true;
     }
+
     sBuf.append("}");
   }
 

@@ -126,7 +126,6 @@ public class ObjectToer implements Toer {
   }
 
   public Object analyseVal(Ctx ctx, Odata d, Class<?> clz) {
-
     Ovalue v = d.value;
 
     if (v.type() == Otype.Null) {

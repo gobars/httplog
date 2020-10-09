@@ -43,21 +43,26 @@ public class ReqRsp {
 
   private int abbrevMaxSize;
 
-  public String abbrBody(int maxLen) {
+  public String abbrBody(int maxLen, HttpLogTag v) {
+    Cnf cnf = Cnf.def().abbrevMaxSize(abbrevMaxSize);
+    cnf.maskKeys(v.maskKeys());
+
     if (maxLen > 0 && this.body.length() <= maxLen) {
       return this.body;
     }
 
     try {
-      return Onode.load(this.body, Cnf.def().abbrevMaxSize(abbrevMaxSize)).toJson();
+      return Onode.load(this.body, cnf).toJson();
     } catch (Exception e) {
       return this.body;
     }
   }
 
   private String tryAbbreviate(String s) {
+    Cnf cnf = Cnf.def().abbrevMaxSize(abbrevMaxSize);
+
     try {
-      return Onode.load(s, Cnf.def().abbrevMaxSize(abbrevMaxSize)).toJson();
+      return Onode.load(s, cnf).toJson();
     } catch (Exception e) {
       return Str.abbreviate(s, abbrevMaxSize);
     }

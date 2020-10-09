@@ -8,16 +8,18 @@ import java.util.HashMap;
 import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class HttpLogFork {
   @Getter private final long id = Id.next();
   @Getter private final HttpLogAttr attr;
   @Getter private final Object request;
   @Getter private Object response;
   @Getter private boolean sealed;
-  @Getter private HashMap<String, String> customized = new HashMap<>();
+  @Getter private final HashMap<String, String> customized = new HashMap<>();
 
-  @Getter private Timestamp start = new Timestamp(System.currentTimeMillis());
+  @Getter private final Timestamp start = new Timestamp(System.currentTimeMillis());
   @Getter private Timestamp end;
   @Getter private long tookMs;
   @Getter private Throwable error;
@@ -69,31 +71,29 @@ public class HttpLogFork {
     }
   }
 
-  public String abbrReq(int maxLen) {
-    return abbr(request, maxLen);
+  public String abbrReq(int maxLen, HttpLogTag v) {
+    return abbr(request, maxLen, v);
   }
 
-  public String abbrRsp(int maxLen) {
-    return abbr(response, maxLen);
+  public String abbrRsp(int maxLen, HttpLogTag v) {
+    return abbr(response, maxLen, v);
   }
 
-  public String getAbbrReq(int maxLen) {
-    return abbr(request, maxLen);
+  public String getAbbrReq(int maxLen, HttpLogTag v) {
+    return abbr(request, maxLen, v);
   }
 
-  public static String abbr(Object obj, int maxLen) {
-    String s = Onode.load(obj).toJson();
-    if (maxLen > 0 && s.length() <= maxLen) {
-      return s;
-    }
+  public static String abbr(Object obj, int maxLen, HttpLogTag v) {
+    Cnf cnf = Cnf.def().abbrevMaxSize(maxLen);
+    cnf.maskKeys(v.maskKeys());
 
     try {
-      return Onode.load(s, Cnf.def().abbrevMaxSize(maxLen)).toJson();
-    } catch (Exception ignore) {
-
+      return Onode.load(obj, cnf).toJson();
+    } catch (Exception ex) {
+      log.warn("failed toJSON", ex);
     }
 
-    return s;
+    return Onode.load(obj).toJson();
   }
 
   private static class HttpLogForkSealedException extends RuntimeException {}

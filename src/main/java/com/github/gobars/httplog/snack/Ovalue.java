@@ -210,11 +210,7 @@ public class Ovalue {
       case BigNumber:
         return bigNumValue.longValue();
       case String:
-        if (strValue == null || strValue.length() == 0) {
-          return 0;
-        }
-
-        return Long.parseLong(strValue);
+        return (strValue == null || strValue.length() == 0) ? 0 : Long.parseLong(strValue);
       case Boolean:
         return boolValue ? 1 : 0;
       case DateTime:
@@ -238,11 +234,7 @@ public class Ovalue {
       case BigNumber:
         return bigNumValue.doubleValue();
       case String:
-        if (strValue == null || strValue.length() == 0) {
-          return 0;
-        }
-
-        return Double.parseDouble(strValue);
+        return (strValue == null || strValue.length() == 0) ? 0 : Double.parseDouble(strValue);
       case Boolean:
         return boolValue ? 1 : 0;
       case DateTime:
@@ -351,25 +343,13 @@ public class Ovalue {
       case String:
         return strValue.equals(o);
       case Integer:
-        if (o instanceof Number) {
-          return ((Number) o).longValue() == intValue;
-        } else {
-          return false;
-        }
+        return o instanceof Number && ((Number) o).longValue() == intValue;
       case DateTime:
         return dateValue.equals(o);
       case Boolean:
-        if (o instanceof Boolean) {
-          return boolValue == (Boolean) o;
-        } else {
-          return false;
-        }
+        return o instanceof Boolean && boolValue == (Boolean) o;
       case Decimal:
-        if (o instanceof Number) {
-          return ((Number) o).doubleValue() == decimalValue;
-        } else {
-          return false;
-        }
+        return o instanceof Number && ((Number) o).doubleValue() == decimalValue;
       case BigNumber:
         return bigNumValue.equals(o);
       default:
