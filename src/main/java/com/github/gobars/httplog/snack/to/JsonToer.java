@@ -9,6 +9,7 @@ import com.github.gobars.httplog.snack.core.Feature;
 import com.github.gobars.httplog.snack.core.exts.ThData;
 import com.github.gobars.httplog.snack.core.utils.IOUtil;
 import com.github.gobars.httplog.snack.core.utils.TypeUtil;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Date;
@@ -81,10 +82,6 @@ public class JsonToer implements Toer {
 
     while (itr.hasNext()) {
       String k = itr.next();
-      if (cnf.maskKeys.contains(k + "-")) {
-        // 不显示掩码的key-value对
-        continue;
-      }
 
       if (started) {
         sBuf.append(",");
@@ -92,11 +89,7 @@ public class JsonToer implements Toer {
 
       writeName(cnf, sBuf, k);
       sBuf.append(":");
-      if (cnf.maskKeys.contains(k)) {
-        sBuf.append("\"...\"");
-      } else {
-        analyse(cnf, d.object.get(k), sBuf);
-      }
+      analyse(cnf, d.object.get(k), sBuf);
 
       started = true;
     }
@@ -124,7 +117,8 @@ public class JsonToer implements Toer {
         break;
 
       case BigNumber:
-        writeValBignum(cnf, sBuf, v.getRawBignumber()); // 添加对大数字的处理
+        // 添加对大数字的处理
+        writeValBignum(cnf, sBuf, v.getRawBignumber());
         break;
 
       case Integer:

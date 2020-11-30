@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<config>
+    <mask>
+        <!-- 指定json格式, key=value key:value形式的key，多个以空白分割 -->
+        <keys>abc efg</keys>
+    </mask>
+</config>

@@ -5,7 +5,7 @@
 
     <groupId>com.github.gobars</groupId>
     <artifactId>httplog</artifactId>
-    <version>0.0.22-SNAPSHOT</version>
+    <version>0.0.24-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>httplog</name>
@@ -23,7 +23,7 @@
 
     <properties>
         <java.version>1.8</java.version>
-<!--        <spring.boot.version>1.5.8.RELEASE</spring.boot.version>-->
+        <!--        <spring.boot.version>1.5.8.RELEASE</spring.boot.version>-->
         <spring.boot.version>2.3.0.RELEASE</spring.boot.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -55,6 +55,19 @@
     </developers>
 
     <dependencies>
+        <dependency>
+            <groupId>com.github.bingoohuang</groupId>
+            <artifactId>logmask</artifactId>
+            <version>0.0.3</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.google.auto.service/auto-service -->
+        <dependency>
+            <groupId>com.google.auto.service</groupId>
+            <artifactId>auto-service</artifactId>
+            <version>1.0-rc7</version>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
@@ -297,4 +310,20 @@ mvn install:install-file -Dfile=ojdbc5.jar -DgroupId=com.oracle -DartifactId=ojd
             </build>
         </profile>
     </profiles>
+    <!--
+
+        <distributionManagement>
+            <repository>
+                <id>releases</id>
+                <name>Internal Releases</name>
+                <url>http://192.168.126.160:8088/nexus/content/repositories/releases/</url>
+            </repository>
+            <snapshotRepository>
+                <id>snapshots</id>
+                <name>Internal Releases</name>
+                <url>http://192.168.126.160:8088/nexus/content/repositories/snapshots/</url>
+            </snapshotRepository>
+        </distributionManagement>
+    -->
+
 </project>

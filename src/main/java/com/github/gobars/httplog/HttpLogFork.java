@@ -3,12 +3,13 @@ package com.github.gobars.httplog;
 import com.github.gobars.httplog.snack.Onode;
 import com.github.gobars.httplog.snack.core.Cnf;
 import com.github.gobars.id.Id;
-import java.sql.Timestamp;
-import java.util.HashMap;
-import java.util.Map;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+
+import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 public class HttpLogFork {
@@ -85,7 +86,6 @@ public class HttpLogFork {
 
   public static String abbr(Object obj, int maxLen, HttpLogTag v) {
     Cnf cnf = Cnf.def().abbrevMaxSize(maxLen);
-    cnf.maskKeys(v.maskKeys());
 
     try {
       return Onode.load(obj, cnf).toJson();

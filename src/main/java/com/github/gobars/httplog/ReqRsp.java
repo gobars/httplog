@@ -2,9 +2,10 @@ package com.github.gobars.httplog;
 
 import com.github.gobars.httplog.snack.Onode;
 import com.github.gobars.httplog.snack.core.Cnf;
+import lombok.Data;
+
 import java.sql.Timestamp;
 import java.util.Map;
-import lombok.Data;
 
 @Data
 public class ReqRsp {
@@ -43,14 +44,12 @@ public class ReqRsp {
 
   private int abbrevMaxSize;
 
-  public String abbrBody(int maxLen, HttpLogTag v) {
-    Cnf cnf = Cnf.def().abbrevMaxSize(abbrevMaxSize);
-    cnf.maskKeys(v.maskKeys());
-
+  public String abbrBody(int maxLen) {
     if (maxLen > 0 && this.body.length() <= maxLen) {
       return this.body;
     }
 
+    Cnf cnf = Cnf.def().abbrevMaxSize(abbrevMaxSize);
     try {
       return Onode.load(this.body, cnf).toJson();
     } catch (Exception e) {

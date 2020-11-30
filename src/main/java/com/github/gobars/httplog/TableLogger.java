@@ -3,14 +3,15 @@ package com.github.gobars.httplog;
 import com.github.gobars.id.Id;
 import com.github.gobars.id.db.SqlRunner;
 import com.github.gobars.id.util.DbType;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.jetbrains.annotations.Nullable;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 在数据库表中记录日志
@@ -59,14 +60,15 @@ public class TableLogger {
   /**
    * 准备记录响应日志
    *
+   * @param table
    * @param ctx ColValueGetterContext
    */
-  public LogPrepared prepareLog(ColValueGetterCtx ctx) {
+  public LogPrepared prepareLog(String table, ColValueGetterCtx ctx) {
     ArrayList<Object> params = new ArrayList<>(valueGetters.size());
     // for id update when duplicate error detected.
     List<Integer> idPositions = new ArrayList<>();
     for (val colValueGetter : valueGetters) {
-      Object obj = getVal(ctx, colValueGetter);
+      Object obj = TableValueFilterUtil.filter(table, ctx, getVal(ctx, colValueGetter));
 
       if (((Long) ctx.req().getId()).equals(obj)) {
         idPositions.add(params.size());

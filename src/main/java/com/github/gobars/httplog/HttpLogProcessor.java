@@ -229,7 +229,8 @@ public class HttpLogProcessor {
 
       for (val table : httpLog.tables()) {
         val ctx = new ColValueGetterCtx().r(r).p(p).req(req).rsp(rsp).hl(httpLog);
-        prepareds.add(sqlGenerators.get(table).prepareLog(ctx));
+        LogPrepared lp = sqlGenerators.get(table).prepareLog(table, ctx);
+        prepareds.add(lp);
       }
     } catch (Exception ex) {
       log.warn("failed to log req:{} rsp:{} for httpLog:{}", req, rsp, httpLog, ex);
@@ -247,7 +248,7 @@ public class HttpLogProcessor {
       HttpLogProcessor ps = hli.cacheGet(f.getAttr());
       for (val table : f.getAttr().tables()) {
         val ctx = new ColValueGetterCtx().r(r).p(p).req(req).rsp(rsp).hl(httpLog).fork(f);
-        prepareds.add(ps.sqlGenerators.get(table).prepareLog(ctx));
+        prepareds.add(ps.sqlGenerators.get(table).prepareLog(table, ctx));
       }
     }
 

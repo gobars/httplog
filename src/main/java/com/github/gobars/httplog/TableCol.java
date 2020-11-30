@@ -81,7 +81,7 @@ public class TableCol {
         eq("body"),
         (c, v, col) ->
             wfork(
-                c, v, () -> c.fork.abbrRsp(col.maxLen, v), () -> c.rsp().abbrBody(col.maxLen, v)));
+                c, v, () -> c.fork.abbrRsp(col.maxLen, v), () -> c.rsp().abbrBody(col.maxLen)));
     rsps.put(
         eq("json"),
         (c, v, col) ->
@@ -106,7 +106,7 @@ public class TableCol {
                 c,
                 v,
                 () -> c.fork.getAbbrReq(col.maxLen, v),
-                () -> c.req().abbrBody(col.maxLen, v)));
+                () -> c.req().abbrBody(col.maxLen)));
 
     reqs.put(
         eq("json"),
@@ -227,7 +227,7 @@ public class TableCol {
       return null;
     }
 
-    String b = req.abbrBody(col.maxLen, v);
+    String b = req.abbrBody(col.maxLen);
     return b != null && (b.startsWith("{") || b.startsWith("[")) ? b : null;
   }
 

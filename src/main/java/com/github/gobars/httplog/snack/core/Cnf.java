@@ -1,12 +1,11 @@
 package com.github.gobars.httplog.snack.core;
 
 import com.github.gobars.httplog.snack.core.exts.Run1;
+import lombok.val;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Locale;
-import java.util.Set;
-import lombok.val;
 
 /** 参数配置 */
 public class Cnf {
@@ -25,7 +24,6 @@ public class Cnf {
   public boolean readonly = false;
 
   public String dateFormat = Defaults.DEF_DATE_FORMAT_STRING;
-  public Set<String> maskKeys = new HashSet<>();
 
   public Cnf() {}
 
@@ -84,19 +82,6 @@ public class Cnf {
 
   public Cnf abbrevMaxSize(int maxSize) {
     this.abbrevMaxSize = maxSize;
-    return this;
-  }
-
-  public Cnf maskKeys(Set<String> maskKeys) {
-    this.maskKeys.addAll(maskKeys);
-    return this;
-  }
-
-  public Cnf maskKeys(String... maskKeys) {
-    for (String key : maskKeys) {
-      this.maskKeys.add(key);
-    }
-
     return this;
   }
 }
