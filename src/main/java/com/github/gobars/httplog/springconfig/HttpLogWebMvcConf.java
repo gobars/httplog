@@ -1,5 +1,6 @@
 package com.github.gobars.httplog.springconfig;
 
+import com.github.gobars.httplog.Const;
 import com.github.gobars.httplog.HttpLogFilter;
 import com.github.gobars.httplog.HttpLogInterceptor;
 import lombok.AllArgsConstructor;
@@ -18,7 +19,8 @@ public class HttpLogWebMvcConf extends WebMvcConfigurerAdapter {
 
   @Override
   public void addInterceptors(InterceptorRegistry registry) {
-    registry.addInterceptor(httpLogInterceptor).addPathPatterns("/**");
+    registry.addInterceptor(httpLogInterceptor).addPathPatterns("/**")
+    .excludePathPatterns(Const.WEB_IGNORES);
     log.info("Configure Interceptor.....");
     super.addInterceptors(registry);
   }

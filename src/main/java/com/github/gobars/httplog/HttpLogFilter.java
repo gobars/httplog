@@ -1,5 +1,6 @@
 package com.github.gobars.httplog;
 
+import static com.github.gobars.httplog.Const.WEB_IGNORES;
 import static java.util.Collections.list;
 
 import com.github.gobars.id.Id;
@@ -14,6 +15,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.http.HttpStatus;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.ContentCachingRequestWrapper;
 import org.springframework.web.util.ContentCachingResponseWrapper;
@@ -34,6 +36,13 @@ public class HttpLogFilter extends OncePerRequestFilter {
   @SneakyThrows
   @Override
   protected void doFilterInternal(HttpServletRequest r, HttpServletResponse s, FilterChain c) {
+
+    // 静态资源，直接跳过
+    if (containIgnoreUris(r.getRequestURI())) {
+      c.doFilter(r, s);
+      return;
+    }
+
     val rq = new ContentCachingRequestWrapper(r);
     val rp = new ContentCachingResponseWrapper(s);
 
@@ -67,6 +76,22 @@ public class HttpLogFilter extends OncePerRequestFilter {
     } catch (Exception ex) {
       log.warn("copyBodyToResponse for req {} failed", req, ex);
     }
+  }
+
+  /**
+   * 校验uri是否为静态资源的URI
+   * @param uri 需要校验的uri
+   * @return
+   */
+  private boolean containIgnoreUris(String uri) {
+    AntPathMatcher pathMatcher = new AntPathMatcher();
+    boolean flag = false;
+    for (String ignore : WEB_IGNORES) {
+      if (pathMatcher.match(ignore,uri)){
+        flag = true;
+      }
+    }
+    return flag;
   }
 
   private void tearDown(
