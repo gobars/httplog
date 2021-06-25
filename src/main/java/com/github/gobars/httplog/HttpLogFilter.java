@@ -89,13 +89,12 @@ public class HttpLogFilter extends OncePerRequestFilter {
    */
   private boolean containIgnoreUris(String uri) {
     AntPathMatcher pathMatcher = new AntPathMatcher();
-    boolean flag = false;
     for (String ignore : httpLogWebIgnores) {
       if (pathMatcher.match(ignore, uri)) {
-        flag = true;
+        return true;
       }
     }
-    return flag;
+    return false;
   }
 
   private void tearDown(
