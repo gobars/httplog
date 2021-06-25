@@ -1,6 +1,5 @@
 package com.github.gobars.httplog;
 
-import static com.github.gobars.httplog.Const.WEB_IGNORES;
 import static java.util.Collections.list;
 
 import com.github.gobars.id.Id;
@@ -14,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -33,6 +33,10 @@ import org.springframework.web.util.ContentCachingResponseWrapper;
  */
 @Slf4j
 public class HttpLogFilter extends OncePerRequestFilter {
+
+  @Autowired(required = false)
+  private String[] httpLogWebIgnores;
+
   @SneakyThrows
   @Override
   protected void doFilterInternal(HttpServletRequest r, HttpServletResponse s, FilterChain c) {
@@ -86,8 +90,8 @@ public class HttpLogFilter extends OncePerRequestFilter {
   private boolean containIgnoreUris(String uri) {
     AntPathMatcher pathMatcher = new AntPathMatcher();
     boolean flag = false;
-    for (String ignore : WEB_IGNORES) {
-      if (pathMatcher.match(ignore,uri)){
+    for (String ignore : httpLogWebIgnores) {
+      if (pathMatcher.match(ignore, uri)) {
         flag = true;
       }
     }

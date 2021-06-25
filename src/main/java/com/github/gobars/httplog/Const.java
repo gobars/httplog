@@ -6,23 +6,4 @@ public interface Const {
   String PROCESSOR = "HTTPLOG_PROCESSOR";
   String INTERCEPTOR = "HTTPLOG_INTERCEPTOR";
   String CUSTOM = "HTTPLOG_CUSTOM";
-
-  String[] WEB_IGNORES =
-      new String[] {
-        "/css/**",
-        "/swagger-resources/**",
-        "/webjars/**",
-        "/v2/**",
-        "/doc.html",
-        "/i18n/**",
-        "/error",
-        "/**/*.ico",
-        "/service-worker.js",
-        "/precache-manifest.*.*",
-        "/index.html",
-        "/druid/**",
-        "/webjars/springfox-swagger-ui/**",
-        "/webjars/bycdao-ui/**"
-  };
-
 }

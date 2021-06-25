@@ -40,4 +40,9 @@ public class App {
 
     return HttpLogTags.parseYml(is);
   }
+
+  @Bean
+  public String[] httpLogWebIgnores() {
+    return new String[]{};
+  }
 }
