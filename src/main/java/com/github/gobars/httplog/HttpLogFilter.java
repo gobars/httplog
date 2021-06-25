@@ -13,7 +13,9 @@ import javax.servlet.http.HttpServletResponse;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.util.ContentCachingRequestWrapper;
 import org.springframework.web.util.ContentCachingResponseWrapper;
@@ -31,9 +33,20 @@ import org.springframework.web.util.ContentCachingResponseWrapper;
  */
 @Slf4j
 public class HttpLogFilter extends OncePerRequestFilter {
+
+  @Autowired(required = false)
+  private String[] httpLogWebIgnores;
+
   @SneakyThrows
   @Override
   protected void doFilterInternal(HttpServletRequest r, HttpServletResponse s, FilterChain c) {
+
+    // 静态资源，直接跳过
+    if (containIgnoreUris(r.getRequestURI())) {
+      c.doFilter(r, s);
+      return;
+    }
+
     val rq = new ContentCachingRequestWrapper(r);
     val rp = new ContentCachingResponseWrapper(s);
 
@@ -67,6 +80,24 @@ public class HttpLogFilter extends OncePerRequestFilter {
     } catch (Exception ex) {
       log.warn("copyBodyToResponse for req {} failed", req, ex);
     }
+  }
+
+  /**
+   * 校验uri是否为静态资源的URI
+   *
+   * @param uri 需要校验的uri
+   * @return
+   */
+  private boolean containIgnoreUris(String uri) {
+    if (null != httpLogWebIgnores && httpLogWebIgnores.length > 0) {
+      AntPathMatcher pathMatcher = new AntPathMatcher();
+      for (String ignore : httpLogWebIgnores) {
+        if (pathMatcher.match(ignore, uri)) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   private void tearDown(
