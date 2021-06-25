@@ -22,7 +22,7 @@ public class HttpLogWebMvcConf extends WebMvcConfigurerAdapter {
   @Override
   public void addInterceptors(InterceptorRegistry registry) {
     InterceptorRegistration i = registry.addInterceptor(httpLogInterceptor).addPathPatterns("/**");
-    if (httpLogWebIgnores.length > 0) {
+    if (null != httpLogWebIgnores && httpLogWebIgnores.length > 0) {
       i.excludePathPatterns(httpLogWebIgnores);
     }
 
