@@ -60,6 +60,25 @@ public class HttpLogProcessor {
             + " from information_schema.columns"
             + " where table_schema = database()"
             + "  and table_name = ?";
+    val dmos =
+        "select tc.column_id,"
+            + "       tc.COLUMN_NAME column_name,"
+            + "       tc.DATA_TYPE   data_type,"
+            + "       tc.DATA_LENGTH max_length,"
+            + "       tc.NULLABLE     nullable,"
+            + "       cc.COMMENTS    column_comment, it.INFO2 extra"
+            + " from user_col_comments cc"
+            + "   inner join user_tab_cols tc"
+            + "   on (cc.table_name = tc.table_name and cc.column_name = tc.column_name)"
+            + "      left JOIN (SELECT * FROM syscolumns t"
+            + "                  WHERE id ="
+            + "                    (SELECT object_id FROM dba_objects t "
+            + "                         WHERE 1=1 "
+                                     + "AND t.owner = ? "
+            + "                      AND object_type = 'TABLE' "
+            + "                      AND t.object_name = ?)"
+            + ") it on (it.NAME = tc.COLUMN_NAME)"
+            + " where cc.table_name = upper(?)";
     val os =
         "select tc.column_id,"
             + "       tc.COLUMN_NAME column_name,"
@@ -71,17 +90,52 @@ public class HttpLogProcessor {
             + "   inner join user_tab_cols tc"
             + "   on (cc.table_name = tc.table_name and cc.column_name = tc.column_name)"
             + " where cc.table_name = upper(?)";
+    val ks =
+        "  select column_id,column_name,  max_length, nullable,ad.adsrc extra, "
+            + "column_comment  from (select  a.attnum column_id, a.attname column_name, "
+            + "a.atttypmod max_length, a.attnotnull nullable, c.oid oid,  a.attnum attnum, d.description column_comment "
+            + "from sys_class c, sys_attribute a "
+            + "left join sys_description d on d.objoid=a.attrelid  and d.objsubid=a.attnum where c.oid=a.attrelid "
+            + "and c.relname = ?  and a.attnum>0) b  left join sys_attrdef ad on b.attnum = ad.adnum and ad.adrelid=b.oid";
+    val ps =
+        "  select column_id,column_name,  max_length, nullable,ad.adsrc extra, "
+            + "column_comment  from (select  a.attnum column_id, a.attname column_name, "
+            + "a.atttypmod max_length, a.attnotnull nullable, c.oid oid,  a.attnum attnum, d.description column_comment "
+            + "from pg_class c, pg_attribute a "
+            + "left join pg_description d on d.objoid=a.attrelid  and d.objsubid=a.attnum where c.oid=a.attrelid "
+            + "and c.relname = ?  and a.attnum>0) b  left join pg_attrdef ad on b.attnum = ad.adnum and ad.adrelid=b.oid";
     @Cleanup val conn = connGetter.getConn();
 
     DbType dbType = DbType.getDbType(conn);
-    val s = dbType == DbType.MYSQL ? ms : os;
+    String s;
+    switch (dbType) {
+      case MYSQL:
+        s = ms;
+        break;
+      case DM:
+        s = dmos;
+        break;
+      case ORACLE:
+        s = os;
+        break;
+      case KINGBASE:
+        s = ks;
+        break;
+      case POSTGRESQL:
+        s = ps;
+        break;
+      default:
+        throw new RuntimeException("not support db");
+    }
     val runner = new SqlRunner(conn, false);
 
     val sqlGenerators = new HashMap<String, TableLogger>(httpLog.tables().length);
     val fixes = Str.parseMap(httpLog.fix(), ",", ":");
 
-    for (val table : httpLog.tables()) {
-      val maps = runner.selectAll(s, table);
+    for (val table : httpLog.tables()){
+      val maps = dbType == DbType.DM ?
+          runner.selectAll(s, conn.getSchema(), table, table)
+          : runner.selectAll(s, table);
       val tableCols = new ArrayList<TableCol>(maps.size());
 
       for (val m : maps) {
@@ -101,7 +155,7 @@ public class HttpLogProcessor {
 
       log.debug("tableCols: {}", tableCols);
 
-      sqlGenerators.put(table, TableLogger.create(table, tableCols));
+      sqlGenerators.put(table, TableLogger.create(table, tableCols, dbType));
     }
 
     return new HttpLogProcessor(httpLog, sqlGenerators, connGetter, fixes, appContext);

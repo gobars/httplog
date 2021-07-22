@@ -351,6 +351,17 @@ public class TableCol {
       return null;
     }
 
+    // kingbase 和pg之类的bigseq 自增主键方式，支持
+    if (Str.containsIgnoreCase(extra, "NEXTVAL") &&
+      Str.containsIgnoreCase(extra, "SEQ'::REGCLASS")
+    ){
+      return null;
+    }
+
+    if (Str.containsIgnoreCase(extra, "1")
+    ){
+      return null;
+    }
     return createValueGetter(tag, TableCol.blts);
   }
 
