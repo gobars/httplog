@@ -4,10 +4,8 @@ import com.github.gobars.httplog.TableLogger.LogPrepared;
 import com.github.gobars.id.conf.ConnGetter;
 import com.github.gobars.id.db.SqlRunner;
 import com.github.gobars.id.util.DbType;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import javax.servlet.http.HttpServletRequest;
@@ -118,6 +116,7 @@ public class HttpLogProcessor {
       case ORACLE:
         s = os;
         break;
+      case OSCAR:
       case KINGBASE:
         s = ks;
         break;
@@ -135,7 +134,7 @@ public class HttpLogProcessor {
     for (val table : httpLog.tables()){
       val maps = dbType == DbType.DM ?
           runner.selectAll(s, conn.getSchema(), table, table)
-          : runner.selectAll(s, table);
+          : runner.selectAll(s, dbType == DbType.OSCAR ? table.toUpperCase() :table);
       val tableCols = new ArrayList<TableCol>(maps.size());
 
       for (val m : maps) {
