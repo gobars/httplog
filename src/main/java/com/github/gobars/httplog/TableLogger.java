@@ -24,7 +24,7 @@ public class TableLogger {
   String sql;
   List<ColValueGetter> valueGetters;
 
-  static TableLogger create(String table, List<TableCol> tableCols) {
+  static TableLogger create(String table, List<TableCol> tableCols, DbType dbType) {
     StringBuilder insertSql = new StringBuilder("insert into ").append(table).append("(");
     val insertValueGetters = new ArrayList<ColValueGetter>(10);
     val columnNames = new ArrayList<String>(10);
@@ -41,9 +41,13 @@ public class TableLogger {
       insertValueGetters.add(valueGetter);
     }
 
-    insertSql
-        .append(String.join(",", columnNames))
-        .append(") values(")
+
+    if (dbType == DbType.MYSQL) {
+      insertSql.append(String.join(",", columnNames));
+    } else {
+      insertSql.append("\"").append(String.join("\",\"", columnNames)).append("\"");
+    }
+    insertSql.append(") values(")
         .append(String.join(",", insertMarks))
         .append(")");
 
