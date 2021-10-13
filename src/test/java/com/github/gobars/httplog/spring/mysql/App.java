@@ -37,7 +37,7 @@ public class App {
   @SneakyThrows
   public HttpLogYml httpLogYml() {
     @Cleanup val is = new ClassPathResource("httplog.yml").getInputStream();
-
+//    @Cleanup val is = new ClassPathResource("httplog-manual.yml").getInputStream();
     return HttpLogYml.loadYml(is);
   }
 

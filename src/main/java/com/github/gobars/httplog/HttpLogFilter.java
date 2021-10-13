@@ -86,11 +86,10 @@ public class HttpLogFilter extends OncePerRequestFilter {
    * 校验uri是否为静态资源的URI
    *
    * @param uri 需要校验的uri
-   * @return
    */
   private boolean containIgnoreUris(String uri) {
     if (null != httpLogWebIgnores && httpLogWebIgnores.length > 0) {
-      AntPathMatcher pathMatcher = new AntPathMatcher();
+      val pathMatcher = new AntPathMatcher();
       for (String ignore : httpLogWebIgnores) {
         if (pathMatcher.match(ignore, uri)) {
           return true;

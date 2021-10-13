@@ -10,6 +10,8 @@ import com.github.gobars.httplog.springconfig.HttpLogYml;
 import com.github.gobars.id.util.Pid;
 import com.github.gobars.id.worker.WorkerIdHostname;
 import com.github.gobars.id.worker.WorkerIdIp;
+
+import java.beans.Transient;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.Timestamp;
@@ -69,58 +71,21 @@ public class TableCol {
     blts.put(eq("end"), (c, v, col) -> wfork(c, v, () -> c.fork.getEnd(), c.rsp::getEnd));
     blts.put(eq("cost"), (c, v, col) -> wfork(c, v, () -> c.fork.getTookMs(), c.rsp::getTookMs));
     blts.put(eq("biz"), (ctx, v, col) -> ctx.hl().biz());
-    blts.put(
-        eq("exception", "error"),
-        (c, v, col) ->
-            wfork(c, v, () -> stackTrace(c.fork.getError()), () -> stackTrace(c.rsp.getError())));
+    blts.put(eq("exception", "error"), (c, v, col) -> wfork(c, v, () -> stackTrace(c.fork.getError()), () -> stackTrace(c.rsp.getError())));
 
     rsps.put(starts("head_"), (ctx, v, col) -> ctx.rsp().getHeaders().get(v.subTagName(5)));
     rsps.put(eq("heads"), (ctx, v, col) -> ctx.rsp().getHeaders());
-
-    rsps.put(
-        eq("body"),
-        (c, v, col) ->
-            wfork(c, v, () -> c.fork.abbrRsp(col.maxLen, v), () -> c.rsp().abbrBody(col.maxLen)));
-    rsps.put(
-        eq("json"),
-        (c, v, col) ->
-            wfork(
-                c, v, () -> c.fork.abbrRsp(col.maxLen, v), () -> getJsonBody(c, v, col, c.rsp())));
-    rsps.put(
-        starts("json_"),
-        (c, v, col) ->
-            wfork(
-                c,
-                v,
-                () -> jp(v.subTagName(5), c.fork.getResponse()),
-                () -> jsonpath(v.subTagName(5), c.rsp())));
+    rsps.put(eq("body"), (c, v, col) -> wfork(c, v, () -> c.fork.abbrRsp(col.maxLen, v), () -> c.rsp().abbrBody(col.maxLen)));
+    rsps.put(eq("json"), (c, v, col) -> wfork(c, v, () -> c.fork.abbrRsp(col.maxLen, v), () -> getJsonBody(c, v, col, c.rsp())));
+    rsps.put(starts("json_"), (c, v, col) -> wfork(c, v, () -> jp(v.subTagName(5), c.fork.getResponse()), () -> jsonpath(v.subTagName(5), c.rsp())));
     rsps.put(eq("status"), (ctx, v, col) -> ctx.rsp().getStatus());
 
     reqs.put(starts("head_"), (ctx, v, col) -> ctx.req().getHeaders().get(v.subTagName(5)));
     reqs.put(eq("heads"), (ctx, v, col) -> ctx.req().getHeaders());
-    reqs.put(
-        eq("body"),
-        (c, v, col) ->
-            wfork(
-                c, v, () -> c.fork.getAbbrReq(col.maxLen, v), () -> c.req().abbrBody(col.maxLen)));
-
-    reqs.put(
-        eq("json"),
-        (c, v, col) ->
-            wfork(
-                c, v, () -> c.fork.abbrReq(col.maxLen, v), () -> getJsonBody(c, v, col, c.req())));
-    reqs.put(
-        starts("json_"),
-        (c, v, col) ->
-            wfork(
-                c,
-                v,
-                () -> jp(v.subTagName(5), c.fork.getRequest()),
-                () -> jsonpath(v.subTagName(5), c.req())));
-
-    reqs.put(
-        eq("method"),
-        (c, v, col) -> wfork(c, v, () -> c.fork.getMethod(), () -> c.req().getMethod()));
+    reqs.put(eq("body"), (c, v, col) -> wfork(c, v, () -> c.fork.getAbbrReq(col.maxLen, v), () -> c.req().abbrBody(col.maxLen)));
+    reqs.put(eq("json"), (c, v, col) -> wfork(c, v, () -> c.fork.abbrReq(col.maxLen, v), () -> getJsonBody(c, v, col, c.req())));
+    reqs.put(starts("json_"), (c, v, col) -> wfork(c, v, () -> jp(v.subTagName(5), c.fork.getRequest()), () -> jsonpath(v.subTagName(5), c.req())));
+    reqs.put(eq("method"), (c, v, col) -> wfork(c, v, () -> c.fork.getMethod(), () -> c.req().getMethod()));
     reqs.put(eq("url"), (ctx, v, col) -> ctx.req().getRequestUri());
     reqs.put(starts("path_"), (ctx, v, col) -> getPathVar(ctx.r(), v.subTagName(5)));
     reqs.put(eq("paths"), (ctx, v, col) -> ctx.r().getAttribute(PATH_ATTR));
@@ -167,7 +132,7 @@ public class TableCol {
   private int maxLen;
 
   /** 字段取值器 */
-  private ColValueGetter valueGetter;
+  private transient ColValueGetter valueGetter;
 
   private ColValueGetter createValueGetter(HttpLogTag tag, Map<Matcher, ColValueGetterV> m) {
     ColValueGetterV getter = findGetterV(tag.tag(), m);

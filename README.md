@@ -58,7 +58,7 @@ HttpLog会根据`@HttpLog`中定义的日志表的注解及字段名，自动记
 上下文:||
 `httplog:"ctx_xxx"` |ctx_xxx|上下文对象xxx的值
 固定值:||
-`httplog:"fix_xxx"`|fix_xxx| 由fix参数指定的固定值 
+`httplog:"fix_xxx"`|fix_xxx| 由fix参数指定的固定值
 扩展类:||
 `httplog:"pre_xxx"`|pre_xxx| 由自定义扩展器pre给出属性值，见[示例](src/test/java/com/github/gobars/httplog/spring/mysql/MyHttpLog.java)
 `httplog:"post_xxx"`|post_xxx| 由自定义扩展器post给出属性值
@@ -81,17 +81,93 @@ biz_log: # 表名
     comment: 业务名称 httplog:"fix_desc"
 ```
 
+### 方式三：完全手工配置指定
+
+在用户没有权限查询数据库表字段元信息，或者元信息查询还未适配新使用的数据库时，可以通过完全手工配置日志表字段元信息，如下所示，
+
+注意设置：`manual_schema: true`
+
+```yaml
+manual_schema: true
+
+biz_log:
+  id:
+    data_type: bigint
+    nullable: true
+    extra: auto_increment
+    comment: 日志记录ID
+  created:
+    data_type: datetime
+    comment: 创建时间 httplog:"-"
+  started:
+    data_type: datetime
+    comment: 请求时间
+  end:
+    data_type: datetime
+    comment: 结束时间
+  cost:
+    data_type: int
+    comment: 费时毫秒
+  ip:
+    data_type: varchar
+    max_length: 60
+    comment: 当前机器IP
+  hostname:
+    data_type: varchar
+    max_length: 60
+    comment: 当前机器名称
+  pid:
+    data_type: int
+    comment: 应用程序PID
+  biz:
+    data_type: varchar
+    max_length: 60
+    comment: 当前业务名称
+  req_path_id:
+    data_type: varchar
+    max_length: 60
+    comment: 请求路径变量id
+  req_url:
+    data_type: varchar
+    max_length: 60
+    comment: 请求url
+  req_heads:
+    data_type: varchar
+    max_length: 600
+    comment: 请求头
+  req_method:
+    data_type: varchar
+    max_length: 60
+    comment: 请求方法
+  rsp_body:
+    data_type: varchar
+    max_length: 300
+    comment: 响应体
+  body2:
+    data_type: varchar
+    max_length: 300
+    comment: 响应体 httplog:"rsp_body"
+  pre_hi:
+    data_type: varchar
+    max_length: 60
+    comment: hi
+  post_bye:
+    data_type: varchar
+    max_length: 60
+    comment: bye
+  bizdesc:
+    comment: 业务名称 httplog:"fix_desc"
+```
+
 然后定义Spring的Bean:
 
 ```java
 @Bean @SneakyThrows
-public HttpLogTags httpLogTags() {
-@Cleanup val is = new ClassPathResource("httplog.yml").getInputStream();
-
-return HttpLogTags.parseYml(is);
+public HttpLogTags httpLogTags(){
+    @Cleanup val is=new ClassPathResource("httplog.yml").getInputStream();
+    return HttpLogTags.parseYml(is);
 }
 ```
-
 
 ### Setup interceptors and filters
 
@@ -99,21 +175,23 @@ return HttpLogTags.parseYml(is);
   <summary>
     <p>Spring配置示例</p>
   </summary>
-  
+
 ```java
+
 @HttpLogEnabled
 @SpringBootApplication
 public class App {
-    
+
 }
 ```
+
 </details>
 
 <details>
   <summary>
     <p>SpringMVC Controller使用示例</p>
   </summary>
-  
+
 ```java
 import com.github.gobars.httplog.HttpLog;
 import com.github.gobars.httplog.spring.TestDto;
@@ -126,42 +204,43 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping(value = "/test")
 public class TestController {
 
-  /**
-   * test get.
-   *
-   * @param id id
-   * @return id
-   */
-  @HttpLog(tables = "biz_log", fix = "desc:ID查找")
-  @GetMapping(value = "/{id}")
-  public String get(@PathVariable Integer id) {
-    return "test id : " + id;
-  }
+    /**
+     * test get.
+     *
+     * @param id id
+     * @return id
+     */
+    @HttpLog(tables = "biz_log", fix = "desc:ID查找")
+    @GetMapping(value = "/{id}")
+    public String get(@PathVariable Integer id) {
+        return "test id : " + id;
+    }
 
-  /**
-   * test post.
-   *
-   * @param testDto testDto
-   * @return testDto
-   */
-  @HttpLog(tables = "biz_log_post")
-  @PostMapping
-  public TestDto post(@RequestBody TestDto testDto) {
-    return testDto;
-  }
+    /**
+     * test post.
+     *
+     * @param testDto testDto
+     * @return testDto
+     */
+    @HttpLog(tables = "biz_log_post")
+    @PostMapping
+    public TestDto post(@RequestBody TestDto testDto) {
+        return testDto;
+    }
 
-  /**
-   * test put error.
-   *
-   * @param testDto testDto
-   */
-  @PutMapping
-  public void error(@RequestBody TestDto testDto) {
-    log.warn("error TestException will be thrown");
-    throw new TestException(testDto.toString());
-  }
+    /**
+     * test put error.
+     *
+     * @param testDto testDto
+     */
+    @PutMapping
+    public void error(@RequestBody TestDto testDto) {
+        log.warn("error TestException will be thrown");
+        throw new TestException(testDto.toString());
+    }
 }
 ```
+
 </details>
 
 <details>
@@ -313,11 +392,10 @@ Caused by: com.github.gobars.httplog.spring.TestException: TestDto(id=10)
 
 </details>
 
-
 ## Rationale
 
 [![image](https://user-images.githubusercontent.com/1940588/84857321-56bf0480-b09b-11ea-8fb1-b89212c9e857.png)](doc/rationale.drawio)
 
-## Release 
+## Release
 
 1. `GPG_TTY=$(tty) LANGUAGE=en mvn clean install -Prelease -Dgpg.passphrase=thephrase`

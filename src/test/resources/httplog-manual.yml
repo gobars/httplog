@@ -1,0 +1,69 @@
+manual_schema: true
+
+biz_log:
+  id:
+    data_type: bigint
+    nullable: true
+    extra: auto_increment
+    comment: 日志记录ID
+  created:
+    data_type: datetime
+    comment: 创建时间 httplog:"-"
+  started:
+    data_type: datetime
+    comment: 请求时间
+  end:
+    data_type: datetime
+    comment: 结束时间
+  cost:
+    data_type: int
+    comment: 费时毫秒
+  ip:
+    data_type: varchar
+    max_length: 60
+    comment: 当前机器IP
+  hostname:
+    data_type: varchar
+    max_length: 60
+    comment: 当前机器名称
+  pid:
+    data_type: int
+    comment: 应用程序PID
+  biz:
+    data_type: varchar
+    max_length: 60
+    comment: 当前业务名称
+  req_path_id:
+    data_type: varchar
+    max_length: 60
+    comment: 请求路径变量id
+  req_url:
+    data_type: varchar
+    max_length: 60
+    comment: 请求url
+  req_heads:
+    data_type: varchar
+    max_length: 600
+    comment: 请求头
+  req_method:
+    data_type: varchar
+    max_length: 60
+    comment: 请求方法
+  rsp_body:
+    data_type: varchar
+    max_length: 300
+    comment: 响应体
+  body2:
+    data_type: varchar
+    max_length: 300
+    comment: 响应体 httplog:"rsp_body"
+  pre_hi:
+    data_type: varchar
+    max_length: 60
+    comment: hi
+  post_bye:
+    data_type: varchar
+    max_length: 60
+    comment: bye
+  bizdesc:
+    comment: 业务名称 httplog:"fix_desc"

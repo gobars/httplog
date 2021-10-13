@@ -9,4 +9,5 @@ public class HttpLogFieldMeta {
   private int maxLength;
   private boolean nullable;
   private String comment;
+  private boolean manualSchema;
 }

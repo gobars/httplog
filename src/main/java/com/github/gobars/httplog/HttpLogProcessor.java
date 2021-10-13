@@ -1,6 +1,7 @@
 package com.github.gobars.httplog;
 
 import com.github.gobars.httplog.TableLogger.LogPrepared;
+import com.github.gobars.httplog.snack.Onode;
 import com.github.gobars.httplog.springconfig.HttpLogYml;
 import com.github.gobars.id.conf.ConnGetter;
 import com.github.gobars.id.db.SqlRunner;
@@ -80,13 +81,11 @@ public class HttpLogProcessor {
 
     val sqlGenerators = new HashMap<String, TableLogger>(httpLog.tables().length);
     val fixes = Str.parseMap(httpLog.fix(), ",", ":");
-
     val httpLogYml = getBeanOfType(appContext, HttpLogYml.class);
 
     for (val table : httpLog.tables()) {
       List<TableCol> tableCols =
           readTableColsSchema(httpLogYml, appContext, conn, schemaSql, runner, fixes, table);
-      log.debug("tableCols: {}", tableCols);
 
       if (CollectionUtils.isEmpty(tableCols)) {
         // 没有从数据库中查到表字段的元信息，尝试从 httplog.yml 中载入
@@ -97,6 +96,7 @@ public class HttpLogProcessor {
         throw new RuntimeException("failed to load meta info for table " + table);
       }
 
+      log.debug("tableCols: {}", Onode.stringify(tableCols));
       sqlGenerators.put(table, TableLogger.create(table, tableCols, DbType.getDbType(conn)));
     }
 
@@ -121,7 +121,7 @@ public class HttpLogProcessor {
       Map<String, String> fixes,
       String table) {
     // 如果不是自动读取表元信息的话，直接返回
-    if (httpLogYml != null && !httpLogYml.isAutoSchema()) {
+    if (httpLogYml != null && httpLogYml.isTableManualSchema(table)) {
       return null;
     }
 
