@@ -4,9 +4,9 @@ import static com.github.gobars.httplog.Equals.eq;
 import static com.github.gobars.httplog.Starts.starts;
 
 import com.github.gobars.httplog.snack.Onode;
-import com.github.gobars.httplog.springconfig.HttpLogTagField;
-import com.github.gobars.httplog.springconfig.HttpLogTagTable;
-import com.github.gobars.httplog.springconfig.HttpLogTags;
+import com.github.gobars.httplog.springconfig.HttpLogFieldMeta;
+import com.github.gobars.httplog.springconfig.HttpLogTableMeta;
+import com.github.gobars.httplog.springconfig.HttpLogYml;
 import com.github.gobars.id.util.Pid;
 import com.github.gobars.id.worker.WorkerIdHostname;
 import com.github.gobars.id.worker.WorkerIdIp;
@@ -80,8 +80,7 @@ public class TableCol {
     rsps.put(
         eq("body"),
         (c, v, col) ->
-            wfork(
-                c, v, () -> c.fork.abbrRsp(col.maxLen, v), () -> c.rsp().abbrBody(col.maxLen)));
+            wfork(c, v, () -> c.fork.abbrRsp(col.maxLen, v), () -> c.rsp().abbrBody(col.maxLen)));
     rsps.put(
         eq("json"),
         (c, v, col) ->
@@ -103,10 +102,7 @@ public class TableCol {
         eq("body"),
         (c, v, col) ->
             wfork(
-                c,
-                v,
-                () -> c.fork.getAbbrReq(col.maxLen, v),
-                () -> c.req().abbrBody(col.maxLen)));
+                c, v, () -> c.fork.getAbbrReq(col.maxLen, v), () -> c.req().abbrBody(col.maxLen)));
 
     reqs.put(
         eq("json"),
@@ -169,12 +165,6 @@ public class TableCol {
    * <p>eg. 20
    */
   private int maxLen;
-  /**
-   * 字段顺序
-   *
-   * <p>从1开始
-   */
-  private int seq;
 
   /** 字段取值器 */
   private ColValueGetter valueGetter;
@@ -275,6 +265,10 @@ public class TableCol {
 
   public void parseComment(String table, ApplicationContext appContext, Map<String, String> fixes) {
     String colComment = createComment(table, appContext);
+    parseComment(fixes, colComment);
+  }
+
+  public void parseComment(Map<String, String> fixes, String colComment) {
     HttpLogTag tag = HttpLogTag.parse(name, colComment);
 
     this.valueGetter = parseValueGetter(fixes, tag);
@@ -284,18 +278,18 @@ public class TableCol {
   }
 
   public String createComment(String table, ApplicationContext appContext) {
-    val httpLogTagsMap = appContext.getBeansOfType(HttpLogTags.class);
-    if (httpLogTagsMap.isEmpty()) {
+    val httpLogXml = appContext.getBeansOfType(HttpLogYml.class);
+    if (httpLogXml.isEmpty()) {
       return comment;
     }
 
-    HttpLogTags tags = httpLogTagsMap.entrySet().iterator().next().getValue();
-    HttpLogTagTable tagTable = tags.get(table);
+    HttpLogYml tags = httpLogXml.entrySet().iterator().next().getValue();
+    HttpLogTableMeta tagTable = tags.get(table);
     if (tagTable == null) {
       return comment;
     }
 
-    HttpLogTagField tagField = tagTable.get(this.name);
+    HttpLogFieldMeta tagField = tagTable.get(this.name);
     if (tagField == null) {
       return comment;
     }
@@ -347,22 +341,20 @@ public class TableCol {
       return null;
     }
 
-    if (Str.containsIgnoreCase(extra, "auto_increment")) {
+    if (Str.containsFold(extra, "auto_increment")) {
       return null;
     }
 
-    // kingbase， oscar 和pg之类的bigseq 自增主键方式，支持
-    if (Str.containsIgnoreCase(extra, "NEXTVAL") &&
-            (Str.containsIgnoreCase(extra, "SEQ'::REGCLASS")
-                    || Str.containsIgnoreCase(extra, "::text"))
-    ){
+    // kingbase、 神通、pg 的 bigseq 自增主键方式，支持
+    if (Str.containsFold(extra, "NEXTVAL")
+        && Str.containsFoldAny(extra, "SEQ'::REGCLASS", "::text")) {
       return null;
     }
 
-    if (Str.containsIgnoreCase(extra, "1")
-    ){
+    if (Str.containsFold(extra, "1")) {
       return null;
     }
+
     return createValueGetter(tag, TableCol.blts);
   }
 

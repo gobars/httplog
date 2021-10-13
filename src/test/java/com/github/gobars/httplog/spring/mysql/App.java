@@ -2,7 +2,7 @@ package com.github.gobars.httplog.spring.mysql;
 
 import com.alibaba.druid.pool.DruidDataSource;
 import com.github.gobars.httplog.springconfig.HttpLogEnabled;
-import com.github.gobars.httplog.springconfig.HttpLogTags;
+import com.github.gobars.httplog.springconfig.HttpLogYml;
 import javax.sql.DataSource;
 import lombok.Cleanup;
 import lombok.SneakyThrows;
@@ -35,14 +35,14 @@ public class App {
 
   @Bean
   @SneakyThrows
-  public HttpLogTags httpLogTags() {
+  public HttpLogYml httpLogYml() {
     @Cleanup val is = new ClassPathResource("httplog.yml").getInputStream();
 
-    return HttpLogTags.parseYml(is);
+    return HttpLogYml.loadYml(is);
   }
 
   @Bean
   public String[] httpLogWebIgnores() {
-    return new String[]{};
+    return new String[] {};
   }
 }

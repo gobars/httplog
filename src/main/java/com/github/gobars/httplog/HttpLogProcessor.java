@@ -1,10 +1,17 @@
 package com.github.gobars.httplog;
 
 import com.github.gobars.httplog.TableLogger.LogPrepared;
+import com.github.gobars.httplog.springconfig.HttpLogYml;
 import com.github.gobars.id.conf.ConnGetter;
 import com.github.gobars.id.db.SqlRunner;
 import com.github.gobars.id.util.DbType;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.UncheckedIOException;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
@@ -15,7 +22,13 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.FileCopyUtils;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * HttpLog日志处理器类.
@@ -47,117 +60,150 @@ public class HttpLogProcessor {
     this.taskExecutor = createTaskExecutor(httpLog, appContext);
   }
 
+  public static String asString(Resource resource) {
+    try (Reader reader = new InputStreamReader(resource.getInputStream(), UTF_8)) {
+      return FileCopyUtils.copyToString(reader);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+  }
+
   @SneakyThrows
   public static HttpLogProcessor create(
       HttpLogAttr httpLog, ConnGetter connGetter, ApplicationContext appContext) {
     // MYSQL: IS_NULLABLE YES NO
     // ORACLE: NULLABLE Y N
-    val ms =
-        "select column_name, column_comment, data_type, extra, is_nullable nullable, "
-            + " character_maximum_length max_length, ordinal_position column_id"
-            + " from information_schema.columns"
-            + " where table_schema = database()"
-            + "  and table_name = ?";
-    val dmos =
-        "select tc.column_id,"
-            + "       tc.COLUMN_NAME column_name,"
-            + "       tc.DATA_TYPE   data_type,"
-            + "       tc.DATA_LENGTH max_length,"
-            + "       tc.NULLABLE     nullable,"
-            + "       cc.COMMENTS    column_comment, it.INFO2 extra"
-            + " from user_col_comments cc"
-            + "   inner join user_tab_cols tc"
-            + "   on (cc.table_name = tc.table_name and cc.column_name = tc.column_name)"
-            + "      left JOIN (SELECT * FROM syscolumns t"
-            + "                  WHERE id ="
-            + "                    (SELECT object_id FROM dba_objects t "
-            + "                         WHERE 1=1 "
-                                     + "AND t.owner = ? "
-            + "                      AND object_type = 'TABLE' "
-            + "                      AND t.object_name = ?)"
-            + ") it on (it.NAME = tc.COLUMN_NAME)"
-            + " where cc.table_name = upper(?)";
-    val os =
-        "select tc.column_id,"
-            + "       tc.COLUMN_NAME column_name,"
-            + "       tc.DATA_TYPE   data_type,"
-            + "       tc.DATA_LENGTH max_length,"
-            + "       tc.NULLABLE     nullable,"
-            + "       cc.COMMENTS    column_comment"
-            + " from user_col_comments cc"
-            + "   inner join user_tab_cols tc"
-            + "   on (cc.table_name = tc.table_name and cc.column_name = tc.column_name)"
-            + " where cc.table_name = upper(?)";
-    val ks =
-        "  select column_id,column_name,  max_length, nullable,ad.adsrc extra, "
-            + "column_comment  from (select  a.attnum column_id, a.attname column_name, "
-            + "a.atttypmod max_length, a.attnotnull nullable, c.oid oid,  a.attnum attnum, d.description column_comment "
-            + "from sys_class c, sys_attribute a "
-            + "left join sys_description d on d.objoid=a.attrelid  and d.objsubid=a.attnum where c.oid=a.attrelid "
-            + "and c.relname = ?  and a.attnum>0) b  left join sys_attrdef ad on b.attnum = ad.adnum and ad.adrelid=b.oid";
-    val ps =
-        "  select column_id,column_name,  max_length, nullable,ad.adsrc extra, "
-            + "column_comment  from (select  a.attnum column_id, a.attname column_name, "
-            + "a.atttypmod max_length, a.attnotnull nullable, c.oid oid,  a.attnum attnum, d.description column_comment "
-            + "from pg_class c, pg_attribute a "
-            + "left join pg_description d on d.objoid=a.attrelid  and d.objsubid=a.attnum where c.oid=a.attrelid "
-            + "and c.relname = ?  and a.attnum>0) b  left join pg_attrdef ad on b.attnum = ad.adnum and ad.adrelid=b.oid";
     @Cleanup val conn = connGetter.getConn();
 
-    DbType dbType = DbType.getDbType(conn);
-    String s;
-    switch (dbType) {
-      case MYSQL:
-        s = ms;
-        break;
-      case DM:
-        s = dmos;
-        break;
-      case ORACLE:
-        s = os;
-        break;
-      case OSCAR:
-      case KINGBASE:
-        s = ks;
-        break;
-      case POSTGRESQL:
-        s = ps;
-        break;
-      default:
-        throw new RuntimeException("not support db");
-    }
+    SchemaSql schemaSql = getSchemaSql(DbType.getDbType(conn));
     val runner = new SqlRunner(conn, false);
 
     val sqlGenerators = new HashMap<String, TableLogger>(httpLog.tables().length);
     val fixes = Str.parseMap(httpLog.fix(), ",", ":");
 
-    for (val table : httpLog.tables()){
-      val maps = dbType == DbType.DM ?
-          runner.selectAll(s, conn.getSchema(), table, table)
-          : runner.selectAll(s, dbType == DbType.OSCAR ? table.toUpperCase() :table);
-      val tableCols = new ArrayList<TableCol>(maps.size());
+    val httpLogYml = getBeanOfType(appContext, HttpLogYml.class);
 
-      for (val m : maps) {
-        val tableCol = new TableCol();
-        tableCols.add(tableCol);
-
-        setStr(m, "column_name", tableCol::setName);
-        setStr(m, "column_comment", tableCol::setComment);
-        setStr(m, "data_type", tableCol::setDataType);
-        setStr(m, "extra", tableCol::setExtra);
-        setInt(m, "max_length", tableCol::setMaxLen);
-        setInt(m, "column_id", tableCol::setSeq);
-        setBool(m, "nullable", tableCol::setNullable, true);
-
-        tableCol.parseComment(table, appContext, fixes);
-      }
-
+    for (val table : httpLog.tables()) {
+      List<TableCol> tableCols =
+          readTableColsSchema(httpLogYml, appContext, conn, schemaSql, runner, fixes, table);
       log.debug("tableCols: {}", tableCols);
 
-      sqlGenerators.put(table, TableLogger.create(table, tableCols, dbType));
+      if (CollectionUtils.isEmpty(tableCols)) {
+        // 没有从数据库中查到表字段的元信息，尝试从 httplog.yml 中载入
+        tableCols = httpLogYml.loadTableColsSchema(table, fixes);
+      }
+
+      if (CollectionUtils.isEmpty(tableCols)) {
+        throw new RuntimeException("failed to load meta info for table " + table);
+      }
+
+      sqlGenerators.put(table, TableLogger.create(table, tableCols, DbType.getDbType(conn)));
     }
 
     return new HttpLogProcessor(httpLog, sqlGenerators, connGetter, fixes, appContext);
+  }
+
+  public static <T> T getBeanOfType(ApplicationContext appContext, Class<T> type) {
+    Map<String, T> beans = appContext.getBeansOfType(type);
+    if (beans.isEmpty()) {
+      return null;
+    }
+
+    return beans.entrySet().iterator().next().getValue();
+  }
+
+  private static List<TableCol> readTableColsSchema(
+      HttpLogYml httpLogYml,
+      ApplicationContext appContext,
+      Connection conn,
+      SchemaSql schemaSql,
+      SqlRunner runner,
+      Map<String, String> fixes,
+      String table) {
+    // 如果不是自动读取表元信息的话，直接返回
+    if (httpLogYml != null && !httpLogYml.isAutoSchema()) {
+      return null;
+    }
+
+    try {
+      return readTableColsSchemaEx(appContext, conn, schemaSql, runner, fixes, table);
+    } catch (SQLException ex) {
+      return null;
+    }
+  }
+
+  private static List<TableCol> readTableColsSchemaEx(
+      ApplicationContext appContext,
+      Connection conn,
+      SchemaSql schemaSql,
+      SqlRunner runner,
+      Map<String, String> fixes,
+      String table)
+      throws SQLException {
+    val tableCols = new ArrayList<TableCol>();
+    Object[] args = schemaSql.args.getArgs(conn.getSchema(), table);
+    val maps = runner.selectAll(schemaSql.query, args);
+    for (val m : maps) {
+      val tableCol = new TableCol();
+      tableCols.add(tableCol);
+
+      setStr(m, "column_name", tableCol::setName);
+      setStr(m, "column_comment", tableCol::setComment);
+      setStr(m, "data_type", tableCol::setDataType);
+      setStr(m, "extra", tableCol::setExtra);
+      setInt(m, "max_length", tableCol::setMaxLen);
+      setBool(m, "nullable", tableCol::setNullable, true);
+
+      tableCol.parseComment(table, appContext, fixes);
+    }
+
+    return tableCols;
+  }
+
+  static class SchemaSql {
+    public String query;
+    public SchemaArgs args;
+
+    public SchemaSql(String query, SchemaArgs args) {
+      this.query = query;
+      this.args = args;
+    }
+  }
+
+  @FunctionalInterface
+  interface SchemaArgs {
+    Object[] getArgs(String schema, String table);
+  }
+
+  private static SchemaSql getSchemaSql(DbType dbType) {
+    switch (dbType) {
+      case MYSQL:
+        return new SchemaSql(
+            asString(new ClassPathResource("schema-mysql.sql")),
+            (schema, table) -> new Object[] {table});
+      case DM:
+        return new SchemaSql(
+            asString(new ClassPathResource("schema-dm.sql")),
+            (schema, table) -> new Object[] {schema, table, table});
+      case ORACLE:
+        return new SchemaSql(
+            asString(new ClassPathResource("schema-oracle.sql")),
+            (schema, table) -> new Object[] {table});
+      case SHENTONG:
+        return new SchemaSql(
+            asString(new ClassPathResource("schema-kingbase.sql")),
+            (schema, table) -> new Object[] {table.toUpperCase()});
+      case KINGBASE:
+        return new SchemaSql(
+            asString(new ClassPathResource("schema-kingbase.sql")),
+            (schema, table) -> new Object[] {table});
+      case POSTGRESQL:
+        return new SchemaSql(
+            asString(new ClassPathResource("schema-postgre.sql")),
+            (schema, table) -> new Object[] {table});
+      default:
+        throw new RuntimeException("not support db");
+    }
   }
 
   private static void setStr(Map<String, String> m, String key, Consumer<String> consumer) {

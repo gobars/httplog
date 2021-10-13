@@ -16,8 +16,22 @@ import lombok.val;
  */
 @UtilityClass
 public class Str {
-  public boolean containsIgnoreCase(String s, String a) {
+  public boolean containsFold(String s, String a) {
     return s != null && a != null && s.toLowerCase().contains(a.toLowerCase());
+  }
+
+  public boolean containsFoldAny(String s, String... aa) {
+    if (s == null) {
+      return false;
+    }
+
+    for (String a : aa) {
+      if (s.toLowerCase().contains(a.toLowerCase())) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   /**

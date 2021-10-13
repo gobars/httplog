@@ -1,6 +1,6 @@
 package com.github.gobars.httplog.spring;
 
-import com.github.gobars.httplog.springconfig.HttpLogTags;
+import com.github.gobars.httplog.springconfig.HttpLogYml;
 import lombok.Cleanup;
 import lombok.SneakyThrows;
 import lombok.val;
@@ -12,7 +12,7 @@ public class YamlTest {
   @SneakyThrows
   public void test() {
     @Cleanup val is = new ClassPathResource("httplog.yml").getInputStream();
-    HttpLogTags httpLogTags = HttpLogTags.parseYml(is);
+    HttpLogYml httpLogTags = HttpLogYml.loadYml(is);
 
     System.out.println(httpLogTags);
   }
