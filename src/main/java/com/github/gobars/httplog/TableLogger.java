@@ -1,5 +1,6 @@
 package com.github.gobars.httplog;
 
+import com.github.gobars.httplog.snack.Onode;
 import com.github.gobars.id.Id;
 import com.github.gobars.id.db.SqlRunner;
 import com.github.gobars.id.util.DbType;
@@ -8,9 +9,14 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -41,15 +47,12 @@ public class TableLogger {
       insertValueGetters.add(valueGetter);
     }
 
-
     if (dbType == DbType.MYSQL) {
       insertSql.append(String.join(",", columnNames));
     } else {
       insertSql.append("\"").append(String.join("\",\"", columnNames)).append("\"");
     }
-    insertSql.append(") values(")
-        .append(String.join(",", insertMarks))
-        .append(")");
+    insertSql.append(") values(").append(String.join(",", insertMarks)).append(")");
 
     return new TableLogger(insertSql.toString(), insertValueGetters);
   }
@@ -78,11 +81,43 @@ public class TableLogger {
         idPositions.add(params.size());
       }
 
-      params.add(obj);
+      params.add(convertSetObject(obj));
     }
 
     log.debug("SQL {} with args {}", sql, params);
     return new LogPrepared(sql, params, idPositions);
+  }
+
+  private Object convertSetObject(Object o) {
+    if (o == null) {
+      return null;
+    }
+
+    if (o instanceof String
+        || o instanceof Number
+        || o instanceof byte[]
+        || o instanceof Date
+        || o instanceof Boolean
+        || o instanceof InputStream
+        || o instanceof LocalDate
+        || o instanceof LocalDateTime
+        || o instanceof LocalTime) {
+      return o;
+    }
+
+    try {
+      return Onode.load(o).toJson();
+    } catch (Exception e) {
+      // Ignore
+    }
+
+    try {
+      return o.toString();
+    } catch (Exception e) {
+      // Ignore
+    }
+
+    return null;
   }
 
   @Nullable
