@@ -12,8 +12,8 @@ public class YamlTest {
   @SneakyThrows
   public void test() {
     @Cleanup val is = new ClassPathResource("httplog.yml").getInputStream();
-    HttpLogYml httpLogTags = HttpLogYml.loadYml(is);
+    HttpLogYml httpLogYml = HttpLogYml.loadYml(is);
 
-    System.out.println(httpLogTags);
+    System.out.println(httpLogYml);
   }
 }

@@ -163,9 +163,9 @@ biz_log:
 
 ```java
 @Bean @SneakyThrows
-public HttpLogTags httpLogTags(){
-    @Cleanup val is=new ClassPathResource("httplog.yml").getInputStream();
-    return HttpLogTags.parseYml(is);
+public HttpLogYml httpLogYml(){
+    @Cleanup val is = new ClassPathResource("httplog.yml").getInputStream();
+    return HttpLogYml.parseYml(is);
 }
 ```
 
