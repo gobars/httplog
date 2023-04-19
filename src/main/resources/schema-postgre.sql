@@ -2,7 +2,7 @@ select column_id,
        column_name,
        max_length,
        nullable,
-       ad.adsrc extra,
+       ad.adbin extra,
        column_comment
 from (select a.attnum      column_id,
              a.attname     column_name,

@@ -115,7 +115,7 @@ mvn install:install-file -Dfile=ojdbc5.jar -DgroupId=com.oracle -DartifactId=ojd
         <dependency>
             <groupId>com.github.gobars</groupId>
             <artifactId>id</artifactId>
-            <version>0.0.13</version>
+            <version>0.0.16-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
