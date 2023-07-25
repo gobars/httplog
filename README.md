@@ -21,49 +21,49 @@ HttpLog会根据`@HttpLog`中定义的日志表的注解及字段名，自动记
     <p>日志表建表规范</p>
   </summary>
 
-字段注释包含| 或者字段名 | 说明
----|---|---
-内置类:||
-`httplog:"id"`|id| 日志记录ID
-`httplog:"created"`|created| 创建时间
-`httplog:"ip"` |ip|当前机器IP
-`httplog:"hostname"` |hostname|当前机器名称
-`httplog:"pid"` |pid|应用程序PID
-`httplog:"started"` |start|开始时间(yyyy-MM-dd HH:mm:ss.SSS)
-`httplog:"end"` |end|结束时间(yyyy-MM-dd HH:mm:ss.SSS)
-`httplog:"cost"` |cost|花费时间（ms)
-`httplog:"biz"` |biz|业务名称，对应到HttpLog注解的biz
-`httplog:"exception"` |exception|异常信息
-请求类:||
-`httplog:"req_head_xxx"` |req_head_xxx|请求中的xxx头
-`httplog:"req_heads"` |req_heads|请求中的所有头
-`httplog:"req_method"` |req_method|请求method
-`httplog:"req_url"` |req_url|请求URL
-`httplog:"req_path_xxx"` |req_path_xxx|请求URL中的xxx路径参数
-`httplog:"req_paths"` |req_paths|请求URL中的所有路径参数
-`httplog:"req_query_xxx"` |req_query_xxx|请求URl中的xxx查询参数
-`httplog:"req_queries"` |req_queries|请求URl中的所有查询参数
-`httplog:"req_param_xxx"` |req_param_xxx|请求中query/form的xxx参数
-`httplog:"req_params"` |req_params|请求中query/form的所有参数
-`httplog:"req_body"` |req_body|请求体
-`httplog:"req_json"` |req_json|请求体（当Content-Type为JSON时)
-`httplog:"req_json_xxx"` |req_json_xxx|请求体JSON中的xxx属性
-响应类:||
-`httplog:"rsp_head_xxx"` |rsp_head_xxx|响应中的xxx头
-`httplog:"rsp_heads"` |rsp_heads|响应中的所有头
-`httplog:"rsp_body"` |rsp_body|响应体
-`httplog:"rsp_json"` |rsp_json|响应体JSON（当Content-Type为JSON时)
-`httplog:"rsp_json_xxx"`|rsp_json_xxx| 请求体JSON中的xxx属性
-`httplog:"rsp_status"`|rsp_status| 响应编码
-上下文:||
-`httplog:"ctx_xxx"` |ctx_xxx|上下文对象xxx的值
-固定值:||
-`httplog:"fix_xxx"`|fix_xxx| 由fix参数指定的固定值
-扩展类:||
-`httplog:"pre_xxx"`|pre_xxx| 由自定义扩展器pre给出属性值，见[示例](src/test/java/com/github/gobars/httplog/spring/mysql/MyHttpLog.java)
-`httplog:"post_xxx"`|post_xxx| 由自定义扩展器post给出属性值
-自定义:||自助引入HttpLogCustom实例
-`httplog:"custom_xxx"`|custom_xxx| 由HttpLogCustom提供的自定义xxx值, eg: `HttpLogCustom.get().put("xxx", "bingoo");`
+| 字段注释包含                    | 或者字段名         | 说明                                                                                         |
+|---------------------------|---------------|--------------------------------------------------------------------------------------------|
+| 内置类:                      |               |                                                                                            |
+| `httplog:"id"`            | id            | 日志记录ID                                                                                     |
+| `httplog:"created"`       | created       | 创建时间                                                                                       |
+| `httplog:"ip"`            | ip            | 当前机器IP                                                                                     |
+| `httplog:"hostname"`      | hostname      | 当前机器名称                                                                                     |
+| `httplog:"pid"`           | pid           | 应用程序PID                                                                                    |
+| `httplog:"started"`       | start         | 开始时间(yyyy-MM-dd HH:mm:ss.SSS)                                                              |
+| `httplog:"end"`           | end           | 结束时间(yyyy-MM-dd HH:mm:ss.SSS)                                                              |
+| `httplog:"cost"`          | cost          | 花费时间（ms)                                                                                   |
+| `httplog:"biz"`           | biz           | 业务名称，对应到HttpLog注解的biz                                                                      |
+| `httplog:"exception"`     | exception     | 异常信息                                                                                       |
+| 请求类:                      |               |                                                                                            |
+| `httplog:"req_head_xxx"`  | req_head_xxx  | 请求中的xxx头                                                                                   |
+| `httplog:"req_heads"`     | req_heads     | 请求中的所有头                                                                                    |
+| `httplog:"req_method"`    | req_method    | 请求method                                                                                   |
+| `httplog:"req_url"`       | req_url       | 请求URL                                                                                      |
+| `httplog:"req_path_xxx"`  | req_path_xxx  | 请求URL中的xxx路径参数                                                                             |
+| `httplog:"req_paths"`     | req_paths     | 请求URL中的所有路径参数                                                                              |
+| `httplog:"req_query_xxx"` | req_query_xxx | 请求URl中的xxx查询参数                                                                             |
+| `httplog:"req_queries"`   | req_queries   | 请求URl中的所有查询参数                                                                              |
+| `httplog:"req_param_xxx"` | req_param_xxx | 请求中query/form的xxx参数                                                                        |
+| `httplog:"req_params"`    | req_params    | 请求中query/form的所有参数                                                                         |
+| `httplog:"req_body"`      | req_body      | 请求体                                                                                        |
+| `httplog:"req_json"`      | req_json      | 请求体（当Content-Type为JSON时)                                                                   |
+| `httplog:"req_json_xxx"`  | req_json_xxx  | 请求体JSON中的xxx属性                                                                             |
+| 响应类:                      |               |                                                                                            |
+| `httplog:"rsp_head_xxx"`  | rsp_head_xxx  | 响应中的xxx头                                                                                   |
+| `httplog:"rsp_heads"`     | rsp_heads     | 响应中的所有头                                                                                    |
+| `httplog:"rsp_body"`      | rsp_body      | 响应体                                                                                        |
+| `httplog:"rsp_json"`      | rsp_json      | 响应体JSON（当Content-Type为JSON时)                                                               |
+| `httplog:"rsp_json_xxx"`  | rsp_json_xxx  | 请求体JSON中的xxx属性                                                                             |
+| `httplog:"rsp_status"`    | rsp_status    | 响应编码                                                                                       |
+| 上下文:                      |               |                                                                                            |
+| `httplog:"ctx_xxx"`       | ctx_xxx       | 上下文对象xxx的值                                                                                 |
+| 固定值:                      |               |                                                                                            |
+| `httplog:"fix_xxx"`       | fix_xxx       | 由fix参数指定的固定值                                                                               |
+| 扩展类:                      |               |                                                                                            |
+| `httplog:"pre_xxx"`       | pre_xxx       | 由自定义扩展器pre给出属性值，见[示例](src/test/java/com/github/gobars/httplog/spring/mysql/MyHttpLog.java) |
+| `httplog:"post_xxx"`      | post_xxx      | 由自定义扩展器post给出属性值                                                                           |
+| 自定义:                      |               | 自助引入HttpLogCustom实例                                                                        |
+| `httplog:"custom_xxx"`    | custom_xxx    | 由HttpLogCustom提供的自定义xxx值, eg: `HttpLogCustom.get().put("xxx", "bingoo");`                  |
 
 </details>
 
@@ -163,7 +163,7 @@ biz_log:
 
 ```java
 @Bean @SneakyThrows
-public HttpLogYml httpLogYml(){
+public HttpLogYml httpLogYml() {
     @Cleanup val is = new ClassPathResource("httplog.yml").getInputStream();
     return HttpLogYml.parseYml(is);
 }
