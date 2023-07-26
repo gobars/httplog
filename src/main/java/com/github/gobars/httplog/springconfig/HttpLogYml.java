@@ -33,7 +33,8 @@ public class HttpLogYml {
     Yaml yaml = new Yaml();
     Map<String, Object> root = yaml.load(is);
     HttpLogYml httpLogYml = new HttpLogYml();
-    httpLogYml.manualSchema = (boolean) root.get(MANUAL_SCHEMA);
+    Object obj = root.get(MANUAL_SCHEMA);
+    httpLogYml.manualSchema = obj != null && (boolean) obj;
 
     for (val entry : root.entrySet()) {
       String table = entry.getKey().toLowerCase();

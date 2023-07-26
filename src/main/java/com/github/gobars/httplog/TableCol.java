@@ -7,11 +7,7 @@ import com.github.gobars.httplog.snack.Onode;
 import com.github.gobars.httplog.springconfig.HttpLogFieldMeta;
 import com.github.gobars.httplog.springconfig.HttpLogTableMeta;
 import com.github.gobars.httplog.springconfig.HttpLogYml;
-import com.github.gobars.id.util.Pid;
-import com.github.gobars.id.worker.WorkerIdHostname;
-import com.github.gobars.id.worker.WorkerIdIp;
 
-import java.beans.Transient;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.Timestamp;
@@ -64,8 +60,8 @@ public class TableCol {
   static {
     blts.put(eq("id"), (c, v, col) -> wfork(c, v, () -> c.fork.getId(), c.req::getId));
     blts.put(eq("created"), (ctx, v, col) -> ctx.req().getStart());
-    blts.put(eq("ip"), (ctx, v, col) -> WorkerIdIp.LOCAL_IP);
-    blts.put(eq("hostname"), (ctx, v, col) -> WorkerIdHostname.HOSTNAME);
+    blts.put(eq("ip"), (ctx, v, col) -> Ip.LOCAL_IP);
+    blts.put(eq("hostname"), (ctx, v, col) -> Hostname.HOSTNAME);
     blts.put(eq("pid"), (ctx, v, col) -> Pid.PROCESS_ID);
     blts.put(eq("started"), (c, v, col) -> wfork(c, v, () -> c.fork.getStart(), c.req::getStart));
     blts.put(eq("end"), (c, v, col) -> wfork(c, v, () -> c.fork.getEnd(), c.rsp::getEnd));

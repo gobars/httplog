@@ -2,7 +2,7 @@ package com.github.gobars.httplog;
 
 import com.github.gobars.httplog.snack.Onode;
 import com.github.gobars.httplog.snack.core.Cnf;
-import com.github.gobars.id.Id;
+import com.github.ksuid.Ksuid;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +13,7 @@ import java.util.Map;
 
 @Slf4j
 public class HttpLogFork {
-  @Getter private final long id = Id.next();
+  @Getter private final String id = Ksuid.newKsuid().toString();
   @Getter private final HttpLogAttr attr;
   @Getter private final Object request;
   @Getter private Object response;
@@ -43,9 +43,7 @@ public class HttpLogFork {
   public void customAll(Map<String, String> map) {
     checkSealed();
 
-    for (Map.Entry<String, String> entry : map.entrySet()) {
-      customized.put(entry.getKey(), entry.getValue());
-    }
+    customized.putAll(map);
   }
 
   public void submitError(Throwable error) {

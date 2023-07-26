@@ -3,9 +3,6 @@ package com.github.gobars.httplog;
 import com.github.gobars.httplog.TableLogger.LogPrepared;
 import com.github.gobars.httplog.snack.Onode;
 import com.github.gobars.httplog.springconfig.HttpLogYml;
-import com.github.gobars.id.conf.ConnGetter;
-import com.github.gobars.id.db.SqlRunner;
-import com.github.gobars.id.util.DbType;
 
 import java.io.IOException;
 import java.io.InputStreamReader;

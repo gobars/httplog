@@ -2,7 +2,7 @@ drop table biz_log;
 
 create table biz_log
 (
-    id          number(19) primary key,
+    id          char(27) primary key,
     created     timestamp default systimestamp,
     "START"     timestamp,
     end         timestamp,
@@ -28,7 +28,7 @@ drop table biz_log_post;
 
 create table biz_log_post
 (
-    id          number(19) primary key,
+    id          char(27) primary key,
     created     timestamp default systimestamp,
     "START"     timestamp,
     end         timestamp,

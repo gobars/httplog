@@ -28,7 +28,7 @@ create table biz_log
 drop table if exists biz_log_post;
 create table biz_log_post
 (
-    id          bigint primary key comment '日志记录ID',
+    id          char(27) primary key comment '日志记录ID',
     created     datetime default current_timestamp comment '创建时间',
     started     datetime comment '请求时间',
     end         datetime comment '结束时间',
@@ -50,7 +50,7 @@ create table biz_log_post
 drop table if exists biz_log_custom;
 create table biz_log_custom
 (
-    id      bigint primary key comment '日志记录ID',
+    id      char(27) primary key comment '日志记录ID',
     req_url varchar(60) comment '请求url',
     created datetime default current_timestamp comment '创建时间',
     started datetime comment '请求时间',
@@ -64,8 +64,8 @@ create table biz_log_custom
 drop table if exists biz_log_fork;
 create table biz_log_fork
 (
-    id      bigint comment '日志记录ID',
-    fork_id      bigint comment '日志记录ID httplog:"id,fork"',
+    id      char(27) comment '日志记录ID',
+    fork_id      char(27) comment '日志记录ID httplog:"id,fork"',
     req_url varchar(60) comment '请求url',
     fork varchar(60) comment '请求参数 httplog:"req_json_forkName,fork"',
     tran varchar(60) comment '渠道流水 httplog:"rsp_json_tran,fork"',

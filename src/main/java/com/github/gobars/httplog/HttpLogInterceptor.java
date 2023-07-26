@@ -2,7 +2,6 @@ package com.github.gobars.httplog;
 
 import static org.springframework.core.annotation.AnnotatedElementUtils.getMergedAnnotationAttributes;
 
-import com.github.gobars.id.conf.ConnGetter;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import javax.servlet.http.HttpServletRequest;
@@ -109,7 +108,7 @@ public class HttpLogInterceptor extends HandlerInterceptorAdapter
    */
   @Override
   public void afterCompletion(HttpServletRequest r, HttpServletResponse p, Object h, Exception e) {
-    log.debug("afterCompletion method:{} URI:{} ex:{}", r.getMethod(), r.getRequestURI(), e);
+    log.debug("afterCompletion method:{} URI:{}", r.getMethod(), r.getRequestURI(), e);
   }
 
   @Override

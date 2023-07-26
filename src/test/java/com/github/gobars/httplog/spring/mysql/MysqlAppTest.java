@@ -1,11 +1,12 @@
 package com.github.gobars.httplog.spring.mysql;
 
+import com.github.gobars.httplog.SqlRunner;
 import com.github.gobars.httplog.spring.TestDto;
-import com.github.gobars.id.Id;
-import com.github.gobars.id.db.SqlRunner;
 import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 import javax.sql.DataSource;
+
+import com.github.ksuid.Ksuid;
 import lombok.SneakyThrows;
 import org.assertj.core.api.Assertions;
 import org.junit.Assert;
@@ -43,7 +44,7 @@ public class MysqlAppTest {
   @Test
   public void Duplicate() {
     SqlRunner runner = new SqlRunner(dataSource.getConnection());
-    long id = Id.next();
+    int  id = Ksuid.newKsuid().hashCode();
     runner.insert("insert into biz_log(id) values(?)", id);
 
     try {

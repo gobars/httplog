@@ -1,9 +1,7 @@
 package com.github.gobars.httplog;
 
 import com.github.gobars.httplog.snack.Onode;
-import com.github.gobars.id.Id;
-import com.github.gobars.id.db.SqlRunner;
-import com.github.gobars.id.util.DbType;
+import com.github.ksuid.Ksuid;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -77,7 +75,7 @@ public class TableLogger {
     for (val colValueGetter : valueGetters) {
       Object obj = TableValueFilterUtil.filter(table, ctx, getVal(ctx, colValueGetter));
 
-      if (((Long) ctx.req().getId()).equals(obj)) {
+      if (ctx.req().getId().equals(obj)) {
         idPositions.add(params.size());
       }
 
@@ -154,7 +152,7 @@ public class TableLogger {
     } catch (Exception ex) {
       if (isDuplicateKeyException(conn, ex)) {
         log.warn("logPrepared {} got duplicate key, retry", logPrepared, ex);
-        long newid = Id.next();
+        String newid = Ksuid.newKsuid().toString();
 
         for (int idPosition : logPrepared.getIdPositions()) {
           logPrepared.getParams().set(idPosition, newid);

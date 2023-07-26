@@ -2,7 +2,6 @@ package com.github.gobars.httplog;
 
 import static java.util.Collections.list;
 
-import com.github.gobars.id.Id;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.util.*;
@@ -10,6 +9,8 @@ import java.util.concurrent.TimeUnit;
 import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.github.ksuid.Ksuid;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
@@ -131,7 +132,7 @@ public class HttpLogFilter extends OncePerRequestFilter {
   }
 
   private void setup(ContentCachingRequestWrapper rq, Req req, Rsp rsp) {
-    req.setId(Id.next());
+    req.setId(Ksuid.newKsuid().toString());
     rsp.setId(req.getId());
 
     // Registration of request status and headers

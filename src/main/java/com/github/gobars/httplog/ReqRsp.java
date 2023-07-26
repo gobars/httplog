@@ -9,7 +9,7 @@ import java.util.Map;
 
 @Data
 public class ReqRsp {
-  private long id;
+  private String id;
   private Timestamp start = new Timestamp(System.currentTimeMillis());
   private Timestamp end;
   private Map<String, String> headers;
