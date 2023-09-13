@@ -117,6 +117,10 @@ public class HttpLogProcessor {
       SqlRunner runner,
       Map<String, String> fixes,
       String table) {
+    // 如果没有找到读取 schema 的 SQL，直接返回 null
+    if (schemaSql == null) {
+      return null;
+    }
     // 如果不是自动读取表元信息的话，直接返回
     if (httpLogYml != null && httpLogYml.isTableManualSchema(table)) {
       return null;
@@ -199,7 +203,8 @@ public class HttpLogProcessor {
             asString(new ClassPathResource("schema-postgre.sql")),
             (schema, table) -> new Object[] {table});
       default:
-        throw new RuntimeException("not support db");
+        // 交由 httplog.yml 自定义表结构
+        return null;
     }
   }
 
