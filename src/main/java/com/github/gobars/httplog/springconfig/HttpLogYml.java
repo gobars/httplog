@@ -55,6 +55,7 @@ public class HttpLogYml {
 
         val props = (Map<String, Object>) field.getValue();
         val tagField = new HttpLogFieldMeta();
+        tagField.setName(field.getKey());
         tagField.setDataType(getString(props, "data_type"));
         tagField.setMaxLength(getInt(props, "max_length"));
         tagField.setNullable(getBool(props, "nullable"));
@@ -105,7 +106,7 @@ public class HttpLogYml {
       tableCols.add(c);
 
       HttpLogFieldMeta v = m.getValue();
-      c.setName(m.getKey());
+      c.setName(v.getName());
       c.setDataType(v.getDataType());
       c.setMaxLen(v.getMaxLength());
       c.setExtra(v.getExtra());

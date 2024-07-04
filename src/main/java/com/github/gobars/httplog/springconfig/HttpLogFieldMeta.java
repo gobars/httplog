@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class HttpLogFieldMeta {
+  private String name;
   private String dataType;
   private String extra;
   private int maxLength;
