@@ -36,6 +36,8 @@ public enum DbType {
             return DbType.MYSQL;
         } else if (driverName.contains("ORACLE")) {
             return DbType.ORACLE;
+        } else if (driverName.contains("POSTGRESQL") || driverName.contains("OPENGAUSS")) {
+            return DbType.POSTGRESQL;
         } else if (driverName.contains("KINGBASE")) {
             return DbType.KINGBASE;
         } else if (driverName.contains("DMDRIVER")) {
